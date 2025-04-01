@@ -93,17 +93,17 @@ module.exports.changeMulti = async ( req ,res) => {
             await Product.updateMany({ _id: { $in: ids } } , {
                 deleted: true,
                 deleteAt: new Date()
-            });   
+            }); 
+            req.flash("success" , `Xóa thành công ${ids.length} sản phẩm!`);  
             break;
         case "change-position":
             for(const item of ids){
                 let [id,position] =  item.split("-");
                 await Product.updateOne({_id: id} ,{
                     position: position
-                });
-                
+                });             
             }
-            
+            req.flash("success" , `Cập nhật vị trí thành công ${ids.length} sản phẩm!`);
             break; 
         default:
             break;
@@ -124,12 +124,18 @@ module.exports.deleteItem = async ( req ,res)=>{
          deleteAt: new Date()
         }
     );
-    
+    req.flash("success" , `Xóa thành công sản phẩm!`);
     res.redirect("back");
 
 }
 
+//[GET] /admin/products/create
+module.exports.create = async (req , res)=>{
 
+    res.render("admin/pages/products/create" , {
+        pageTitle: "Thêm mới sản phẩm"
+    });
+}
 
 
 
