@@ -131,7 +131,8 @@ if(formChangeMulti){
                     .closest("tr")
                     .querySelector("input[name='position']").value ;
                     
-                    console.log(position);
+                    
+                    ids.push(`${id}-${position}`);  
                 }else{
                     ids.push(id);  
                 }

@@ -45,7 +45,10 @@ module.exports.index = async (req , res) => {
     
 
 
-    const products = await Product.find(find).limit(objectPagination.limitItems).skip(objectPagination.skip) ;
+    const products = await Product.find(find)
+    .sort({position: "desc"})// sap xep theo thuoc tinh
+    .limit(objectPagination.limitItems)// gioi han ban ghi/trang
+    .skip(objectPagination.skip);// bo qua ban ghi
 
     // Gửi cho Views
     res.render("admin/pages/products/index" , {
@@ -88,6 +91,16 @@ module.exports.changeMulti = async ( req ,res) => {
                 deleteAt: new Date()
             });   
             break;
+        case "change-position":
+            for(const item of ids){
+                let [id,position] =  item.split("-");
+                await Product.updateOne({_id: id} ,{
+                    position: position
+                });
+                
+            }
+            
+            break; 
         default:
             break;
     } 
@@ -111,6 +124,7 @@ module.exports.deleteItem = async ( req ,res)=>{
     res.redirect("back");
 
 }
+
 
 
 
