@@ -2,7 +2,6 @@
 
 // Button Status
 const buttonStatus = document.querySelectorAll("[button-status]");
-
 if(buttonStatus.length > 0){
     let url = new URL(window.location.href); // lay ra url hien tai
     
@@ -43,7 +42,6 @@ if(formSearch){
     });
 
 }
-
 // End form search
 
 // Pagination
@@ -62,7 +60,6 @@ if(buttonPagination){
         });
     });
 }
-
 // End Pagination
 
 
@@ -95,7 +92,6 @@ if(checkboxMulti){
         })
     })
 }
-
 //End Checkbox Multi
 
 
@@ -149,7 +145,6 @@ if(formChangeMulti){
 
     });
 }
-
 //End form change Multi
 
 //Show alert
@@ -167,9 +162,24 @@ if(showAlert){
     });
 
 }
-
 //End show alert
 
+
+// Upload image
+const uploadImage = document.querySelector("[ upload-image]");
+if(uploadImage){
+    const uploadImageInput = document.querySelector("[upload-image-input]");
+    const uploadImagePreview  = document.querySelector("[upload-image-preview]");
+
+    uploadImageInput.addEventListener("change" , (e)=>{
+        const file = e.target.files[0];
+        if(file){
+            uploadImagePreview.src = URL.createObjectURL(file);
+        }
+    });
+
+}
+// End upload image
 
 
 
