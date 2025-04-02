@@ -115,7 +115,6 @@ module.exports.changeMulti = async ( req ,res) => {
 
 }
 
-
 //[DELETE] /admin/products/delete/:id
 module.exports.deleteItem = async ( req ,res)=>{
 
@@ -141,7 +140,7 @@ module.exports.create = async (req , res)=>{
 
 //[POST] /admin/products/create
 module.exports.createPost = async (req , res)=>{
-    
+
     req.body.price = parseInt(req.body.price);
     req.body.discountPercentage = parseInt(req.body.discountPercentage);
     req.body.stock = parseInt(req.body.stock);
@@ -154,8 +153,11 @@ module.exports.createPost = async (req , res)=>{
         req.body.position = parseInt(req.body.position);
     }
 
-    //xu li anh
-    req.body.thumbnail = `/uploads/${req.file.filename}`;
+    if(req.file){
+        //xu li anh
+        req.body.thumbnail = `/uploads/${req.file.filename}`;
+    }
+    
 
     // tao moi san pham , luu vao DB
     const product = new Product(req.body);
