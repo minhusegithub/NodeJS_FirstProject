@@ -141,6 +141,11 @@ module.exports.create = async (req , res)=>{
 
 //[POST] /admin/products/create
 module.exports.createPost = async (req , res)=>{
+    
+    req.body.price = parseInt(req.body.price);
+    req.body.discountPercentage = parseInt(req.body.discountPercentage);
+    req.body.stock = parseInt(req.body.stock);
+
 
     if(req.body.position == ""){
         const countProducts = await Product.countDocuments();
@@ -149,11 +154,15 @@ module.exports.createPost = async (req , res)=>{
         req.body.position = parseInt(req.body.position);
     }
 
-    // tao moi san pham
+    //xu li anh
+    req.body.thumbnail = `/uploads/${req.file.filename}`;
+
+    // tao moi san pham , luu vao DB
     const product = new Product(req.body);
     await product.save();
 
     res.redirect(`${systemConfig.prefixAdmin}/products`);
+
 }
 
 
