@@ -1,6 +1,8 @@
 
 const Product = require("../../models/product.model")
 
+const systemConfig = require("../../config/system");
+
 const filterStatusHelper = require("../../helpers/filterStatus");
 
 const searchHelper = require("../../helpers/search");
@@ -137,6 +139,22 @@ module.exports.create = async (req , res)=>{
     });
 }
 
+//[POST] /admin/products/create
+module.exports.createPost = async (req , res)=>{
+
+    if(req.body.position == ""){
+        const countProducts = await Product.countDocuments();
+        req.body.position = countProducts + 1; 
+    }else{
+        req.body.position = parseInt(req.body.position);
+    }
+
+    // tao moi san pham
+    const product = new Product(req.body);
+    await product.save();
+
+    res.redirect(`${systemConfig.prefixAdmin}/products`);
+}
 
 
 
