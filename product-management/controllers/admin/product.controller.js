@@ -52,6 +52,7 @@ module.exports.index = async (req , res) => {
     .limit(objectPagination.limitItems)// gioi han ban ghi/trang
     .skip(objectPagination.skip);// bo qua ban ghi
 
+
     // Gửi cho Views
     res.render("admin/pages/products/index" , {
         pageTitle: "Danh sách sản phẩm",
@@ -166,6 +167,56 @@ module.exports.createPost = async (req , res)=>{
     res.redirect(`${systemConfig.prefixAdmin}/products`);
 
 }
+
+//[GET] /admin/products/edit/:id
+module.exports.edit = async (req , res)=>{
+    try {
+        const find = { // tim ra san pham chua xoa , co Id tuong ung
+            deleted: false,
+            _id:req.params.id
+        }
+        const product = await Product.findOne(find);
+        res.render("admin/pages/products/edit" , {
+            pageTitle: "Chỉnh sửa sản phẩm",
+            product: product
+        });
+
+   }
+    catch (error) {
+        res.redirect(`${systemConfig.prefixAdmin}/products`);
+    }
+
+};
+
+//[PATCH] /admin/products/edit/:id
+module.exports.editPatch = async (req , res)=>{
+    const id = req.params.id;
+
+    req.body.price = parseInt(req.body.price);
+    req.body.discountPercentage = parseInt(req.body.discountPercentage);
+    req.body.stock = parseInt(req.body.stock);
+    req.body.position = parseInt(req.body.position);
+    
+
+    if(req.file){
+        //xu li anh
+        req.body.thumbnail = `/uploads/${req.file.filename}`;
+    }
+    
+
+    // Update san pham trong DB
+    
+    try {
+        await Product.updateOne( {_id: id}, req.body);
+        req.flash("success" , `Cập nhật thành công sản phẩm!`);
+        
+    } catch (error) {
+        req.flash("erroe" , `Cập nhật thất bại!`);
+    }
+
+    res.redirect("back");
+
+};
 
 
 
