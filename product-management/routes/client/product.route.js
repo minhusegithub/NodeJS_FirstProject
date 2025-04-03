@@ -7,5 +7,7 @@ const controller = require("../../controllers/client/product.controller");
 //định nghĩa route / sử dụng phương thức GET
 router.get('/', controller.index);
 
+router.get('/:slug', controller.detail);
+
 module.exports = router;
 

@@ -21,7 +21,31 @@ module.exports.index = async (req , res) => {
     });
 }
 
+// [GET] /products/:slug
+module.exports.detail = async (req , res) => {
+    
+    try {
+        const find = { // tim ra san pham chua xoa , co Id tuong ung
+            deleted: false,
+            slug :req.params.slug
+        };
 
+        const product = await Product.findOne(find);
+
+        console.log(product);
+
+        res.render("client/pages/products/detail" , {
+            pageTitle: product.title,
+            product: product
+        });
+
+   }
+    catch (error) {
+        res.redirect(`/products`);
+    }
+
+   
+}
 
 
 

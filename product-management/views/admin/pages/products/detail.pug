@@ -2,7 +2,7 @@ extend ../../layouts/default.pug
 
 block main  
     
-
+    h1 Chi tiết sản phẩm
     if(product.title)
         div(class="mb-4") Tiêu đề: <b> #{product.title} </b>
   
@@ -42,8 +42,8 @@ block main
 
     a(
         href= `${prefixAdmin}/products/edit/${product.id}`
-        class= "btn btn-outline-warning"
-    )   ~ Chỉnh sửa ~
+        class= "btn btn-warning"
+    )   Chỉnh sửa
      
 
 
