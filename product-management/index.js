@@ -28,7 +28,7 @@ app.use(methodOverride('_method'));
 app.use(bodyParser.urlencoded({ extends: false }));
 
 // cau hinh pug
-app.set('views', './views');
+app.set('views', `${__dirname}/views`);
 app.set('view engine', 'pug');
 
 // flash
@@ -41,7 +41,7 @@ app.use(flash());
 app.locals.prefixAdmin = systemConfig.prefixAdmin;
 
 // nhung file tinh
-app.use(express.static('public'));
+app.use(express.static(`${__dirname}/public`));
 
 
 
