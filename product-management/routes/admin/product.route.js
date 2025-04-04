@@ -1,14 +1,20 @@
 const express = require('express');
 const multer = require("multer");
+
 const router = express.Router();
-const storageMulter = require("../../helpers/storageMulter");
-const upload = multer( {storage:storageMulter() });
+// const storageMulter = require("../../helpers/storageMulter");
+
+
+
+const upload = multer();
 
 //khai bao controller
 const controller = require("../../controllers/admin/product.controller");
 
 //Validate
 const validate = require("../../validates/admin/product.validate");
+
+const uploadCloud = require("../../middlewares/admin/uploadCloud.middleware")
 
 //goi controller
 router.get('/', controller.index);
@@ -24,6 +30,7 @@ router.get("/create" , controller.create);
 router.post(
     "/create",
     upload.single("thumbnail"),
+    uploadCloud.upload,
     validate.createPost,
     controller.createPost
 );

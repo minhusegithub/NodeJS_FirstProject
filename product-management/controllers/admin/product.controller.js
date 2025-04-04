@@ -154,10 +154,6 @@ module.exports.createPost = async (req , res)=>{
         req.body.position = parseInt(req.body.position);
     }
 
-    if(req.file){
-        //xu li anh
-        req.body.thumbnail = `/uploads/${req.file.filename}`;
-    }
     
 
     // tao moi san pham , luu vao DB
