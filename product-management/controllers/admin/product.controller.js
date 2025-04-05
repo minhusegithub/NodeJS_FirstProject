@@ -44,11 +44,19 @@ module.exports.index = async (req , res) => {
     const totalPage = Math.ceil (countProducts /objectPagination.limitItems) ;
     objectPagination.totalPage = totalPage;
 
+    // Sap xep theo tieu chi
+    let sort = {};
+    if(req.query.sortKey && req.query.sortValue){
+        sort[req.query.sortKey] = req.query.sortValue;
+    } else{
+        sort.position = "desc";
+    }
     
 
 
+
     const products = await Product.find(find)
-    .sort({position: "desc"})// sap xep theo thuoc tinh
+    .sort(sort)// sap xep theo thuoc tinh
     .limit(objectPagination.limitItems)// gioi han ban ghi/trang
     .skip(objectPagination.skip);// bo qua ban ghi
 
