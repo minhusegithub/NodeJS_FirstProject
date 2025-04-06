@@ -215,7 +215,7 @@ module.exports.editPatch = async (req , res)=>{
         req.flash("success" , `Cập nhật thành công sản phẩm!`);
         
     } catch (error) {
-        req.flash("erroe" , `Cập nhật thất bại!`);
+        req.flash("error" , `Cập nhật thất bại!`);
     }
 
     res.redirect("back");
@@ -232,7 +232,7 @@ module.exports.detail = async (req , res)=>{
 
         const product = await Product.findOne(find);
 
-        console.log(product);
+        //console.log(product);
 
         res.render("admin/pages/products/detail" , {
             pageTitle: product.title,

@@ -16,7 +16,7 @@ block main
                         a(
                             href= `${prefixAdmin}/products-category/create`
                             class= "btn btn-outline-success"
-                        )   + Thêm mới sản phẩm             
+                        )   + Thêm mới             
 
                 table(
                     class= "table.table-hover.table-sm"
@@ -36,7 +36,15 @@ block main
                     tbody 
                         +table-tree(records)
             
-                                
+    form(
+        action=""
+        method="POST"
+        id="form-delete-category"
+        data-path= `${prefixAdmin}/products-category/delete`
+    ) 
+
+
+    script(src="/admin/js/products-category.js")                    
 
     
 

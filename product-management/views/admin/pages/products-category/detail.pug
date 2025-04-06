@@ -1,0 +1,50 @@
+extend ../../layouts/default.pug
+
+block main  
+    
+    h1 Chi tiết danh mục sản phẩm
+    if(data.title)
+        div(class="mb-4") Tiêu đề: <b> #{data.title} </b>
+  
+    if(data.price)
+        div(class="mb-4") Giá: <b>#{data.price}$ </b> 
+    
+  
+  
+    if(data.discountPercentage)
+        div(class="mb-4") Giảm giá: <b>#{data.discountPercentage}% </b>
+     
+    if(data.stock)
+        div(class="mb-4") Còn lại:<b>  #{data.stock}</b>
+        
+    if(data.thumbnail)
+        div(class="mb-4")
+            img(
+                src=data.thumbnail 
+                style="width: 100px"
+            )
+    
+    if(data.status)
+        div(class="mb-4")
+            span Trạng thái: 
+            if (data.status === "acive")
+                span(class="badge badge-success") Hoạt động
+            else 
+                span(class="badge badge-danger") Dừng hoạt động
+        
+    if(data.position)
+        div(class="mb-4") Vị trí: <b>#{data.position} </b> 
+
+    if(data.description)
+          div(class="mb-4") Mô tả: !{data.description} 
+
+    a(
+        href= `${prefixAdmin}/products-category/edit/${data.id}`
+        class= "btn btn-warning"
+    )   Chỉnh sửa
+     
+
+
+    script(src="/admin/js/product.js")
+
+

@@ -65,3 +65,90 @@ module.exports.createPost = async (req , res)=>{
     res.redirect(`${systemConfig.prefixAdmin}/products-category`);
 
 }
+
+//[GET] /admin/products-category/edit/:id
+module.exports.edit = async (req , res) => {
+    try {
+        const id = req.params.id;
+    
+        const data =await productCategory.findOne({
+            _id:id,
+            deleted: false
+        })
+
+        const records = await productCategory.find({
+            deleted: false
+        })
+        
+        const newRecords = createTreeHelper.tree(records);
+
+        res.render("admin/pages/products-category/edit" , {
+            pageTitle: "Chỉnh sửa danh mục sản phẩm",
+            data: data,
+            records: newRecords
+        });
+    } catch (error) {
+        res.redirect(`${systemConfig.prefixAdmin}/products-category`);
+    }
+
+}
+
+//[PATCH] /admin/products-category/edit/:id
+module.exports.editPatch = async (req , res) => {
+   
+    const id = req.params.id;
+    req.body.position = parseInt(req.body.position);
+
+
+     
+    try {
+        await productCategory.updateOne( {_id: id}, req.body);
+        req.flash("success" , `Cập nhật thành công danh mục sản phẩm!`);
+        
+    } catch (error) {
+        req.flash("error" , `Cập nhật thất bại!`);
+    }
+
+    res.redirect("back");
+
+    
+}
+
+//[GET] /admin/products-category/detail/:id
+module.exports.detail = async (req , res)=>{
+    try {
+        const find = { // tim ra san pham chua xoa , co Id tuong ung
+            deleted: false,
+            _id:req.params.id
+        }
+
+        const data = await productCategory.findOne(find);
+
+        
+
+        res.render("admin/pages/products-category/detail" , {
+            pageTitle: data.title,
+            data: data
+        });
+
+   }
+    catch (error) {
+        res.redirect(`${systemConfig.prefixAdmin}/products-category`);
+    }
+
+};
+
+//[DELETE] /admin/products-category/delete/:id
+module.exports.deleteItem = async ( req ,res)=>{
+
+    const id = req.params.id;
+    // xoa mem (update) , xoa cung(delete)
+    await productCategory.updateOne( {_id: id} , {
+            deleted: true,
+            deleteAt: new Date()
+        }
+    );
+    req.flash("success" , `Xóa thành công danh mục sản phẩm!`);
+    res.redirect("back");
+
+}
