@@ -1,13 +1,15 @@
 
 const Product = require("../../models/product.model")
 
+const productCategory = require("../../models/product-category.model")
+
 const systemConfig = require("../../config/system");
 
 const filterStatusHelper = require("../../helpers/filterStatus");
 
 const searchHelper = require("../../helpers/search");
 
-
+const createTreeHelper = require("../../helpers/createTree")
 
 //[GET] /admin/products
 module.exports.index = async (req , res) => {
@@ -142,8 +144,19 @@ module.exports.deleteItem = async ( req ,res)=>{
 //[GET] /admin/products/create
 module.exports.create = async (req , res)=>{
 
+    let find = {
+            deleted: false
+        }
+        // Ham de quy de xay dung cay phan cap
+        
+    const category = await productCategory.find(find)
+    
+    const newCategory = createTreeHelper.tree(category);
+
+
     res.render("admin/pages/products/create" , {
-        pageTitle: "Thêm mới sản phẩm"
+        pageTitle: "Thêm mới sản phẩm",
+        category: newCategory
     });
 }
 
@@ -179,10 +192,24 @@ module.exports.edit = async (req , res)=>{
             deleted: false,
             _id:req.params.id
         }
+
+
         const product = await Product.findOne(find);
+
+        
+        // Ham de quy de xay dung cay phan cap
+        
+        const category = await productCategory.find({
+            deleted: false
+        })
+    
+        const newCategory = createTreeHelper.tree(category);
+
+
         res.render("admin/pages/products/edit" , {
             pageTitle: "Chỉnh sửa sản phẩm",
-            product: product
+            product: product,
+            category: newCategory
         });
 
    }

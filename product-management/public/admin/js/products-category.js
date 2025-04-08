@@ -1,4 +1,4 @@
-//delete Item
+//delete Item category
 const buttonsDelete = document.querySelectorAll("[button-delete]");
 
 
@@ -22,4 +22,4 @@ if(buttonsDelete.length > 0){
         });
     });
 }
-//End delete Item
+//End delete Item category

@@ -7,6 +7,7 @@ block main
 
     h1(class= "mb-4") Thêm mới danh mục sản phẩm 
     +alert-error(5000)
+    +alert-success(5000)
 
     form(
         action=`${prefixAdmin}/products-category/create`
@@ -95,5 +96,5 @@ block main
                 class="btn btn-primary"
             )   Tạo mới
 
-    script(src= "/admin/js/product.js")
+    //- script(src= "/admin/js/product.js")
 
