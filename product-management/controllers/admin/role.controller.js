@@ -31,7 +31,6 @@ module.exports.create = async (req , res) => {
 
 }
 
-
 //[POST] /admin/roles/create
 module.exports.createPost = async (req , res) => {
     
@@ -43,7 +42,85 @@ module.exports.createPost = async (req , res) => {
 
 }
 
+//[GET] /admin/roles/edit
+module.exports.edit = async (req , res) => {
+    try {
+        const id = req.params.id;
+        let find = {
+            _id:id,
+            deleted:false
+        }
+        const data = await Role.findOne(find);
+    
+        res.render("admin/pages/roles/edit" , {
+            pageTitle: "Chỉnh sửa nhóm quyền",
+            data:data
+        });
+    } catch (error) {
+        res.redirect(`${systemConfig.prefixAdmin}/roles`);
+    }
+   
 
+}
+
+//[PATCH] /admin/roles/edit
+module.exports.editPatch = async (req , res) => {
+    const id = req.params.id;
+  
+
+    // Update san pham trong DB
+    try {
+        await Role.updateOne( {_id: id}, req.body);
+        req.flash("success" , `Cập nhật thành công sản phẩm!`);
+        
+    } catch (error) {
+        req.flash("error" , `Cập nhật thất bại!`);
+    }
+
+    res.redirect("back");
+   
+
+}
+
+//[GET] /admin/roles/edit
+module.exports.detail = async (req , res) => {
+    try {
+        const find = { // tim ra san pham chua xoa , co Id tuong ung
+            deleted: false,
+            _id:req.params.id
+        }
+
+        const data = await Role.findOne(find);
+
+        //console.log(product);
+
+        res.render("admin/pages/roles/detail" , {
+            pageTitle: data.title,
+            data: data
+        });
+
+   }
+    catch (error) {
+        res.redirect(`${systemConfig.prefixAdmin}/roles`);
+    }
+   
+
+}
+
+//[DELETE] /admin/roles/delete/:id
+module.exports.deleteItem = async ( req ,res)=>{
+
+    const id = req.params.id;
+    // xoa mem (update) , xoa cung(delete)
+    await Role.updateOne( {_id: id} , {
+            deleted: true,
+            deleteAt: new Date()
+        }
+    );
+    req.flash("success" , `Xóa thành công nhóm quyền sản phẩm!`);
+    res.redirect("back");
+
+}
 
 
 

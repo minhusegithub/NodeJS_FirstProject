@@ -1,0 +1,22 @@
+extend ../../layouts/default.pug
+
+block main  
+    
+    h1 Chi tiết nhóm quyền
+    if(data.title)
+        div(class="mb-4") Nhóm quyền: <b> #{data.title} </b>
+  
+    if(data.description)
+          div(class="mb-4") Mô tả ngắn : !{data.description} 
+    if(data.permissions)
+        div(class="mb-4") Các quyền khả thi : #{data.permissions}
+    a(
+        href= `${prefixAdmin}/roles/edit/${data.id}`
+        class= "btn btn-warning"
+    )   Chỉnh sửa
+     
+
+
+    //- script(src="/admin/js/product.js")
+
+
