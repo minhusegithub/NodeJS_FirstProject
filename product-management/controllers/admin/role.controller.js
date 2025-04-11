@@ -42,7 +42,7 @@ module.exports.createPost = async (req , res) => {
 
 }
 
-//[GET] /admin/roles/edit
+//[GET] /admin/roles/edit/:id
 module.exports.edit = async (req , res) => {
     try {
         const id = req.params.id;
@@ -63,7 +63,7 @@ module.exports.edit = async (req , res) => {
 
 }
 
-//[PATCH] /admin/roles/edit
+//[PATCH] /admin/roles/edit/:id
 module.exports.editPatch = async (req , res) => {
     const id = req.params.id;
   
