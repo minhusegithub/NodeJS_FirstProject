@@ -3,6 +3,8 @@ const Product = require("../../models/product.model")
 
 const productCategory = require("../../models/product-category.model")
 
+const Account = require("../../models/account.model")
+
 const systemConfig = require("../../config/system");
 
 const filterStatusHelper = require("../../helpers/filterStatus");
@@ -10,6 +12,7 @@ const filterStatusHelper = require("../../helpers/filterStatus");
 const searchHelper = require("../../helpers/search");
 
 const createTreeHelper = require("../../helpers/createTree")
+
 
 //[GET] /admin/products
 module.exports.index = async (req , res) => {
@@ -62,6 +65,17 @@ module.exports.index = async (req , res) => {
     .limit(objectPagination.limitItems)// gioi han ban ghi/trang
     .skip(objectPagination.skip);// bo qua ban ghi
 
+    for(const product of products){
+        const user = await Account.findOne({
+            _id: product.createBy.account_id
+        });
+        if(user){
+            product.accountFullName = user.fullName;
+        }
+
+
+    };
+
 
     // Gửi cho Views
     res.render("admin/pages/products/index" , {
@@ -105,7 +119,10 @@ module.exports.changeMulti = async ( req ,res) => {
         case "delete-all":
             await Product.updateMany({ _id: { $in: ids } } , {
                 deleted: true,
-                deleteAt: new Date()
+                deletedBy:{
+                    account_id: res.locals.user.id,
+                    deletedAt: new Date(),
+                }
             }); 
             req.flash("success" , `Xóa thành công ${ids.length} sản phẩm!`);  
             break;
@@ -132,10 +149,15 @@ module.exports.deleteItem = async ( req ,res)=>{
     const id = req.params.id;
     // xoa mem (update) , xoa cung(delete)
     await Product.updateOne( {_id: id} , {
-         deleted: true,
-         deleteAt: new Date()
+        deleted: true,
+        deletedBy:{
+            account_id: res.locals.user.id,
+            deletedAt: new Date(),
+        }
         }
     );
+
+
     req.flash("success" , `Xóa thành công sản phẩm!`);
     res.redirect("back");
 
@@ -175,7 +197,10 @@ module.exports.createPost = async (req , res)=>{
         req.body.position = parseInt(req.body.position);
     }
 
-    
+    req.body.createBy = {
+        account_id:  res.locals.user.id
+
+    }
 
     // tao moi san pham , luu vao DB
     const product = new Product(req.body);
