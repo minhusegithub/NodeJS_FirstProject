@@ -1,0 +1,43 @@
+extend ../../layouts/default.pug
+
+block main  
+    
+    h1 Chi tiết tài khoản
+    if(data.avatar)
+        div(class="mb-4")
+            img(
+                src=data.avatar 
+                style="width: 100px"
+            )
+
+    if(data.fullName)
+        div(class="mb-4") Họ tên: <b> #{data.fullName} </b>
+  
+    if(data.role_id)
+        div(class="mb-4") Phân quyền : <b>#{role.title} </b> 
+    
+    if(data.email)
+        div(class="mb-4") Email : <b>#{data.email} </b> 
+  
+  
+        
+    
+    if(data.status)
+        div(class="mb-4")
+            span Trạng thái: 
+            if (data.status === "acive")
+                span(class="badge badge-success") Hoạt động
+            else 
+                span(class="badge badge-danger") Dừng hoạt động
+        
+
+    a(
+        href= `${prefixAdmin}/accounts/edit/${data.id}`
+        class= "btn btn-warning"
+    )   Chỉnh sửa
+     
+
+
+    //- script(src="/admin/js/product.js")
+
+

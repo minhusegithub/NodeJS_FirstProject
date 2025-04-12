@@ -129,3 +129,46 @@ module.exports.editPatch = async (req , res) => {
    
 
 }
+
+//[GET] /admin/accounts/detail/:id
+module.exports.detail = async (req , res) => {
+    try {
+            const find = { // tim ra san pham chua xoa , co Id tuong ung
+                deleted: false,
+                _id:req.params.id
+            }
+    
+            const data = await Account.findOne(find);
+    
+            const role = await Role.findOne({
+                _id: data.role_id
+            })
+    
+            res.render("admin/pages/accounts/detail" , {
+                pageTitle: data.email,
+                data: data,
+                role:role
+            });
+    
+    }catch (error) {
+            res.redirect(`${systemConfig.prefixAdmin}/accounts`);
+    }
+   
+
+}
+
+//[DELETE] /admin/roles/delete/:id
+module.exports.deleteItem = async ( req ,res)=>{
+
+    const id = req.params.id;
+    // xoa mem (update) , xoa cung(delete)
+    await Account.updateOne( {_id: id} , {
+            deleted: true,
+            deleteAt: new Date()
+        }
+    );
+    req.flash("success" , `Xóa thành công tài khoản!`);
+    res.redirect("back");
+
+}
+
