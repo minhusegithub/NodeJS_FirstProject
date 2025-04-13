@@ -21,9 +21,9 @@ const productSchema = new mongoose.Schema(
             slug: "title",
             unique: true // luôn tạo ra 2 title khác nhau
         },
-        createBy:{
+        createdBy:{
             account_id: String,
-            createAt:{
+            createdAt:{
                 type: Date,
                 default: Date.now
             }
@@ -33,11 +33,16 @@ const productSchema = new mongoose.Schema(
             default: false,
             
         },
-    
         deletedBy:{
             account_id: String,
             deletedAt: Date
         },
+        updatedBy:[
+            {
+                account_id: String,
+                updatedAt: Date
+            }
+        ],
     },
     {
         timestamps: true  
