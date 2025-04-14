@@ -1,6 +1,8 @@
 
 const productCategory = require("../../models/product-category.model")
 
+const Account = require("../../models/account.model")
+
 const systemConfig = require("../../config/system");
 
 const createTreeHelper = require("../../helpers/createTree")
@@ -19,6 +21,27 @@ module.exports.index = async (req , res) => {
     const records = await productCategory.find(find)
 
     const newRecords = createTreeHelper.tree(records);
+
+    for(const product of records){
+        const user = await Account.findOne({
+            _id: product.createdBy.account_id
+        });
+        if(user){
+            product.accountFullName = user.fullName;
+        }
+        // lay ra thong tin nguoi cap nhat gan nhat
+        const updatedBy = product.updatedBy.slice(-1)[0];
+        if(updatedBy){
+            const userUpdated = await Account.findOne({
+                _id: updatedBy.account_id
+            });
+            updatedBy.accountFullName = userUpdated.fullName;
+        }
+
+
+    };
+
+
 
     res.render("admin/pages/products-category/index" , {
         pageTitle: "Danh mục sản phẩm",
@@ -56,6 +79,10 @@ module.exports.createPost = async (req , res)=>{
         req.body.position = count + 1; 
     }else{
         req.body.position = parseInt(req.body.position);
+    }
+    req.body.createdBy = {
+        account_id:  res.locals.user.id
+
     }
 
     // tao moi va luu vao DB
@@ -102,7 +129,19 @@ module.exports.editPatch = async (req , res) => {
 
      
     try {
-        await productCategory.updateOne( {_id: id}, req.body);
+        const updatedBy = {
+            account_id: res.locals.user.id,
+            updatedAt: new Date()
+        }
+
+        
+
+
+        await productCategory.updateOne( {_id: id}, {
+            ...req.body,
+            $push: { updatedBy: updatedBy}
+        });
+
         req.flash("success" , `Cập nhật thành công danh mục sản phẩm!`);
         
     } catch (error) {
@@ -143,9 +182,14 @@ module.exports.deleteItem = async ( req ,res)=>{
 
     const id = req.params.id;
     // xoa mem (update) , xoa cung(delete)
+
+
     await productCategory.updateOne( {_id: id} , {
-            deleted: true,
-            deleteAt: new Date()
+        deleted: true,
+        deletedBy:{
+            account_id: res.locals.user.id,
+            deletedAt: new Date(),
+        }
         }
     );
     req.flash("success" , `Xóa thành công danh mục sản phẩm!`);

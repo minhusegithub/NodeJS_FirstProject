@@ -43,7 +43,20 @@ mixin table-tree(items , level = 1)
                             data-id= item.id 
                             button-change-status
                             class="badge badge-danger"
-                        ) Dừng hoạt động     
+                        ) Dừng hoạt động
+            td 
+                p #{item.accountFullName}
+                p 
+                    +formatDateTime(item.createdBy.createdAt)
+            td 
+                - const updatedBy = item.updatedBy.slice(-1)[0];
+                if(updatedBy)
+                    p #{updatedBy.accountFullName}
+                    p 
+                        +formatDateTime(updatedBy.updatedAt)
+
+
+
             td 
                 a(
                     href=`${prefixAdmin}/products-category/detail/${item.id}`

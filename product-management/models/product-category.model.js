@@ -18,12 +18,28 @@ const productCategorySchema = new mongoose.Schema(
             slug: "title",
             unique: true // luôn tạo ra 2 title khác nhau
         },
+        createdBy:{
+            account_id: String,
+            createdAt:{
+                type: Date,
+                default: Date.now
+            }
+        },
         deleted:{
             type: Boolean,
             default: false,
             
         },
-        deleteAt: Date
+        deletedBy:{
+            account_id: String,
+            deletedAt: Date
+        },
+        updatedBy:[
+            {
+                account_id: String,
+                updatedAt: Date
+            }
+        ],
     },
     {
         timestamps: true  
