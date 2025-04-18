@@ -1,4 +1,9 @@
+include ../mixins/sub-menu.pug
+
+
 header.header
+    
+
     .container 
         .row-align-items-center     
             .col-3  
@@ -10,5 +15,16 @@ header.header
                     ul 
                         li 
                             a(href="/") Trang chủ  
-                        li 
-                            a(href="/products") Trang danh sách sản phẩm  
+                        li(class= "sub-menu")
+                            -const pathProduct = "/products";
+                            a(href= pathProduct) Sản phẩm 
+                                +sub-menu(layoutProductsCategory, pathProduct)
+
+
+            
+                                     
+                                     
+
+-
+                        
+                        

@@ -1,22 +1,19 @@
 const Product = require("../../models/product.model");
 
+const productsHelper = require("../../helpers/products");
 // [GET] /products
 module.exports.index = async (req , res) => {
     const products = await Product.find({// tim tat ca object thoa man
-       
+       status:"active",
+       deleted:false,
     }).sort({position: "desc"});
 
-    const newProduct = products.map(item =>{
-        item.priceNew =  (item.price*(100- item.discountPercentage)/100 ).toFixed(0);
-        return item;
-    });
+    const newProduct = productsHelper.priceNewProducts(products);
 
-
-    // console.log(newProduct);
     
     // Tra ve Views
     res.render("client/pages/products/index" , {
-        pageTitle: "Trang danh sach san pham",
+        pageTitle: "Trang danh sách sản phẩm",
         products: newProduct
     });
 }
