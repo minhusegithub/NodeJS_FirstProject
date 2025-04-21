@@ -3,9 +3,6 @@ const Product = require("../../models/product.model");
 
 const productsHelper = require("../../helpers/products");
 
-
-
-
 //[GET] /seach/
 module.exports.index = async (req , res) => {
     
@@ -25,9 +22,6 @@ module.exports.index = async (req , res) => {
         newProducts = productsHelper.priceNewProducts(products);
 
     };
-
-
-
 
     res.render("client/pages/search/index" , {
         pageTitle: "Kết quả tìm kiếm",
