@@ -31,7 +31,7 @@ block main
                                 tr
                                     td #{index+1}
                                     td 
-                                        img(src="", alt="Sản phẩm 1" width="80px")
+                                        img(src=item.productInfo.thumbnail , alt="" width="80px")
                                     td 
                                         a(href='/products/detail/:slug') #{item.productInfo.title}
                                     td #{item.productInfo.priceNew}$
