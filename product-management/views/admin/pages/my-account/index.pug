@@ -1,55 +1,51 @@
 extends ../../layouts/default.pug
 
 block main 
-    h1(class="mb-4") Thông tin cá nhân 
+  .container.mt-4
+    .card.shadow.p-4(style="max-width: 600px; margin: 0 auto;")
+      .card-body
+        h2.mb-4.text-center Personal Information
 
-    if(user.avatar)
-        img(src= user.avatar width="150px" class= "mb-3")
-    else 
-        img(src="/admin/images/avatar.pug" width= "150px" class="mb-3")
+        .text-center.mb-4
+          if user.avatar
+            img(src= user.avatar, width="120", class="rounded-circle border")
+          else 
+            img(src="/admin/images/avatar.pug", width="120", class="rounded-circle border")
 
-    if(user.fullName)
-        p Họ tên: <b> #{user.fullName} </b>
+        ul.list-group.list-group-flush
+          if user.fullName
+            li.list-group-item
+              i.bi.bi-person-fill.mr-2
+              | Full name: 
+              b.ml-1 #{user.fullName}
 
-    if(user.email)
-        p Email: <b> #{user.email} </b>
+          if user.email
+            li.list-group-item
+              i.bi.bi-envelope-fill.mr-2
+              | Email:
+              b.ml-1 #{user.email}
 
-    if(user.phone)
-        p Số điện thoại: <b> #{user.phone} </b>
+          if user.phone
+            li.list-group-item
+              i.bi.bi-telephone-fill.mr-2
+              | Phone:
+              b.ml-1 #{user.phone}
 
-    p 
-        span Trạng thái:
-        span 
-            <b> #{user.status === "active" ? "Hoạt động": "Dừng hoạt động"} </b>
+          li.list-group-item
+            i.bi.bi-check-circle-fill.mr-2
+            | Status: 
+            b.ml-1 #{user.status === "active" ? "Hoạt động" : "Dừng hoạt động"}
 
-    if(role.title)
-        p Phân quyền: <b> #{role.title} </b>
+          if role.title
+            li.list-group-item
+              i.bi.bi-shield-lock-fill.mr-2
+              | Role:
+              b.ml-1 #{role.title}
 
-    a(
-        href= `${prefixAdmin}/my-account/edit`
-        class= "btn btn-primary"
-    )   Chỉnh sửa thông tin
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        .text-center.mt-4
+          a(
+            href= `${prefixAdmin}/my-account/edit`
+            class= "btn btn-primary px-4"
+          ) 
+            i.bi.bi-pencil-fill.mr-1
+            | Edit Profile

@@ -1,15 +1,14 @@
 mixin search(keyword)
-    form(action="" id="form-search")
-        .input-group 
-            input(
-                type="text" 
-                placeholder="Nhập từ khóa"
-                name= "keyword"
-                class= "form-control"  
-                value= keyword                          
-            ) 
-            .input-group-append  
-                button( 
-                    class="btn btn-success"
-                    type="submit"                                   
-                ) TÌM
+  form(action="" id="form-search" class="mb-3")
+    .input-group
+      input.form-control(
+        type="text",
+        placeholder="Nhập từ khóa...",
+        name="keyword",
+        value=keyword,
+        aria-label="Search"
+      )
+      .input-group-append
+        button.btn.btn-success(type="submit")
+          i.bi.bi-search.mr-1
+          | Tìm kiếm

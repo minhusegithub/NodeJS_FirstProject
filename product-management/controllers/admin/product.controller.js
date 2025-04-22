@@ -285,13 +285,8 @@ module.exports.editPatch = async (req , res)=>{
     req.body.stock = parseInt(req.body.stock);
     req.body.position = parseInt(req.body.position);
     
-
-    if(req.file){
-        //xu li anh
-        req.body.thumbnail = `/uploads/${req.file.filename}`;
-    }
-    
-
+   
+  
     // Update san pham trong DB
     
     try {
@@ -299,9 +294,6 @@ module.exports.editPatch = async (req , res)=>{
             account_id: res.locals.user.id,
             updatedAt: new Date()
         }
-
-        
-
 
         await Product.updateOne( {_id: id}, {
             ...req.body,

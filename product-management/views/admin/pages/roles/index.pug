@@ -1,67 +1,66 @@
 extends ../../layouts/default.pug
 
+block main
+  if role.permissions.includes("roles_view")
+    .container.mt-4
+      h2.mb-4.text-center 
+        i.bi.bi-shield-lock-fill.mr-2
+        | Danh sách nhóm quyền
 
-block main 
-    if(role.permissions.includes("roles_view"))
-        h1(class= "mb-4") Nhóm quyền
+      .card.shadow.mb-4
+        .card-header.d-flex.justify-content-between.align-items-center
+          span.font-weight-bold
+            i.bi.bi-list-check.mr-2
+            | Danh sách nhóm quyền
+          if role.permissions.includes("roles_edit")
+            a.btn.btn-success.btn-sm(href=`${prefixAdmin}/roles/create`)
+              i.bi.bi-plus-circle.mr-1
+              | Thêm mới
 
-        .card.mb-3 
-            .card-header Danh sách
-            .card-body
-                .row    
-                    .col-6     
-                    .col-4.text-right
-                            if(role.permissions.includes("roles_edit"))
-                                a(
-                                    href= `${prefixAdmin}/roles/create`
-                                    class= "btn btn-outline-success"
-                                )   + Thêm mới   
-                    table(
-                        class="table table-hover table -sm"
-                    )
-                        thead 
-                            tr 
-                                th STT
-                                th Nhóm quyền
-                                th Mô tả ngắn
-                                th Hành động
+        .card-body.p-0
+          table.table.table-hover.table-bordered.mb-0
+            thead.thead-light
+              tr.text-center
+                th(style="width: 40px") #
+                th Nhóm quyền
+                th Mô tả ngắn
+                th(style="min-width: 160px") Hành động
 
-                        tbody 
-                            if(records.length > 0)
-                                each item , index in records
-                                    tr 
-                                        td #{index + 1}     
-                                        td #{item.title}     
-                                        td #{item.description}     
-                                        td
-                                            a(
-                                                class="btn btn-secondary btn-sm"
-                                                href=`${prefixAdmin}/roles/detail/${item.id}`
-                                            ) Chi tiết
-                                            if(role.permissions.includes("roles_edit"))
-                                                a(
-                                                    class="btn btn-warning btn-sm"
-                                                    href=`${prefixAdmin}/roles/edit/${item.id}`
-                                                ) Sửa
-                                            if(role.permissions.includes("roles_delete"))
-                                                button(
-                                                    class="btn btn-danger btn-sm ml-1"
-                                                    button-delete
-                                                    data-id= item.id
-                                                ) Xóa
-                            else 
-                                tr 
-                                    td(colspan="4" class= "text-center") Chưa có nhóm quyền nào được chọn
+            tbody
+              if records.length > 0
+                each item, index in records
+                  tr.text-center.align-middle
+                    td #{index + 1}
+                    td.text-left #{item.title}
+                    td.text-left #{item.description}
+                    td
+                      a.btn.btn-secondary.btn-sm.mr-1(
+                        href=`${prefixAdmin}/roles/detail/${item.id}`
+                      )
+                        i.bi.bi-eye-fill
+                      if role.permissions.includes("roles_edit")
+                        a.btn.btn-warning.btn-sm.mr-1(
+                          href=`${prefixAdmin}/roles/edit/${item.id}`
+                        )
+                          i.bi.bi-pencil-fill
+                      if role.permissions.includes("roles_delete")
+                        button.btn.btn-danger.btn-sm(
+                          button-delete
+                          data-id=item.id
+                        )
+                          i.bi.bi-trash-fill
+              else
+                tr
+                  td(colspan="4" class="text-center text-muted") 
+                    i.bi.bi-info-circle-fill.mr-1
+                    | Chưa có nhóm quyền nào được tạo
 
-        form(
-            action=""
-            method="POST"
-            id="form-delete-roles"
-            data-path= `${prefixAdmin}/roles/delete`
-        ) 
+    // Form xóa
+    form(
+      action=""
+      method="POST"
+      id="form-delete-roles"
+      data-path=`${prefixAdmin}/roles/delete`
+    )
 
-
-        script(src="/admin/js/roles.js")           
-
-
-
+    script(src="/admin/js/roles.js")

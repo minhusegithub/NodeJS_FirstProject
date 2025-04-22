@@ -1,5 +1,3 @@
-
-
 // Button Status
 const buttonStatus = document.querySelectorAll("[button-status]");
 if(buttonStatus.length > 0){
@@ -166,7 +164,7 @@ if(showAlert){
 
 
 // Upload image
-const uploadImage = document.querySelector("[ upload-image]");
+const uploadImage = document.querySelector("[upload-image]");
 if(uploadImage){
     const uploadImageInput = document.querySelector("[upload-image-input]");
     const uploadImagePreview  = document.querySelector("[upload-image-preview]");

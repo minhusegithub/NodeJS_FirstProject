@@ -7,6 +7,7 @@ block main
     if(role.permissions.includes("products_edit"))
         +alert-success(5000)
         +alert-error(5000)
+       
 
         h1(class= "mb-4") Chỉnh sửa sản phẩm 
 
@@ -113,8 +114,8 @@ block main
                 )
                 img(
                     src=product.thumbnail
-                    upload-image-preview
                     class= "image-preview" 
+                    upload-image-preview
                 )
             div(class= "form-group")
                 label(for="position") Vị trí
@@ -153,5 +154,5 @@ block main
                     class="btn btn-primary"
                 )   Cập nhật
 
-        script(src= "/admin/js/product.js")
+        script(src= "/admin/js/script.js")
 

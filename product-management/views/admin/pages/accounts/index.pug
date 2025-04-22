@@ -2,94 +2,84 @@ extends ../../layouts/default.pug
 
 include ../../mixins/alert.pug
 
-block main   
-    if(role.permissions.includes("accounts_view"))
-        h1(class= "mb-4") Danh sách tài khoản
-        
-        .card.mb-3 
-            .card-header Danh sách
-            .card-body
-                .row    
-                    .col-6     
-                    .col-4.text-right
-                            if(role.permissions.includes("accounts_create"))
-                                a(
-                                    href= `${prefixAdmin}/accounts/create`
-                                    class= "btn btn-outline-success"
-                                )   + Thêm mới   
-                    table(
-                        class="table table-hover table -sm"
-                    )
-                        thead 
-                            tr 
-                                th STT
-                                th Avatar
-                                th Họ tên
-                                th Phân quyền
-                                th Email
-                                th Trạng thái
-                                th Hành động
+block main
+  if role.permissions.includes("accounts_view")
+    .container.mt-4
+      h2.mb-4.text-center 
+        i.bi.bi-people-fill.mr-2
+        | Danh sách tài khoản
 
-                        tbody 
-                            each item , index in records
-                                tr 
-                                    td #{index + 1}  
+      +alert-success(5000)
+      +alert-error(5000)
 
-                                    td 
-                                        img(
-                                            src=item.avatar
-                                            alt=item.fullName
-                                            width="100px"
-                                            height="auto"
-                                        )
+      .card.shadow.mb-4
+        .card-header.d-flex.justify-content-between.align-items-center
+          span.font-weight-bold
+            i.bi.bi-card-list.mr-2
+            | Danh sách tài khoản
+          if role.permissions.includes("accounts_create")
+            a.btn.btn-success.btn-sm(href= `${prefixAdmin}/accounts/create`)
+              i.bi.bi-plus-circle.mr-1
+              | Thêm mới
 
-                                    td #{item.fullName}     
-                                    td #{item.role.title}     
-                                    td #{item.email} 
-                                    td 
-                                        if(role.permissions.includes("accounts_edit"))
-                                            if(item.status == "active")
-                                                a(
-                                                    href="javascript:;"
-                                                    class="badge badge-success"
-                                                    data-status= "active"
+        .card-body.p-0
+          table.table.table-hover.table-bordered.mb-0
+            thead.thead-light
+              tr.text-center
+                th(style="width: 40px") #
+                th Avatar
+                th Họ tên
+                th Phân quyền
+                th Email
+                th Trạng thái
+                th(style="min-width: 160px") Hành động
 
-                                                    
-                                                )  Hoạt động 
-                                            else
-                                                a(
-                                                    href="javascript:;"
-                                                    class="badge badge-danger"
-                                                    data-status= "inactive"
-                                                
-                                                ) Dừng hoạt động     
+            tbody
+              each item, index in records
+                tr.text-center.align-middle
+                  td #{index + 1}
+                  td
+                    if item.avatar
+                      img.rounded-circle.border(
+                        src=item.avatar,
+                        alt=item.fullName,
+                        width="60",
+                        height="60"
+                      )
+                    else
+                      span.text-muted Không có ảnh
+                  td.text-left #{item.fullName}
+                  td #{item.role.title}
+                  td #{item.email}
+                  td
+                    if role.permissions.includes("accounts_edit")
+                      if item.status == "active"
+                        span.badge.badge-success(data-status="active") 
+                          i.bi.bi-check-circle.mr-1
+                          | Hoạt động
+                      else
+                        span.badge.badge-danger(data-status="inactive")
+                          i.bi.bi-x-circle.mr-1
+                          | Dừng hoạt động
+                    else
+                      span.text-muted #{item.status}
 
-                                    td
-                                        a(
-                                            class="btn btn-secondary btn-sm"
-                                            href=`${prefixAdmin}/accounts/detail/${item.id}`
-                                        ) Chi tiết
-                                        if(role.permissions.includes("accounts_edit"))
-                                            a(
-                                                class="btn btn-warning btn-sm"
-                                                href=`${prefixAdmin}/accounts/edit/${item.id}`
-                                            ) Sửa
-                                        if(role.permissions.includes("accounts_delete"))
-                                            button(
-                                                class="btn btn-danger btn-sm ml-1"
-                                                button-delete
-                                                data-id= item.id
-                                            ) Xóa
-        form(
-            action=""
-            method="POST"
-            id="form-delete-accounts"
-            data-path= `${prefixAdmin}/accounts/delete`
-        ) 
+                  td
+                    a.btn.btn-secondary.btn-sm.mr-1(href=`${prefixAdmin}/accounts/detail/${item.id}`)
+                      i.bi.bi-eye-fill
+                    if role.permissions.includes("accounts_edit")
+                      a.btn.btn-warning.btn-sm.mr-1(href=`${prefixAdmin}/accounts/edit/${item.id}`)
+                        i.bi.bi-pencil-fill
+                    if role.permissions.includes("accounts_delete")
+                      button.btn.btn-danger.btn-sm(button-delete data-id=item.id)
+                        i.bi.bi-trash-fill
 
+      // Form xóa
+      form(
+        action=""
+        method="POST"
+        id="form-delete-accounts"
+        data-path=`${prefixAdmin}/accounts/delete`
+      )
 
-        script(src="/admin/js/account.js")    
-                    
-
-
-
+      script(src="/admin/js/account.js")
