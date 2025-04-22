@@ -3,16 +3,19 @@ extends ../../layouts/default.pug
 include ../../mixins/alert.pug
 
 block main  
-    .container.py-4
+    .container.py-5
         .row.justify-content-center
             .col-lg-8.col-md-10
-                .card.shadow-sm
-                    .card-header.bg-primary.text-white
-                        h1(class="h3 mb-0")
-                            i(class="fas fa-user-plus me-2")
-                            |       Thêm mới tài khoản
+                .card.border-0.shadow-lg.rounded-4.overflow-hidden
+                    .card-header.bg-gradient-primary.text-white.py-4
+                        .d-flex.align-items-center
+                            .icon-circle.bg-white.text-primary.rounded-circle.p-3.me-3
+                                i(class="fas fa-user-plus fa-2x")
+                            div
+                                h1(class="h3 mb-0 fw-bold") Thêm mới tài khoản
+                                
                     
-                    .card-body
+                    .card-body.p-4.bg-light
                         +alert-error(5000)
 
                         form(
@@ -20,123 +23,193 @@ block main
                             method="POST"
                             enctype="multipart/form-data"
                         )
-                            .mb-3
-                                label(for="fullName" class="form-label") 
-                                    i(class="fas fa-user me-1")
-                                    | Họ tên *
-                                input(
-                                    type="text"
-                                    class="form-control"
-                                    id="fullName"
-                                    name="fullName"
-                                    placeholder="Nhập họ tên đầy đủ"
-                                    required 
-                                )
-                            
-                            .mb-3
-                                label(for="email" class="form-label")
-                                    i(class="fas fa-envelope me-1") 
-                                    | Email *
-                                input(
-                                    type="email"
-                                    class="form-control"
-                                    id="email"                
-                                    name="email"
-                                    placeholder="example@domain.com"
-                                    required
-                                )   
-                            
-                            .mb-3
-                                label(for="password" class="form-label")
-                                    i(class="fas fa-lock me-1")
-                                    | Mật khẩu *
-                                .input-group
-                                    input(
-                                        type="password"
-                                        class="form-control"
-                                        id="password"
-                                        name="password"
-                                        required 
-                                    )
-                                    
-                            
-                            .mb-3
-                                label(for="phone" class="form-label")
-                                    i(class="fas fa-phone me-1")
-                                    | Số điện thoại
-                                input(
-                                    type="text"
-                                    class="form-control"
-                                    id="phone"                
-                                    name="phone"
-                                    placeholder="Nhập số điện thoại"
-                                ) 
-                            
-                            div(
-                                class= "form-group"
-                                upload-image 
-                            )  
-                                label(for="avatar") Avatar
-                                input(
-                                    type= "file"
-                                    class= "form-control-file"
-                                    id="avatar"                
-                                    name="avatar"
-                                    accept= "image/*"
-                                    upload-image-input
-                                )
-                                img(
-                                    src=""
-                                    class="image-preview"
-                                    upload-image-preview
-                                )
-
-                            .mb-3
-                                label(for="role_id" class="form-label")
-                                    i(class="fas fa-user-shield me-1")
-                                    | Phân quyền 
-                                select(name="role_id" id="role_id" class="form-select")
-                                    option(selected disabled) --Chọn quyền-- 
-                                    each item in roles      
-                                        option(value=item.id) #{item.title}
-                            
-                            .mb-3
-                                label(class="form-label d-block")
-                                    i(class="fas fa-toggle-on me-1")
-                                    | Trạng thái
-                                .form-check.form-check-inline
-                                    input(
-                                        type="radio"
-                                        class="form-check-input"
-                                        id="statusActive"
-                                        name="status"
-                                        value="active"
-                                        checked
-                                    )     
-                                    label(for="statusActive" class="form-check-label")
-                                        i(class="fas fa-check-circle text-success me-1")
-                                        | Hoạt động
+                            .row.g-4
+                                .col-md-6
+                                    .form-floating
+                                        label(for="fullName")
+                                            i(class="fas fa-user me-2")
+                                            | Họ tên *
+                                        input(
+                                            type="text"
+                                            class="form-control border-0 shadow-sm"
+                                            id="fullName"
+                                            name="fullName"
+                                            placeholder="Nhập họ tên đầy đủ"
+                                            required 
+                                        )
                                 
-                                .form-check.form-check-inline
-                                    input(
-                                        type="radio"
-                                        class="form-check-input"
-                                        id="statusInactive"
-                                        name="status"
-                                        value="inactive"
-                                    )     
-                                    label(for="statusInactive" class="form-check-label")
-                                        i(class="fas fa-times-circle text-danger me-1")
-                                        | Dừng hoạt động
+                                .col-md-6
+                                    .form-floating
+                                        label(for="email")
+                                            i(class="fas fa-envelope me-2") 
+                                            | Email *
+                                        input(
+                                            type="email"
+                                            class="form-control border-0 shadow-sm"
+                                            id="email"                
+                                            name="email"
+                                            placeholder="example@domain.com"
+                                            required
+                                        )
+                                
+                                .col-md-6
+                                    .form-floating
+                                        label(for="password")
+                                            i(class="fas fa-lock me-2")
+                                            | Mật khẩu *
+                                        input(
+                                            type="password"
+                                            class="form-control border-0 shadow-sm"
+                                            id="password"
+                                            name="password"
+                                            placeholder="Mật khẩu"
+                                            required 
+                                        )
+                                
+                                .col-md-6
+                                    .form-floating
+                                        label(for="phone")
+                                            i(class="fas fa-phone me-2")
+                                            | Số điện thoại
+                                        input(
+                                            type="text"
+                                            class="form-control border-0 shadow-sm"
+                                            id="phone"                
+                                            name="phone"
+                                            placeholder="Số điện thoại"
+                                        )
+                                
+                                .col-12
+                                    .form-floating
+                                        label(for="role_id")
+                                            i(class="fas fa-user-shield me-2")
+                                            | Phân quyền
+                                        select(name="role_id" id="role_id" class="form-select border-0 shadow-sm")
+                                            option(selected disabled) --Chọn quyền-- 
+                                            each item in roles      
+                                                option(value=item.id) #{item.title}
+                                
+                                .col-12
+                                    .card.border-0.shadow-sm
+                                        .card-body
+                                            label(for="avatar" class="form-label fw-medium d-block")
+                                                i(class="fas fa-image me-2")
+                                                | Avatar
+                                            .upload-area.border.rounded-3.p-3.text-center(
+                                                upload-image
+                                                onclick="document.getElementById('avatar').click()"
+                                            )
+                                                input(
+                                                    type="file"
+                                                    class="form-control-file"
+                                                    id="avatar"                
+                                                    name="avatar"
+                                                    accept="image/*"
+                                                    upload-image-input
+                                                    style="display: none;"
+                                                )
+                                                img(
+                                                    src=""
+                                                    upload-image-preview
+                                                    class="image-preview rounded-3 shadow-sm mb-3"
+                                                    style="max-width: 200px; max-height: 200px; object-fit: cover; display: none;"
+                                                )
+                                                .upload-placeholder
+                                                    i(class="fas fa-cloud-upload-alt fa-3x text-muted mb-3")
+                                                    p(class="text-muted mb-0") Kéo thả ảnh vào đây hoặc click để chọn
+                                                    p(class="text-muted small") Hỗ trợ: JPG, PNG, GIF
+                                
+                                .col-12
+                                    .card.border-0.shadow-sm
+                                        .card-body
+                                            label(class="form-label fw-medium d-block mb-3")
+                                                i(class="fas fa-toggle-on me-2")
+                                                | Trạng thái
+                                            .d-flex.gap-4
+                                                .form-check
+                                                    input(
+                                                        type="radio"
+                                                        class="form-check-input"
+                                                        id="statusActive"
+                                                        name="status"
+                                                        value="active"
+                                                        checked
+                                                    )     
+                                                    label(for="statusActive" class="form-check-label")
+                                                        i(class="fas fa-check-circle text-success me-1")
+                                                        | Hoạt động
+                                                
+                                                .form-check
+                                                    input(
+                                                        type="radio"
+                                                        class="form-check-input"
+                                                        id="statusInactive"
+                                                        name="status"
+                                                        value="inactive"
+                                                    )     
+                                                    label(for="statusInactive" class="form-check-label")
+                                                        i(class="fas fa-times-circle text-danger me-1")
+                                                        | Dừng hoạt động
 
-                            .d-grid.gap-2.d-md-flex.justify-content-md-end.mt-4
-                                a(href=`${prefixAdmin}/accounts` class="btn btn-secondary me-md-2")
-                                    i(class="fas fa-arrow-left me-1")
+                            .d-grid.gap-3.d-md-flex.justify-content-md-end.mt-5
+                                a(href=`${prefixAdmin}/accounts` class="btn btn-outline-secondary btn-lg me-md-2")
+                                    i(class="fas fa-arrow-left me-2")
                                     | Quay lại
                                 button(
                                     type="submit"
-                                    class="btn btn-primary"
+                                    class="btn btn-primary btn-lg px-4"
                                 )
-                                    i(class="fas fa-save me-1")
+                                    i(class="fas fa-save me-2")
                                     | Tạo mới
+    style.
+        .bg-gradient-primary {
+            background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
+        }
+        .icon-circle {
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .form-floating > .form-control:focus,
+        .form-floating > .form-control:not(:placeholder-shown) {
+            padding-top: 1.625rem;
+            padding-bottom: 0.625rem;
+        }
+        .form-floating > label {
+            padding: 1rem 0.75rem;
+        }
+        .card {
+            transition: all 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-2px);
+        }
+        .btn {
+            transition: all 0.3s ease;
+        }
+        .btn:hover {
+            transform: translateY(-1px);
+        }
+        .form-control:focus,
+        .form-select:focus {
+            box-shadow: 0 0 0 0.25rem rgba(78, 115, 223, 0.25);
+            border-color: #4e73df;
+        }
 
+    script.
+        // Thêm hiệu ứng hover và focus cho các input
+        document.querySelectorAll('.form-control, .form-select').forEach(input => {
+            input.addEventListener('focus', function() {
+                this.classList.add('shadow-sm');
+            });
+            input.addEventListener('blur', function() {
+                this.classList.remove('shadow-sm');
+            });
+        });
+
+
+    script(src="/admin/js/script.js")
+
+        

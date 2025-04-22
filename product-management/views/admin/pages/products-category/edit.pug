@@ -3,101 +3,180 @@ extends ../../layouts/default.pug
 include ../../mixins/alert.pug
 include ../../mixins/select-tree.pug
 
-block main  
+block main
     if(role.permissions.includes("products-category_edit"))
-        h1(class= "mb-4") Chỉnh sửa danh mục sản phẩm 
-        +alert-success(5000)
-        +alert-error(5000)
+        .container.py-4
+            .row.justify-content-center
+                .col-lg-8
+                    .card.border-0.shadow-lg.rounded-4.overflow-hidden
+                        .card-header.bg-gradient-primary.text-white.py-4
+                            .d-flex.align-items-center
+                                .icon-circle.bg-white.text-primary.rounded-circle.p-3.me-3
+                                    i(class="fas fa-edit fa-2x")
+                                div
+                                    h1(class="h3 mb-0 fw-bold") Chỉnh sửa danh mục
+                                    p(class="text-white-50 mb-0") Cập nhật thông tin danh mục sản phẩm
+                        
+                        .card-body.p-4
+                            +alert-success(5000)
+                            +alert-error(5000)
 
-        form(
-            action=`${prefixAdmin}/products-category/edit/${data.id}?_method=PATCH`
-            method="POST"
-            enctype="multipart/form-data"
-        )
-            div(class= "form-group")
-                label(for="title") Tiêu đề
-                input(
-                    type="text"
-                    class= "form-control"
-                    id= "title"
-                    name="title"
-                    required 
-                    value= data.title
-                )
-            div(class= "form-group")
-                label(for="parent_id") Danh mục cha
-                select(
-                    name="parent_id"
-                    id="parent_id"
-                    class= "form-control"
-                )
-                    option(value="") --Chọn danh mục cha--
-                    if(records)
-                    +select-tree(records , 1 , data.parent_id)
-            div(class= "form-group")
-                label(for="desc") Mô tả
-                textarea(
-                    class= "form-control"
-                    id="desc"                
-                    name="description"
-                    rows="5"
-                    
-                )  #{data.description}
-        
-            div(
-                class= "form-group"
-                upload-image
-            )
-                label(for="thumbnail") Ảnh
-                input(
-                    type="file"
-                    class="form-control-file"
-                    id="thumbnail"
-                    name="thumbnail"
-                    accept="image/*"  
-                    upload-image-input
-                )
-                img(
-                    src= data.thumbnail
-                    upload-image-preview
-                    class= "image-preview" 
-                )
-            div(class= "form-group")
-                label(for="position") Vị trí
-                input(
-                    type="number"
-                    class="form-control"
-                    id="position"
-                    name="position"
-                    placeholder="Tự động tăng"
-                    min="1"
-                    value= data.position
-                )       
-            div(class= "form-group form-check form-check-inline")
-                input(
-                    type="radio"
-                    class="form-check-input"
-                    id="statusActive"
-                    name="status"
-                    value="active"
-                    checked= (data.status =="active" ? true : false) 
-                )     
-                label(for="statusActive" class="form-check-label") Hoạt động
-            div(class= "form-group form-check form-check-inline")
-                input(
-                    type="radio"
-                    class="form-check-input"
-                    id="statusActive"
-                    name="status"
-                    value="inactive"
-                    checked= (data.status == "inactive" ? true : false) 
-                )     
-                label(for="statusActive" class="form-check-label") Dừng Hoạt động
-            div(class="form-group")
-                button(
-                    type="submit"
-                    class="btn btn-primary"
-                )  Cập nhật
+                            form(
+                                action=`${prefixAdmin}/products-category/edit/${data.id}?_method=PATCH`
+                                method="POST"
+                                enctype="multipart/form-data"
+                            )
+                                .row.g-4
+                                    .col-md-12
+                                        .form-group
+                                            label(for="title" class="form-label fw-medium") Tiêu đề
+                                            input(
+                                                type="text"
+                                                class="form-control form-control-lg"
+                                                id="title"
+                                                name="title"
+                                                required
+                                                value=data.title
+                                                placeholder="Nhập tiêu đề danh mục"
+                                            )
 
-        //- script(src= "/admin/js/product.js")
+                                    .col-md-12
+                                        .form-group
+                                            label(for="parent_id" class="form-label fw-medium") Danh mục cha
+                                            select(
+                                                name="parent_id"
+                                                id="parent_id"
+                                                class="form-select form-select-lg"
+                                            )
+                                                option(value="") --Chọn danh mục cha--
+                                                if(records)
+                                                    +select-tree(records, 1, data.parent_id)
 
+                                    .col-md-12
+                                        .form-group
+                                            label(for="desc" class="form-label fw-medium") Mô tả
+                                            textarea(
+                                                class="form-control form-control-lg"
+                                                id="desc"
+                                                name="description"
+                                                rows="5"
+                                                placeholder="Nhập mô tả danh mục"
+                                            ) #{data.description}
+
+                                    .col-md-12
+                                        .form-group
+                                            label(for="thumbnail" class="form-label fw-medium") Ảnh
+                                            .upload-area.border.rounded-3.p-3.text-center(
+                                                upload-image
+                                                onclick="document.getElementById('thumbnail').click()"
+                                            )
+                                                input(
+                                                    type="file"
+                                                    class="form-control-file"
+                                                    id="thumbnail"
+                                                    name="thumbnail"
+                                                    accept="image/*"
+                                                    upload-image-input
+                                                    style="display: none;"
+                                                )
+                                                img(
+                                                    src=data.thumbnail
+                                                    upload-image-preview
+                                                    class="image-preview rounded-3 shadow-sm mb-3"
+                                                    style="max-width: 200px;"
+                                                )
+                                                .upload-placeholder(style="display: none;")
+                                                    i(class="fas fa-cloud-upload-alt fa-3x text-muted mb-3")
+                                                    p(class="text-muted mb-0") Kéo thả ảnh vào đây hoặc click để chọn
+                                                    p(class="text-muted small") Hỗ trợ: JPG, PNG, GIF
+
+                                    .col-md-6
+                                        .form-group
+                                            label(for="position" class="form-label fw-medium") Vị trí
+                                            input(
+                                                type="number"
+                                                class="form-control form-control-lg"
+                                                id="position"
+                                                name="position"
+                                                placeholder="Tự động tăng"
+                                                min="1"
+                                                value=data.position
+                                            )
+
+                                    .col-md-6
+                                        .form-group
+                                            label(class="form-label fw-medium d-block") Trạng thái
+                                            .btn-group.w-100(role="group")
+                                                input(
+                                                    type="radio"
+                                                    class="btn-check"
+                                                    id="statusActive"
+                                                    name="status"
+                                                    value="active"
+                                                    checked=(data.status == "active" ? true : false)
+                                                )
+                                                label(
+                                                    class="btn btn-outline-success"
+                                                    for="statusActive"
+                                                )
+                                                    i(class="fas fa-check-circle me-2")
+                                                    | Hoạt động
+                                                
+                                                input(
+                                                    type="radio"
+                                                    class="btn-check"
+                                                    id="statusInactive"
+                                                    name="status"
+                                                    value="inactive"
+                                                    checked=(data.status == "inactive" ? true : false)
+                                                )
+                                                label(
+                                                    class="btn btn-outline-danger"
+                                                    for="statusInactive"
+                                                )
+                                                    i(class="fas fa-times-circle me-2")
+                                                    | Dừng hoạt động
+
+                                .d-flex.justify-content-end.mt-4
+                                    button(
+                                        type="submit"
+                                        class="btn btn-primary btn-lg px-4"
+                                    )
+                                        i(class="fas fa-save me-2")
+                                        | Cập nhật
+
+    style.
+        .bg-gradient-primary {
+            background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
+        }
+        .icon-circle {
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .upload-area {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .upload-area:hover {
+            border-color: #4e73df !important;
+            background-color: rgba(78, 115, 223, 0.05);
+        }
+        .btn {
+            transition: all 0.3s ease;
+        }
+        .btn:hover {
+            transform: translateY(-1px);
+        }
+        .form-control, .form-select {
+            transition: all 0.3s ease;
+        }
+        .form-control:focus, .form-select:focus {
+            border-color: #4e73df;
+            box-shadow: 0 0 0 0.25rem rgba(78, 115, 223, 0.25);
+        }
+
+    
+    script(src="/admin/js/script.js")

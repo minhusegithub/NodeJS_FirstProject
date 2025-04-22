@@ -168,11 +168,14 @@ const uploadImage = document.querySelector("[upload-image]");
 if(uploadImage){
     const uploadImageInput = document.querySelector("[upload-image-input]");
     const uploadImagePreview  = document.querySelector("[upload-image-preview]");
+    const uploadPlaceholder = document.querySelector(".upload-placeholder");
 
     uploadImageInput.addEventListener("change" , (e)=>{
         const file = e.target.files[0];
         if(file){
             uploadImagePreview.src = URL.createObjectURL(file);
+            uploadImagePreview.style.display = "block";
+            uploadPlaceholder.style.display = "none";
         }
     });
 

@@ -1,39 +1,97 @@
 extends ../../layouts/default.pug
 
+include ../../mixins/alert.pug
 
 block main  
-    if(role.permissions.includes("roles_create"))
-        h1(class= "mb-4") Thêm mới nhóm quyền
-        
+    .container.py-5
+        .row.justify-content-center
+            .col-lg-8.col-md-10
+                .card.border-0.shadow-lg.rounded-4.overflow-hidden
+                    .card-header.bg-gradient-primary.text-white.py-4
+                        .d-flex.align-items-center
+                            .icon-circle.bg-white.text-primary.rounded-circle.p-3.me-3
+                                i(class="fas fa-user-shield fa-2x")
+                            div
+                                h1(class="h3 mb-0 fw-bold") Thêm mới nhóm quyền
+                                p(class="text-white-50 mb-0") Tạo nhóm quyền mới cho hệ thống
+                    
+                    .card-body.p-4.bg-light
+                        if(role.permissions.includes("roles_create"))
+                            form(
+                                action=`${prefixAdmin}/roles/create`
+                                method="POST"
+                            )
+                                .row.g-4
+                                    .col-12
+                                        .form-floating
+                                            label(for="title")
+                                                i(class="fas fa-heading me-2")
+                                                | Tiêu đề
+                                            input(
+                                                type="text"
+                                                class="form-control border-0 shadow-sm"
+                                                id="title"
+                                                name="title"
+                                                placeholder="Tiêu đề"
+                                                required 
+                                            )
+                                    
+                                    .col-12
+                                        .form-floating
+                                            label(for="desc")
+                                                i(class="fas fa-info-circle me-2")
+                                                | Mô tả
+                                            input(
+                                                type="text"
+                                                class="form-control border-0 shadow-sm"
+                                                id="desc"                
+                                                name="description"
+                                                placeholder="Mô tả"
+                                            )
 
-        form(
-            action=`${prefixAdmin}/roles/create`
-            method="POST"
-            
-        )
-            div(class= "form-group")
-                label(for="title") Tiêu đề
-                input(
-                    type="text"
-                    class= "form-control"
-                    id= "title"
-                    name="title"
-                    required 
-                )
-            div(class= "form-group")
-                label(for="desc") Mô tả
-                input(
-                    type= "text"
-                    class= "form-control"
-                    id="desc"                
-                    name="description"
-                )   
-        
-            div(class="form-group")
-                button(
-                    type="submit"
-                    class="btn btn-primary"
-                )   Tạo mới
-
-        //- script(src= "/admin/js/product.js")
+                                .d-grid.gap-3.d-md-flex.justify-content-md-end.mt-5
+                                    a(href=`${prefixAdmin}/roles` class="btn btn-outline-secondary btn-lg me-md-2")
+                                        i(class="fas fa-arrow-left me-2")
+                                        | Quay lại
+                                    button(
+                                        type="submit"
+                                        class="btn btn-primary btn-lg px-4"
+                                    )
+                                        i(class="fas fa-save me-2")
+                                        | Tạo mới
+    style.
+        .bg-gradient-primary {
+            background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
+        }
+        .icon-circle {
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .form-floating > .form-control:focus,
+        .form-floating > .form-control:not(:placeholder-shown) {
+            padding-top: 1.625rem;
+            padding-bottom: 0.625rem;
+        }
+        .form-floating > label {
+            padding: 1rem 0.75rem;
+        }
+        .card {
+            transition: all 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-2px);
+        }
+        .btn {
+            transition: all 0.3s ease;
+        }
+        .btn:hover {
+            transform: translateY(-1px);
+        }
+        .form-control:focus {
+            box-shadow: 0 0 0 0.25rem rgba(78, 115, 223, 0.25);
+            border-color: #4e73df;
+        }
 

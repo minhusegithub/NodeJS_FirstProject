@@ -1,50 +1,94 @@
-extend ../../layouts/default.pug
+extends ../../layouts/default.pug
 
-block main  
+include ../../mixins/alert.pug
+
+block main
+    .container.py-4
+        .row.justify-content-center
+            .col-lg-8
+                .card.border-0.shadow-lg.rounded-4.overflow-hidden
+                    .card-header.bg-gradient-primary.text-white.py-4
+                        .d-flex.align-items-center
+                            .icon-circle.bg-white.text-primary.rounded-circle.p-3.me-3
+                                i(class="fas fa-folder fa-2x")
+                            div
+                                h1(class="h3 mb-0 fw-bold") Chi tiết danh mục
+                                p(class="text-white-50 mb-0") Thông tin chi tiết danh mục sản phẩm
+                    
+                    .card-body.p-4
+                        .row.g-4
+                            if(data.title)
+                                .col-md-6
+                                    .info-item.bg-light.p-3.rounded-3
+                                        .text-muted.small Tiêu đề
+                                        .fw-bold #{data.title}
+                            
+                            if(data.position)
+                                .col-md-6
+                                    .info-item.bg-light.p-3.rounded-3
+                                        .text-muted.small Vị trí
+                                        .fw-bold #{data.position}
+
+                            if(data.thumbnail)
+                                .col-12
+                                    .info-item.bg-light.p-3.rounded-3
+                                        .text-muted.small.mb-2 Hình ảnh
+                                        img(
+                                            src=data.thumbnail
+                                            class="rounded-3 shadow-sm"
+                                            style="width: 200px; height: 200px; object-fit: cover;"
+                                        )
+
+                            if(data.status)
+                                .col-md-6
+                                    .info-item.bg-light.p-3.rounded-3
+                                        .text-muted.small Trạng thái
+                                        if(data.status === "active")
+                                            span.badge.bg-success.p-2
+                                                i(class="fas fa-check-circle me-1")
+                                                | Hoạt động
+                                        else
+                                            span.badge.bg-danger.p-2
+                                                i(class="fas fa-times-circle me-1")
+                                                | Dừng hoạt động
+
+                            if(data.description)
+                                .col-12
+                                    .info-item.bg-light.p-3.rounded-3
+                                        .text-muted.small Mô tả
+                                        .fw-medium !{data.description}
+
+                        .d-flex.justify-content-end.mt-4
+                            a(
+                                href=`${prefixAdmin}/products-category/edit/${data.id}`
+                                class="btn btn-primary"
+                            )
+                                i(class="fas fa-edit me-2")
+                                | Chỉnh sửa
+
+    style.
+        .bg-gradient-primary {
+            background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
+        }
+        .icon-circle {
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .info-item {
+            transition: all 0.3s ease;
+        }
+        .info-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        }
+        .btn {
+            transition: all 0.3s ease;
+        }
+        .btn:hover {
+            transform: translateY(-1px);
+        }
     
-    h1 Chi tiết danh mục sản phẩm
-    if(data.title)
-        div(class="mb-4") Tiêu đề: <b> #{data.title} </b>
-  
-    if(data.price)
-        div(class="mb-4") Giá: <b>#{data.price}$ </b> 
     
-  
-  
-    if(data.discountPercentage)
-        div(class="mb-4") Giảm giá: <b>#{data.discountPercentage}% </b>
-     
-    if(data.stock)
-        div(class="mb-4") Còn lại:<b>  #{data.stock}</b>
-        
-    if(data.thumbnail)
-        div(class="mb-4")
-            img(
-                src=data.thumbnail 
-                style="width: 100px"
-            )
-    
-    if(data.status)
-        div(class="mb-4")
-            span Trạng thái: 
-            if (data.status === "acive")
-                span(class="badge badge-success") Hoạt động
-            else 
-                span(class="badge badge-danger") Dừng hoạt động
-        
-    if(data.position)
-        div(class="mb-4") Vị trí: <b>#{data.position} </b> 
-
-    if(data.description)
-          div(class="mb-4") Mô tả: !{data.description} 
-
-    a(
-        href= `${prefixAdmin}/products-category/edit/${data.id}`
-        class= "btn btn-warning"
-    )   Chỉnh sửa
-     
-
-
-    //- script(src="/admin/js/product.js")
-
-
