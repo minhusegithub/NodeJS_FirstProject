@@ -3,7 +3,7 @@ const md5 = require("md5");
 const User = require("../../models/user.model")
 const ForgotPassword = require("../../models/forgot-password.model")
 const generateHelper = require("../../helpers/generate");
-
+const sendMailHelper = require("../../helpers/sendMail");
  
 // [GET] /user/register
 module.exports.register = async (req, res ,next)=>{
@@ -108,20 +108,26 @@ module.exports.forgotPasswordPost = async (req, res ,next)=>{
         return;
     }
     
-    // Bước 1 : Tạo mã OTP và lưu thông tin yêu cầu vào collection
-    
+    // Bước 1 : Tạo mã OTP và lưu otp ,email vào collection forgot-password
+    const otp = generateHelper.generateRandomNumber(8);
+
     const objectForgotPassword = {      
         email: email,
-        otp: "",
+        otp: otp,
         expireAt: Date.now()
     };
-    objectForgotPassword.otp = generateHelper.generateRandomNumber(8);
-    console.log(objectForgotPassword)
+
+ 
     const forgotPassword = new ForgotPassword(objectForgotPassword);
     await forgotPassword.save();
    
     // Bước 2: gửi mã OTP qua email của user
+    const subject = "Mã OTP xác minh lấy lại mật khẩu";
+    const html = `Mã OTP xác minh lấy lại mật khẩu là <b> ${otp} </b>.Thời hạn sử dụng là 3 phút`
 
+
+    sendMailHelper.sendMail(email , subject , html);
+    
     res.redirect(`/user/password/otp?email=${email}`);
 
 }
@@ -151,7 +157,7 @@ module.exports.otpPasswordPost = async (req, res ,next)=>{
         res.redirect("back");
         return;
     }
-
+    // Nếu OTP hợp lệ thì tạo mã mới và lưu vào database
     const user = await User.findOne({
         email:email
     });
@@ -162,8 +168,30 @@ module.exports.otpPasswordPost = async (req, res ,next)=>{
     
 }
 
+// [GET] /user/password/reset
+module.exports.resetPassword = async (req, res ,next)=>{
+
+    res.render("client/pages/user/reset-password" , {
+        pageTitle: "Đổi mật khẩu",
+    });
+}
+
+// [POST] /user/password/reset
+module.exports.resetPasswordPost = async (req, res ,next)=>{
+
+    
+    const password = req.body.password;
+    const tokenUser = req.cookies.tokenUser;
 
 
+    await User.updateOne({
+        tokenUser:tokenUser
+    },
+    { 
+        password:md5(password)     
+    });
+    
+    res.redirect("/user/login");
 
-
+}
 
