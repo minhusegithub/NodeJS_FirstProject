@@ -4,7 +4,8 @@ const User = require("../../models/user.model")
 const ForgotPassword = require("../../models/forgot-password.model")
 const generateHelper = require("../../helpers/generate");
 const sendMailHelper = require("../../helpers/sendMail");
- 
+const Cart = require("../../models/cart.model")
+
 // [GET] /user/register
 module.exports.register = async (req, res ,next)=>{
    
@@ -69,11 +70,15 @@ module.exports.loginPost = async (req, res ,next)=>{
     }
 
     res.cookie("tokenUser" , user.tokenUser)
-
+    // Lưu user_id vào collection carts
+    await Cart.updateOne({
+        _id: req.cookies.cartId
+    },{
+        user_id: user.id
+    })
 
     res.redirect("/");
     
-
 }
 
 // [GET] /user/logout
@@ -193,5 +198,12 @@ module.exports.resetPasswordPost = async (req, res ,next)=>{
     
     res.redirect("/user/login");
 
+}
+
+// [GET] /user/info
+module.exports.info = async (req, res ,next)=>{
+    res.render("client/pages/user/info" , {
+        pageTitle: "Thông tin tài khoản",
+    });
 }
 

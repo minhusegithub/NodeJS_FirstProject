@@ -4,9 +4,8 @@ const router = express.Router();
 
 //khai bao controller
 const controller = require("../../controllers/client/user.controller");
-
 const validate = require("../../validates/client/user.validate")
-
+const authMiddleware = require("../../middlewares/clients/auth.middleware");
 
 //goi controller
 router.get('/register', controller.register);
@@ -30,6 +29,10 @@ router.post('/password/otp', controller.otpPasswordPost);
 router.get('/password/reset', controller.resetPassword);
 
 router.post('/password/reset', validate.resetPasswordPost , controller.resetPasswordPost);
+
+router.get('/info', authMiddleware.requireAuth , controller.info);
+
+
 
 module.exports = router;
 
