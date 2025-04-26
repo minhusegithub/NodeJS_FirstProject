@@ -2,6 +2,7 @@
 .header {
     border-bottom: 1px solid #ddd;
     padding: 10px 0;
+    background-color:#122449;
 }
 
 .header .inner-logo img {
@@ -26,7 +27,7 @@
 /* footer */
 
 .footer{
-    background: #333;
+    
     color: #fff;
     text-align: center;
     padding: 10px;
@@ -247,6 +248,31 @@
 }
 /* End Show alert */
 
+.cart_design{ 
+    padding: 5px 10px; 
+}
+.user_design{
+    padding: 5px 10px;
+}
+.logout_design{
+    padding: 5px 10px; 
+}
+.register_design{
+    margin: 5px 5px;
+    padding: 10px 10px;
+    background-color: #fff;
+    border-radius: 10px;
+    
+    
+}
+.login_design{
+    margin: 5px 5px;
+    padding: 10px 10px;
+    background-color: #fff;
+    border-radius: 10px;
+    
+    
+}
  
 
 

@@ -1,50 +1,153 @@
 extends ../../layouts/default.pug
 
 block main 
-    h1 Trang tổng quan 
-    .row.mt-4
-        .col-12
-            .card.mb-4
-                .card-header Thông tin tài khoản
-                .card-body
-                    if(user.avatar)
-                        img(src= user.avatar , alt="Avatar" style="height: 100px; margin-bottom: 15px;")
-                    if(user.fullName)
-                        p Họ tên: <b> #{user.fullName} </b>
-                    if(user.email)
-                        p Email: <b> #{user.email} </b>
-                    if(user.phone)
-                        p Số điện thoại: <b> #{user.phone} </b>
-                    if(user.address)
-                        p Địa chỉ: <b> #{user.address} </b>
-                    if(role.title)
-                        p Phân quyền: <b> #{role.title} </b>
-        .col-6 
-            .card.mb-4
-                .card-header Danh mục sản phẩm
-                .card-body
-                    p Số lượng: <b> #{statistic.categoryProduct.total} </b>
-                    p Hoạt động: <b> #{statistic.categoryProduct.active} </b>
-                    p Dừng hoạt động: <b> #{statistic.categoryProduct.inactive} </b>
-        .col-6 
-            .card.mb-4
-                .card-header Sản phẩm
-                .card-body
-                    p Số lượng: <b> #{statistic.product.total} </b>
-                    p Hoạt động: <b> #{statistic.product.active} </b>
-                    p Dừng hoạt động: <b> #{statistic.product.inactive} </b>
-        .col-6 
-            .card.mb-4
-                .card-header Tài khoản admin
-                .card-body
-                    p Số lượng: <b> #{statistic.account.total} </b>
-                    p Hoạt động: <b> #{statistic.account.active} </b>
-                    p Dừng hoạt động: <b> #{statistic.account.inactive} </b>
-        .col-6 
-            .card.mb-4
-                .card-header Tài khoản client
-                .card-body
-                    p Số lượng: <b> #{statistic.user.total} </b>
-                    p Hoạt động: <b> #{statistic.user.active} </b>
-                    p Dừng hoạt động: <b> #{statistic.user.inactive} </b>
+    .container-fluid
+        h1.mb-4
+            i.bi.bi-speedometer2.me-2.text-primary
+            | Tổng quan 
+        
+        .row.mt-4
+            .col-12
+                .card.shadow-sm.mb-4
+                    .card-header.bg-white
+                        h5.mb-0
+                            i.bi.bi-person-circle.me-2
+                            | Thông tin tài khoản
+                    .card-body
+                        .d-flex.align-items-center.mb-4
+                            if(user.avatar)
+                                img.rounded-circle.me-4(src= user.avatar, alt="Avatar", style="width: 100px; height: 100px; object-fit: cover;")
+                            else
+                                .rounded-circle.me-4.d-flex.align-items-center.justify-content-center.bg-light(style="width: 100px; height: 100px;")
+                                    i.bi.bi-person-circle(style="font-size: 3rem; color: #6c757d;")
+                            
+                            .user-info
+                                if(user.fullName)
+                                    p.mb-2
+                                        i.bi.bi-person.me-2
+                                        | Họ tên: 
+                                        strong #{user.fullName}
+                                if(user.email)
+                                    p.mb-2
+                                        i.bi.bi-envelope.me-2
+                                        | Email: 
+                                        strong #{user.email}
+                                if(user.phone)
+                                    p.mb-2
+                                        i.bi.bi-telephone.me-2
+                                        | Số điện thoại: 
+                                        strong #{user.phone}
+                                if(user.address)
+                                    p.mb-2
+                                        i.bi.bi-geo-alt.me-2
+                                        | Địa chỉ: 
+                                        strong #{user.address}
+                                if(role.title)
+                                    p.mb-0
+                                        i.bi.bi-shield-check.me-2
+                                        | Phân quyền: 
+                                        strong #{role.title}
+
+        .row
+            .col-md-6.mb-4
+                .card.shadow-sm.h-100
+                    .card-body
+                        .d-flex.align-items-center.mb-3
+                            i.bi.bi-grid.text-primary(style="font-size: 2rem;")
+                            h5.mb-0.ms-3 Danh mục sản phẩm
+                        .d-flex.justify-content-between.mb-2
+                            span
+                                i.bi.bi-check-circle-fill.text-success.me-1
+                                | Hoạt động
+                            strong #{statistic.categoryProduct.active}
+                        .d-flex.justify-content-between
+                            span
+                                i.bi.bi-x-circle-fill.text-danger.me-1
+                                | Dừng hoạt động
+                            strong #{statistic.categoryProduct.inactive}
+                        .text-end.mt-3
+                            h3.mb-0 Tổng : #{statistic.categoryProduct.total}
+
+            .col-md-6.mb-4
+                .card.shadow-sm.h-100
+                    .card-body
+                        .d-flex.align-items-center.mb-3
+                            i.bi.bi-box-seam.text-success(style="font-size: 2rem;")
+                            h5.mb-0.ms-3 Sản phẩm
+                        .d-flex.justify-content-between.mb-2
+                            span
+                                i.bi.bi-check-circle-fill.text-success.me-1
+                                | Hoạt động
+                            strong #{statistic.product.active}
+                        .d-flex.justify-content-between
+                            span
+                                i.bi.bi-x-circle-fill.text-danger.me-1
+                                | Dừng hoạt động
+                            strong #{statistic.product.inactive}
+                        .text-end.mt-3
+                            h3.mb-0 Tổng : #{statistic.product.total}
+
+            .col-md-6.mb-4
+                .card.shadow-sm.h-100
+                    .card-body
+                        .d-flex.align-items-center.mb-3
+                            i.bi.bi-person-badge.text-info(style="font-size: 2rem;")
+                            h5.mb-0.ms-3 Tài khoản admin
+                        .d-flex.justify-content-between.mb-2
+                            span
+                                i.bi.bi-check-circle-fill.text-success.me-1
+                                | Hoạt động
+                            strong #{statistic.account.active}
+                        .d-flex.justify-content-between
+                            span
+                                i.bi.bi-x-circle-fill.text-danger.me-1
+                                | Dừng hoạt động
+                            strong #{statistic.account.inactive}
+                        .text-end.mt-3
+                            h3.mb-0 Tổng : #{statistic.account.total}
+
+            .col-md-6.mb-4
+                .card.shadow-sm.h-100
+                    .card-body
+                        .d-flex.align-items-center.mb-3
+                            i.bi.bi-people.text-warning(style="font-size: 2rem;")
+                            h5.mb-0.ms-3 Tài khoản client
+                        .d-flex.justify-content-between.mb-2
+                            span
+                                i.bi.bi-check-circle-fill.text-success.me-1
+                                | Hoạt động
+                            strong #{statistic.user.active}
+                        .d-flex.justify-content-between
+                            span
+                                i.bi.bi-x-circle-fill.text-danger.me-1
+                                | Dừng hoạt động
+                            strong #{statistic.user.inactive}
+                        .text-end.mt-3
+                            h3.mb-0 Tổng : #{statistic.user.total}
+    style.
+        .card {
+            border: none;
+            border-radius: 0.5rem;
+            transition: all 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+        }
+        .card-header {
+            background-color: #fff;
+            border-bottom: 1px solid rgba(0,0,0,.125);
+            padding: 1.25rem 1.5rem;
+        }
+        .card-body {
+            padding: 1.5rem;
+        }
+        .user-info p {
+            margin-bottom: 0.5rem;
+        }
+        @media (max-width: 768px) {
+            .card-body {
+                padding: 1rem;
+            }
+        }
 

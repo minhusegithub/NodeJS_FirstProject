@@ -2,80 +2,205 @@ extends ../../layouts/default.pug
 include ../../mixins/alert.pug
 
 block main
-    h1 Cài đặt chung
+    .container-fluid
+        .row
+            .col-12
+                .card.shadow-sm
+                    .card-header.bg-white
+                        h1.card-title.mb-0
+                            i.bi.bi-gear-fill.me-2.text-primary
+                            | Cài đặt chung
+                    .card-body
+                        +alert-success(5000)
+                        +alert-error(5000)
 
-    +alert-success(5000)
-    +alert-error(5000)
+                        form(
+                            action=`${prefixAdmin}/settings/general?_method=PATCH`
+                            method="POST"
+                            enctype="multipart/form-data"
+                        )
+                            .row
+                                .col-md-6.mb-4
+                                    .form-group
+                                        label(for="websiteName") 
+                                            i.bi.bi-globe.me-2.text-primary
+                                            | Tên website    
+                                        input.form-control(
+                                            type="text",
+                                            id="websiteName",
+                                            name="websiteName",
+                                            value= (settingGeneral ? settingGeneral.websiteName : "")
+                                            placeholder="Nhập tên website"
+                                        )
 
-    form(
-        action=`${prefixAdmin}/settings/general?_method=PATCH`
-        method="POST"
-        enctype="multipart/form-data"
-    )
-        .form-group
-            label(for="websiteName") Tên website    
-            input.form-control(
-                type="text",
-                class="form-control",
-                id="websiteName",
-                name="websiteName",
-                value= (settingGeneral ? settingGeneral.websiteName : "")
-            )
+                                .col-md-6.mb-4
+                                    div(
+                                        class="form-group"
+                                        upload-image
+                                    )
+                                        label(for="logo") 
+                                            i.bi.bi-image.me-2.text-primary
+                                            | Logo
+                                        .upload-container
+                                            input(
+                                                type="file",
+                                                class="form-control",
+                                                id="logo",
+                                                name="logo",
+                                                accept="image/*",
+                                                upload-image-input
+                                            )
+                                            .image-preview-container
+                                                img(
+                                                    src= (settingGeneral ? settingGeneral.logo : ""),
+                                                    class="image-preview",
+                                                    upload-image-preview,
+                                                    onerror="this.src='/admin/images/no-image.png'"
+                                                )
 
-        div(
-            class="form-group"
-            upload-image
-        )
-            label(for="logo") Logo
-            input(
-                type="file",
-                class="form-control",
-                id="logo",
-                name="logo",
-                accept="image/*",
-                upload-image-input
-            )
-            img(src= (settingGeneral ? settingGeneral.logo : "") class="image-preview" upload-image-preview)
+                            .row
+                                .col-md-6.mb-4
+                                    .form-group 
+                                        label(for="phone") 
+                                            i.bi.bi-telephone-fill.me-2.text-primary
+                                            | Số điện thoại
+                                        input(
+                                            type="text",
+                                            class="form-control",
+                                            id="phone",
+                                            name="phone",
+                                            value= (settingGeneral ? settingGeneral.phone : "")
+                                            placeholder="Nhập số điện thoại"
+                                        )
 
+                                .col-md-6.mb-4
+                                    .form-group 
+                                        label(for="email") 
+                                            i.bi.bi-envelope-fill.me-2.text-primary
+                                            | Email
+                                        input(
+                                            type="email",
+                                            class="form-control",
+                                            id="email",
+                                            name="email",
+                                            value= (settingGeneral ? settingGeneral.email : "")
+                                            placeholder="Nhập email"
+                                        )
 
-        div(class="form-group") 
-            label(for="phone") Số điện thoại
-            input(
-                type="text",
-                class="form-control",
-                id="phone",
-                name="phone",
-                value= (settingGeneral ? settingGeneral.phone : "")
-            )
+                            .row
+                                .col-md-6.mb-4
+                                    .form-group 
+                                        label(for="address") 
+                                            i.bi.bi-geo-alt-fill.me-2.text-primary
+                                            | Địa chỉ
+                                        input(
+                                            type="text",
+                                            class="form-control",
+                                            id="address",
+                                            name="address",
+                                            value= (settingGeneral ? settingGeneral.address : "")
+                                            placeholder="Nhập địa chỉ"
+                                        )
 
-        div(class="form-group") 
-            label(for="email") Email
-            input(
-                type="email",
-                class="form-control",
-                id="email",
-                name="email",
-                value= (settingGeneral ? settingGeneral.email : "")
-            )
-        div(class="form-group") 
-            label(for="address") Địa chỉ
-            input(
-                type="text",
-                class="form-control",
-                id="address",
-                name="address",
-                value= (settingGeneral ? settingGeneral.address : "")
-            )
+                                .col-md-6.mb-4
+                                    .form-group 
+                                        label(for="copyright") 
+                                            i.bi.bi-c-circle-fill.me-2.text-primary
+                                            | Copyright
+                                        input(
+                                            type="text",
+                                            class="form-control",
+                                            id="copyright",
+                                            name="copyright",
+                                            value= (settingGeneral ? settingGeneral.copyright : "")
+                                            placeholder="Nhập copyright"
+                                        )
 
-        div(class="form-group") 
-            label(for="copyright") Copyright
-            input(
-                type="text",
-                class="form-control",
-                id="copyright",
-                name="copyright",
-                value= (settingGeneral ? settingGeneral.copyright : "")
-            )
-
-        div(class="form-group")
-            button(type="submit" class="btn btn-primary") Cập nhật
+                            .form-group.mt-4.text-center
+                                button(type="submit" class="btn btn-primary px-5")
+                                    i.bi.bi-save.me-2
+                                    | Cập nhật
+    style.
+        .card {
+            border: none;
+            border-radius: 0.5rem;
+            transition: all 0.3s ease;
+        }
+        .card:hover {
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+        }
+        .card-header {
+            background-color: #fff;
+            border-bottom: 1px solid rgba(0,0,0,.125);
+            padding: 1.25rem 1.5rem;
+        }
+        .card-body {
+            padding: 2rem;
+        }
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        .form-group label {
+            font-weight: 500;
+            color: #495057;
+            margin-bottom: 0.5rem;
+        }
+        .form-control {
+            border-radius: 0.375rem;
+            border: 1px solid #ced4da;
+            padding: 0.75rem 1rem;
+            transition: all 0.2s ease;
+        }
+        .form-control:focus {
+            border-color: #80bdff;
+            box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+        }
+        .upload-container {
+            position: relative;
+            border: 2px dashed #dee2e6;
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        .upload-container:hover {
+            border-color: #80bdff;
+            background-color: rgba(0,123,255,.05);
+        }
+        .image-preview-container {
+            margin-top: 1rem;
+        }
+        .image-preview {
+            max-width: 200px;
+            max-height: 200px;
+            object-fit: contain;
+            border-radius: 0.25rem;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        }
+        input[type="file"] {
+            opacity: 0;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+        .btn-primary {
+            padding: 0.75rem 2rem;
+            font-weight: 500;
+            border-radius: 0.375rem;
+            transition: all 0.2s ease;
+        }
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        }
+        @media (max-width: 768px) {
+            .card-body {
+                padding: 1.5rem;
+            }
+            .upload-container {
+                padding: 1rem;
+            }
+        }

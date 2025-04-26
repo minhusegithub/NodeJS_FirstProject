@@ -74,7 +74,7 @@ module.exports.detail = async (req , res) => {
             product.category = category;
         }
 
-        productsHelper.priceNewProduct(product);
+        product.priceNew = productsHelper.priceNewProduct(product);
 
         
         res.render("client/pages/products/detail" , {

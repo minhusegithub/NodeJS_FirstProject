@@ -4,46 +4,90 @@ include ../../mixins/alert.pug
 block main 
     +alert-error(5000)
     
-    .container.my-5 
-        .row.justify-content-center 
-            .col-8 
-                h1(class="text-center") Đăng ký tài khoản 
-                form(
-                    action=`/user/register`
-                    method="POST"
-                )
-                    div(class="form-group")
-                        label(for="fullName") Họ và tên
-                        input(
-                            type="text"
-                            class="form-control"
-                            id="fullName"
-                            name="fullName"
-                            required
-                        )
-                    div(class="form-group")
-                        label(for="email") Email
-                        input(
-                            type="email"
-                            class="form-control"
-                            id="email"
-                            name="email"
-                            required
-                        )
-                    div(class="form-group")
-                        label(for="password") Mật khẩu 
-                        input(
-                            type="password"
-                            class="form-control"
-                            id="password"
-                            name="password"
-                            required
-                        ) 
-                    div(class="form-group")
-                        button(
-                            type="submit"
-                            class="btn btn-primary btn-block"
-                        ) Đăng ký 
+    .register-page
+        .container
+            .row.justify-content-center.align-items-center.min-vh-100
+                .col-11.col-sm-6.col-md-5.col-lg-4
+                    .card.border-0.shadow.rounded-4
+                        .card-body.p-4
+                            form(
+                                action=`/user/register`
+                                method="POST"
+                                autocomplete="off"
+                            )
+                                .form-group.mb-3
+                                    input(
+                                        type="text"
+                                        class="form-control form-control-lg rounded-3 border-0 bg-light"
+                                        id="fullName"
+                                        name="fullName"
+                                        placeholder="Họ và tên"
+                                        required
+                                    )
+
+                                .form-group.mb-3
+                                    input(
+                                        type="email"
+                                        class="form-control form-control-lg rounded-3 border-0 bg-light"
+                                        id="email"
+                                        name="email"
+                                        placeholder="Email"
+                                        required
+                                    )
+
+                                .form-group.mb-3
+                                    input(
+                                        type="password"
+                                        class="form-control form-control-lg rounded-3 border-0 bg-light"
+                                        id="password"
+                                        name="password"
+                                        placeholder="Mật khẩu"
+                                        required
+                                    )
+
+                                button(
+                                    type="submit"
+                                    class="btn btn-success btn-lg w-100 rounded-3 mb-3"
+                                ) Tạo tài khoản mới
+
+                                .text-center
+                                    a.btn.btn-primary.btn-lg.w-100.rounded-3(href="/user/login") Đăng nhập
+
+    style.
+        .register-page {
+            background-color: #f0f2f5;
+            min-height: 100vh;
+        }
+        .form-control {
+            padding: 0.8rem 1rem;
+        }
+        .form-control:focus {
+            background-color: #fff;
+            box-shadow: 0 0 0 2px rgba(24, 119, 242, 0.2);
+            border: none;
+        }
+        .btn-primary {
+            background-color: #1877f2;
+            border-color: #1877f2;
+        }
+        .btn-primary:hover {
+            background-color: #166fe5;
+            border-color: #166fe5;
+        }
+        .btn-success {
+            background-color: #42b72a;
+            border-color: #42b72a;
+        }
+        .btn-success:hover {
+            background-color: #36a420;
+            border-color: #36a420;
+        }
+        .card {
+            box-shadow: 0 2px 4px rgba(0, 0, 0, .1), 0 8px 16px rgba(0, 0, 0, .1) !important;
+        }
+        .form-control::placeholder {
+            color: #90949c;
+        }
 
 
 

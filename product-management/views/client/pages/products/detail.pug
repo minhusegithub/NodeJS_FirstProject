@@ -15,11 +15,11 @@ block main
             ) Trở lại
 
             .row 
-                .col-6
-                    .inner-thumb 
-                         img( src=product.thumbnail ,alt=product.title)                     
-                .col-6
-                    h1(class="inner-title")  #{product.title}
+                .col-12.col-md-6.mb-4.mb-md-0
+                    .inner-thumb.border.rounded.p-3.bg-light
+                        img.img-fluid.rounded(src=product.thumbnail, alt=product.title)                     
+                .col-12.col-md-6
+                    h1.inner-title.mb-4 #{product.title}
 
                     if(product.category)
                         div(class="inner-category") 
@@ -37,23 +37,23 @@ block main
                     
                     if(product.stock)
                         div(class="inner-stock") Còn lại:<span>  #{product.stock}</span> sản phẩm
-                        
-                    form(
-                        action=`/cart/add/${product.id}`
-                        method="POST"
-                    )
-                        input(
-                            class="form-control mb-2"
-                            type= "number"
-                            name ="quantity"
-                            value="1"
-                            min="1"
-                            max=product.stock 
+                    if(user)
+                        form(
+                            action=`/cart/add/${product.id}`
+                            method="POST"
                         )
-                        button(
-                            type="submit"
-                            class="btn btn-success btn-block"
-                        ) Thêm vào giỏ hàng
+                            input(
+                                class="form-control mb-2"
+                                type= "number"
+                                name ="quantity"
+                                value="1"
+                                min="1"
+                                max=product.stock 
+                            )
+                            button(
+                                type="submit"
+                                class="btn btn-success btn-block"
+                            ) Thêm vào giỏ hàng
 
         hr
 
