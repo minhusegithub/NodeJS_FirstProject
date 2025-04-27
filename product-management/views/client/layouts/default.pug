@@ -2,11 +2,14 @@
 html 
     head 
         title= pageTitle
-        //- nhung bootstrap4
+        //- nhúng bootstrap4
         link(rel="stylesheet", href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css")
-        //- nhung css
+        //- nhúng css
         link(rel="stylesheet", href="/css/style.css")
-
+          //- nhúng bootstrap icon
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+        //- Nhúng Font awesome
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     body
         include ../partials/header.pug
 
@@ -17,6 +20,11 @@ html
         script(src= "https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js")
         script(src= "https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js")
 
+        //- nhúng socket.io
+        script(src= "/socket.io/socket.io.js")
+        script(src= "/js/socket.js")
+        script(src= "/js/chat.js")
+        //- nhúng script
         script(src= "/js/script.js")
 html 
         

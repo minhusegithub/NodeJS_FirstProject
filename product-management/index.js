@@ -8,6 +8,8 @@ const cookieParser = require("cookie-parser");
 const session = require("express-session");
 const flash = require('express-flash');
 const moment = require('moment');
+const http = require('http');
+const { Server } = require("socket.io");
 
 
 //nhung dotenv
@@ -32,6 +34,13 @@ app.use(bodyParser.urlencoded({ extends: false }));
 // cau hinh pug
 app.set('views', `${__dirname}/views`);
 app.set('view engine', 'pug');
+
+// Socket.io
+const server = http.createServer(app);
+const io = new Server(server);
+global._io = io;
+
+
 
 // flash
 app.use(cookieParser('MINH'));
@@ -68,7 +77,7 @@ app.get("*", (req, res) => {
 });
 
 
-app.listen(port, () => {
+server.listen(port, () => {
   console.log(`App listening on port ${port}`)
 })
 
