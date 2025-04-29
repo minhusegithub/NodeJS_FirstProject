@@ -17,7 +17,9 @@ block main
                                 if(chat.infoUser.id != user.id )
                                     .inner-name #{chat.infoUser.fullName}
                                 .inner-content
-                                    | #{chat.content}           
+                                    | #{chat.content}   
+                        div(class="inner-list-typing")
+                           
                     .inner-foot 
                         form(
                             class="inner-form"
@@ -28,9 +30,13 @@ block main
                                 placeholder="Nhập nội dung..."
                                 name="content"
                             )
+                            div(class="custom-file-container" data-upload-id="upload-image")
                             span(class="button-icon btn btn-light mx-2") <i class="fa-regular fa-face-smile"></i>
                             button
                                 i.fas.fa-paper-plane
     
     div(class="tooltip" role="tooltip")
         emoji-picker(class="light")
+
+    //- div(class="custom-file-container" data-upload-id="upload-image")
+       

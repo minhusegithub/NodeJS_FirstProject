@@ -108,7 +108,6 @@ module.exports.success = async (req, res ,next)=>{
         product.productInfo = productInfo;
 
         product.priceNew = productsHelper.priceNewProduct(product);
-
         product.totalPrice = product.priceNew * product.quantity;
 
     }
