@@ -16,16 +16,12 @@ module.exports.history = async (req, res ,next)=>{
     const orders = await Order.find({cart_id: {$in: cartIds}});
     // Thêm thuộc tính thumbnail và title vào mảng products của đơn hàng
     for(const order of orders){
-        let totalPrice = 0;
         for(const product of order.products){
             const productInfo = await Product.findOne({_id: product.product_id});
             product.thumbnail = productInfo.thumbnail;
             product.title = productInfo.title;
             product.priceNew = productsHelper.priceNewProduct(productInfo);
-            totalPrice += product.quantity * product.priceNew;
-            
         }
-        order.totalPrice = totalPrice;
     }
     
     // console.log(orders);

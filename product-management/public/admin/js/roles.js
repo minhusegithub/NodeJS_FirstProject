@@ -49,11 +49,6 @@ if(tablePermissions){
             else{
                 inputs.forEach( (input , index ) =>{
                     const checked = input.checked;
-
-                    // console.log(name);
-                    // console.log(index);
-                    // console.log(checked);
-                    // console.log("----");
                     if(checked)
                         permissions[index].permissions.push(name);
                 })

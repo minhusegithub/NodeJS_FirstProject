@@ -60,7 +60,6 @@ module.exports.logout = (req , res) => {
    
     //Xóa token trong cookie
     res.clearCookie("token");
-
     // Quay lại trang đăng nhập
     res.redirect(`${systemConfig.prefixAdmin}/auth/login`);
 

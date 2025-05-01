@@ -1,289 +1,331 @@
 extends ../../layouts/default.pug
-
 include ../../mixins/alert.pug
 
 block main  
-    .container.py-5
-        .row.justify-content-center
-            .col-lg-10.col-md-12
-                .card.border-0.shadow-lg.rounded-4.overflow-hidden
-                    .card-header.bg-gradient-primary.text-white.py-4
-                        .d-flex.align-items-center
-                            .icon-circle.bg-white.text-primary.rounded-circle.p-3.me-3
-                                i(class="fas fa-user-lock fa-2x")
-                            div
-                                h1(class="h3 mb-0 fw-bold") Phân quyền
-                                p(class="text-white-50 mb-0") Quản lý quyền truy cập cho các nhóm quyền
-                    
-                    .card-body.p-4.bg-light
-                        if(role.permissions.includes("roles_permissions"))
-                            +alert-success(5000)
-                            +alert-error(5000)
+    if(role.permissions.includes("roles_permissions"))
+        .container.py-5
+            .card.border-0.shadow-lg.rounded-4.overflow-hidden
+                .card-header.bg-gradient-primary.text-white.py-4
+                    .d-flex.align-items-center
+                        .icon-circle.bg-white.text-primary.rounded-circle.p-3.me-3
+                            i(class="fas fa-user-lock fa-2x")
+                        div
+                            h1(class="h3 mb-0 fw-bold") Phân quyền
+                            p(class="text-white-50 mb-0") Quản lý quyền truy cập cho các nhóm quyền
+                
+                .card-body.p-4.bg-light
+                    +alert-success(5000)
+                    +alert-error(5000)
 
-                            if(records)
-                                div(data-records= records)
+                    if(records)
+                        div(data-records= records)
 
-                                .table-responsive
-                                    table(
-                                        class="table table-hover align-middle"
-                                        table-permissions
-                                    )
-                                        thead 
-                                            tr 
-                                                th(class="fw-medium") Tính năng\Quyền
-                                                each item in records 
-                                                    th(class="text-center fw-medium") #{item.title}
+                        .table-responsive
+                            table(
+                                class="table table-hover align-middle"
+                                table-permissions
+                            )
+                                thead 
+                                    tr 
+                                        th(class="fw-medium") Tính năng\Quyền
+                                        each item in records 
+                                            th(class="text-center fw-medium") #{item.title}
+                                    
+                                tbody 
+                                    tr(data-name="id")
+                                        td 
+                                        each item in records
+                                            td(class="text-center")
+                                                input(type="text" value=item.id)
+                                    tr.bg-light
+                                        td(colspan="4")
+                                            i(class="fas fa-folder me-2 text-primary")
+                                            b Danh mục sản phẩm 
+                                    tr(data-name="products-category_view")
+                                        td 
+                                            i(class="fas fa-eye me-2 text-muted")
+                                            | Xem
+                                        each item in records
+                                            td(class="text-center")
+                                                .form-check.d-inline-block
+                                                    input(
+                                                        type="checkbox"
+                                                        class="form-check-input"
+                                                        name="permissions"
+                                                        value=`${item.id},products-category_view`
+                                                        checked=item.permissions.includes("products-category_view")
+                                                    )
                                             
-                                        tbody 
-                                            //- tr(data-name="id")
-                                            //-     td 
-                                            //-     each item in records
-                                            //-         td(class="text-center")
-                                            //-             input(
-                                            //-                 type="text" 
-                                            //-                 class="form-control form-control-sm text-center"
-                                            //-                 value=item.id
-                                            //-             )
+                                    tr(data-name="products-category_create")
+                                        td
+                                            i(class="fas fa-plus me-2 text-muted")
+                                            | Thêm mới
+                                        each item in records
+                                            td(class="text-center")
+                                                .form-check.d-inline-block
+                                                    input(
+                                                        type="checkbox"
+                                                        class="form-check-input"
+                                                        name="permissions"
+                                                        value=`${item.id},products-category_create`
+                                                        checked=item.permissions.includes("products-category_create")
+                                                    )
+                                    tr(data-name="products-category_edit")
+                                        td
+                                            i(class="fas fa-edit me-2 text-muted")
+                                            | Chỉnh sửa
+                                        each item in records
+                                            td(class="text-center")
+                                                .form-check.d-inline-block
+                                                    input(
+                                                        type="checkbox"
+                                                        class="form-check-input"
+                                                        name="permissions"
+                                                        value=`${item.id},products-category_edit`
+                                                        checked=item.permissions.includes("products-category_edit")
+                                                    )
+                                    tr(data-name="products-category_delete")
+                                        td
+                                            i(class="fas fa-trash me-2 text-muted")
+                                            | Xóa
+                                        each item in records
+                                            td(class="text-center")
+                                                .form-check.d-inline-block
+                                                    input(
+                                                        type="checkbox"
+                                                        class="form-check-input"
+                                                        name="permissions"
+                                                        value=`${item.id},products-category_delete`
+                                                        checked=item.permissions.includes("products-category_delete")
+                                                    )
+
+                                    //- Sản phẩm
+                                    tr.bg-light
+                                        td(colspan="4")
+                                            i(class="fas fa-box me-2 text-primary")
+                                            b Sản phẩm 
+                                    tr(data-name="products_view")
+                                        td
+                                            i(class="fas fa-eye me-2 text-muted")
+                                            | Xem
+                                        each item in records
+                                            td(class="text-center")
+                                                .form-check.d-inline-block
+                                                    input(
+                                                        type="checkbox"
+                                                        class="form-check-input"
+                                                        name="permissions"
+                                                        value=`${item.id},products_view`
+                                                        checked=item.permissions.includes("products_view")
+                                                    )
                                             
-                                            //- Danh mục sản phẩm
-                                            tr.bg-light
-                                                td(colspan="4")
-                                                    i(class="fas fa-folder me-2 text-primary")
-                                                    b Danh mục sản phẩm 
-                                            tr(data-name="products-category_view")
-                                                td 
-                                                    i(class="fas fa-eye me-2 text-muted")
-                                                    | Xem
-                                                each item in records
-                                                    td(class="text-center")
-                                                        .form-check.d-inline-block
-                                                            input(
-                                                                type="checkbox"
-                                                                class="form-check-input"
-                                                            )
-                                                    
-                                            tr(data-name="products-category_create")
-                                                td
-                                                    i(class="fas fa-plus me-2 text-muted")
-                                                    | Thêm mới
-                                                each item in records
-                                                    td(class="text-center")
-                                                        .form-check.d-inline-block
-                                                            input(
-                                                                type="checkbox"
-                                                                class="form-check-input"
-                                                            )
-                                            tr(data-name="products-category_edit")
-                                                td
-                                                    i(class="fas fa-edit me-2 text-muted")
-                                                    | Chỉnh sửa
-                                                each item in records
-                                                    td(class="text-center")
-                                                        .form-check.d-inline-block
-                                                            input(
-                                                                type="checkbox"
-                                                                class="form-check-input"
-                                                            )
-                                            tr(data-name="products-category_delete")
-                                                td
-                                                    i(class="fas fa-trash me-2 text-muted")
-                                                    | Xóa
-                                                each item in records
-                                                    td(class="text-center")
-                                                        .form-check.d-inline-block
-                                                            input(
-                                                                type="checkbox"
-                                                                class="form-check-input"
-                                                            )
+                                    tr(data-name="products_create")
+                                        td
+                                            i(class="fas fa-plus me-2 text-muted")
+                                            | Thêm mới
+                                        each item in records
+                                            td(class="text-center")
+                                                .form-check.d-inline-block
+                                                    input(
+                                                        type="checkbox"
+                                                        class="form-check-input"
+                                                        name="permissions"
+                                                        value=`${item.id},products_create`
+                                                        checked=item.permissions.includes("products_create")
+                                                    )
+                                    tr(data-name="products_edit")
+                                        td
+                                            i(class="fas fa-edit me-2 text-muted")
+                                            | Chỉnh sửa
+                                        each item in records
+                                            td(class="text-center")
+                                                .form-check.d-inline-block
+                                                    input(
+                                                        type="checkbox"
+                                                        class="form-check-input"
+                                                        name="permissions"
+                                                        value=`${item.id},products_edit`
+                                                        checked=item.permissions.includes("products_edit")
+                                                    )
+                                    tr(data-name="products_delete")
+                                        td
+                                            i(class="fas fa-trash me-2 text-muted")
+                                            | Xóa
+                                        each item in records
+                                            td(class="text-center")
+                                                .form-check.d-inline-block
+                                                    input(
+                                                        type="checkbox"
+                                                        class="form-check-input"
+                                                        name="permissions"
+                                                        value=`${item.id},products_delete`
+                                                        checked=item.permissions.includes("products_delete")
+                                                    )
 
-                                            //- Sản phẩm
-                                            tr.bg-light
-                                                td(colspan="4")
-                                                    i(class="fas fa-box me-2 text-primary")
-                                                    b Sản phẩm 
-                                            tr(data-name="products_view")
-                                                td
-                                                    i(class="fas fa-eye me-2 text-muted")
-                                                    | Xem
-                                                each item in records
-                                                    td(class="text-center")
-                                                        .form-check.d-inline-block
-                                                            input(
-                                                                type="checkbox"
-                                                                class="form-check-input"
-                                                            )
-                                                    
-                                            tr(data-name="products_create")
-                                                td
-                                                    i(class="fas fa-plus me-2 text-muted")
-                                                    | Thêm mới
-                                                each item in records
-                                                    td(class="text-center")
-                                                        .form-check.d-inline-block
-                                                            input(
-                                                                type="checkbox"
-                                                                class="form-check-input"
-                                                            )
-                                            tr(data-name="products_edit")
-                                                td
-                                                    i(class="fas fa-edit me-2 text-muted")
-                                                    | Chỉnh sửa
-                                                each item in records
-                                                    td(class="text-center")
-                                                        .form-check.d-inline-block
-                                                            input(
-                                                                type="checkbox"
-                                                                class="form-check-input"
-                                                            )
-                                            tr(data-name="products_delete")
-                                                td
-                                                    i(class="fas fa-trash me-2 text-muted")
-                                                    | Xóa
-                                                each item in records
-                                                    td(class="text-center")
-                                                        .form-check.d-inline-block
-                                                            input(
-                                                                type="checkbox"
-                                                                class="form-check-input"
-                                                            )
+                                    //- Nhóm quyền
+                                    tr.bg-light
+                                        td(colspan="4")
+                                            i(class="fas fa-user-shield me-2 text-primary")
+                                            b Phân quyền 
+                                    tr(data-name="roles_view")
+                                        td
+                                            i(class="fas fa-eye me-2 text-muted")
+                                            | Xem
+                                        each item in records
+                                            td(class="text-center")
+                                                .form-check.d-inline-block
+                                                    input(
+                                                        type="checkbox"
+                                                        class="form-check-input"
+                                                        name="permissions"
+                                                        value=`${item.id},roles_view`
+                                                        checked=item.permissions.includes("roles_view")
+                                                    )
+                                            
+                                    tr(data-name="roles_create")
+                                        td
+                                            i(class="fas fa-plus me-2 text-muted")
+                                            | Thêm mới
+                                        each item in records
+                                            td(class="text-center")
+                                                .form-check.d-inline-block
+                                                    input(
+                                                        type="checkbox"
+                                                        class="form-check-input"
+                                                        name="permissions"
+                                                        value=`${item.id},roles_create`
+                                                        checked=item.permissions.includes("roles_create")
+                                                    )
+                                    tr(data-name="roles_edit")
+                                        td
+                                            i(class="fas fa-edit me-2 text-muted")
+                                            | Chỉnh sửa
+                                        each item in records
+                                            td(class="text-center")
+                                                .form-check.d-inline-block
+                                                    input(
+                                                        type="checkbox"
+                                                        class="form-check-input"
+                                                        name="permissions"
+                                                        value=`${item.id},roles_edit`
+                                                        checked=item.permissions.includes("roles_edit")
+                                                    )
+                                    tr(data-name="roles_delete")
+                                        td
+                                            i(class="fas fa-trash me-2 text-muted")
+                                            | Xóa
+                                        each item in records
+                                            td(class="text-center")
+                                                .form-check.d-inline-block
+                                                    input(
+                                                        type="checkbox"
+                                                        class="form-check-input"
+                                                        name="permissions"
+                                                        value=`${item.id},roles_delete`
+                                                        checked=item.permissions.includes("roles_delete")
+                                                    )
+                                    tr(data-name="roles_permissions")
+                                        td
+                                            i(class="fas fa-key me-2 text-muted")
+                                            | Phân quyền
+                                        each item in records
+                                            td(class="text-center")
+                                                .form-check.d-inline-block
+                                                    input(
+                                                        type="checkbox"
+                                                        class="form-check-input"
+                                                        name="permissions"
+                                                        value=`${item.id},roles_permissions`
+                                                        checked=item.permissions.includes("roles_permissions")
+                                                    )
 
-                                            //- Nhóm quyền
-                                            tr.bg-light
-                                                td(colspan="4")
-                                                    i(class="fas fa-user-shield me-2 text-primary")
-                                                    b Phân quyền 
-                                            tr(data-name="roles_view")
-                                                td
-                                                    i(class="fas fa-eye me-2 text-muted")
-                                                    | Xem
-                                                each item in records
-                                                    td(class="text-center")
-                                                        .form-check.d-inline-block
-                                                            input(
-                                                                type="checkbox"
-                                                                class="form-check-input"
-                                                            )
-                                                    
-                                            tr(data-name="roles_create")
-                                                td
-                                                    i(class="fas fa-plus me-2 text-muted")
-                                                    | Thêm mới
-                                                each item in records
-                                                    td(class="text-center")
-                                                        .form-check.d-inline-block
-                                                            input(
-                                                                type="checkbox"
-                                                                class="form-check-input"
-                                                            )
-                                            tr(data-name="roles_edit")
-                                                td
-                                                    i(class="fas fa-edit me-2 text-muted")
-                                                    | Chỉnh sửa
-                                                each item in records
-                                                    td(class="text-center")
-                                                        .form-check.d-inline-block
-                                                            input(
-                                                                type="checkbox"
-                                                                class="form-check-input"
-                                                            )
-                                            tr(data-name="roles_delete")
-                                                td
-                                                    i(class="fas fa-trash me-2 text-muted")
-                                                    | Xóa
-                                                each item in records
-                                                    td(class="text-center")
-                                                        .form-check.d-inline-block
-                                                            input(
-                                                                type="checkbox"
-                                                                class="form-check-input"
-                                                            )
-                                            tr(data-name="roles_permissions")
-                                                td
-                                                    i(class="fas fa-key me-2 text-muted")
-                                                    | Phân quyền
-                                                each item in records
-                                                    td(class="text-center")
-                                                        .form-check.d-inline-block
-                                                            input(
-                                                                type="checkbox"
-                                                                class="form-check-input"
-                                                            )
+                                    //- Tài khoản
+                                    tr.bg-light
+                                        td(colspan="4")
+                                            i(class="fas fa-users me-2 text-primary")
+                                            b Tài khoản
+                                    tr(data-name="accounts_view")
+                                        td
+                                            i(class="fas fa-eye me-2 text-muted")
+                                            | Xem
+                                        each item in records
+                                            td(class="text-center")
+                                                .form-check.d-inline-block
+                                                    input(
+                                                        type="checkbox"
+                                                        class="form-check-input"
+                                                        name="permissions"
+                                                        value=`${item.id},accounts_view`
+                                                        checked=item.permissions.includes("accounts_view")
+                                                    )
+                                            
+                                    tr(data-name="accounts_create")
+                                        td
+                                            i(class="fas fa-plus me-2 text-muted")
+                                            | Thêm mới
+                                        each item in records
+                                            td(class="text-center")
+                                                .form-check.d-inline-block
+                                                    input(
+                                                        type="checkbox"
+                                                        class="form-check-input"
+                                                        name="permissions"
+                                                        value=`${item.id},accounts_create`
+                                                        checked=item.permissions.includes("accounts_create")
+                                                    )
+                                    tr(data-name="accounts_edit")
+                                        td
+                                            i(class="fas fa-edit me-2 text-muted")
+                                            | Chỉnh sửa
+                                        each item in records
+                                            td(class="text-center")
+                                                .form-check.d-inline-block
+                                                    input(
+                                                        type="checkbox"
+                                                        class="form-check-input"
+                                                        name="permissions"
+                                                        value=`${item.id},accounts_edit`
+                                                        checked=item.permissions.includes("accounts_edit")
+                                                    )
+                                    tr(data-name="accounts_delete")
+                                        td
+                                            i(class="fas fa-trash me-2 text-muted")
+                                            | Xóa
+                                        each item in records
+                                            td(class="text-center")
+                                                .form-check.d-inline-block
+                                                    input(
+                                                        type="checkbox"
+                                                        class="form-check-input"
+                                                        name="permissions"
+                                                        value=`${item.id},accounts_delete`
+                                                        checked=item.permissions.includes("accounts_delete")
+                                                    )
 
-                                            //- Tài khoản
-                                            tr.bg-light
-                                                td(colspan="4")
-                                                    i(class="fas fa-users me-2 text-primary")
-                                                    b Tài khoản
-                                            tr(data-name="accounts_view")
-                                                td
-                                                    i(class="fas fa-eye me-2 text-muted")
-                                                    | Xem
-                                                each item in records
-                                                    td(class="text-center")
-                                                        .form-check.d-inline-block
-                                                            input(
-                                                                type="checkbox"
-                                                                class="form-check-input"
-                                                            )
-                                                    
-                                            tr(data-name="accounts_create")
-                                                td
-                                                    i(class="fas fa-plus me-2 text-muted")
-                                                    | Thêm mới
-                                                each item in records
-                                                    td(class="text-center")
-                                                        .form-check.d-inline-block
-                                                            input(
-                                                                type="checkbox"
-                                                                class="form-check-input"
-                                                            )
-                                            tr(data-name="accounts_edit")
-                                                td
-                                                    i(class="fas fa-edit me-2 text-muted")
-                                                    | Chỉnh sửa
-                                                each item in records
-                                                    td(class="text-center")
-                                                        .form-check.d-inline-block
-                                                            input(
-                                                                type="checkbox"
-                                                                class="form-check-input"
-                                                            )
-                                            tr(data-name="accounts_delete")
-                                                td
-                                                    i(class="fas fa-trash me-2 text-muted")
-                                                    | Xóa
-                                                each item in records
-                                                    td(class="text-center")
-                                                        .form-check.d-inline-block
-                                                            input(
-                                                                type="checkbox"
-                                                                class="form-check-input"
-                                                            )
+                        .d-grid.gap-3.d-md-flex.justify-content-md-end.mt-4
+                            a(href=`${prefixAdmin}/roles` class="btn btn-outline-secondary btn-lg me-md-2")
+                                i(class="fas fa-arrow-left me-2")
+                                | Quay lại
+                            button(
+                                type="submit"
+                                class="btn btn-primary btn-lg px-4"
+                                button-submit
+                            )
+                                i(class="fas fa-save me-2")
+                                | Cập nhật
 
-                                .d-grid.gap-3.d-md-flex.justify-content-md-end.mt-4
-                                    a(href=`${prefixAdmin}/roles` class="btn btn-outline-secondary btn-lg me-md-2")
-                                        i(class="fas fa-arrow-left me-2")
-                                        | Quay lại
-                                    button(
-                                        type="submit"
-                                        class="btn btn-primary btn-lg px-4"
-                                        button-submit
-                                    )
-                                        i(class="fas fa-save me-2")
-                                        | Cập nhật
+                form(
+                    id="form-change-permissions"
+                    method="POST"
+                    action=`${prefixAdmin}/roles/permissions?_method=PATCH`
+                ) 
+                    input(
+                        type="text"
+                        class="form-control d-none"
+                        name="permissions"
+                    )
 
-                            form(
-                                id="form-change-permissions"
-                                method="POST"
-                                action=`${prefixAdmin}/roles/permissions?_method=PATCH`
-                            ) 
-                                input(
-                                    type="text"
-                                    class="form-control d-none"
-                                    name="permissions"
-                                )
-
-                            script(src="/admin/js/roles.js") 
+                script(src="/admin/js/roles.js") 
 
     style.
         .bg-gradient-primary {
@@ -318,6 +360,26 @@ block main
         .btn:hover {
             transform: translateY(-1px);
         }
+        .table tbody tr:hover {
+            background-color: rgba(78, 115, 223, 0.05);
+        }
+        .table tbody tr.bg-light:hover {
+            background-color: rgba(78, 115, 223, 0.1) !important;
+        }
+        .table tbody tr td {
+            vertical-align: middle;
+        }
+        .card {
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        }
+        .card-header {
+            border-bottom: none;
+        }
+        .text-muted {
+            color: #6c757d !important;
+        }
+        .text-primary {
+            color: #4e73df !important;
+        }
 
                     
-

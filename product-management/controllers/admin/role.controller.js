@@ -71,7 +71,7 @@ module.exports.editPatch = async (req , res) => {
     // Update san pham trong DB
     try {
         await Role.updateOne( {_id: id}, req.body);
-        req.flash("success" , `Cập nhật thành công sản phẩm!`);
+        req.flash("success" , `Cập nhật thành công nhóm quyền!`);
         
     } catch (error) {
         req.flash("error" , `Cập nhật thất bại!`);
