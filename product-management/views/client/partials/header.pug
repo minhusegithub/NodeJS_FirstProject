@@ -40,15 +40,15 @@ header.header
             .col-5
                     if(user)
                        
-                        a(href="/chat", class="chat_design btn btn-light") Chat   
+                        a(href="/chat", class="option_design btn btn-light") Chat   
                     
-                        a(href="/order/history", class="order_history_design btn btn-light") Lịch sử đặt hàng    
+                        a(href="/order/history", class="option_design btn btn-light") Lịch sử đặt hàng    
                     
-                        a(href="/cart", class="cart_design btn btn-light") Giỏ hàng (#{miniCart ? miniCart.totalQuantity : "0" })        
+                        a(href="/cart", class="option_design btn btn-light") Giỏ hàng (#{miniCart ? miniCart.totalQuantity : "0" })        
                     
-                        a(href="/user/logout", class="logout_design btn btn-light") Đăng xuất 
+                        a(href="/user/logout", class="option_design btn btn-light") Đăng xuất 
 
-                        a(href="/user/info", class="user_design btn btn-light") #{user.fullName}     
+                        a(href="/user/info", class="option_design btn btn-light") #{user.fullName}     
                     
                     else
                         .auth-buttons.d-flex.justify-content-end.gap-2

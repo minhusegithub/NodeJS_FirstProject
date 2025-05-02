@@ -13,7 +13,7 @@ const checkoutRoutes = require("./checkout.route");
 const userRoutes = require("./user.route");
 const chatRoutes = require("./chat.route");
 const orderRoutes = require("./order.route");
-
+const orderMiddleware = require("../../middlewares/clients/order.middleware");
 module.exports = (app)=>{ 
 
     app.use( categoryMiddleware.category );
@@ -29,7 +29,7 @@ module.exports = (app)=>{
     
     app.use('/cart', cartRoutes );
     
-    app.use('/checkout', checkoutRoutes );
+    app.use('/checkout', orderMiddleware.orderId, checkoutRoutes );
 
     app.use('/user', userRoutes );
 

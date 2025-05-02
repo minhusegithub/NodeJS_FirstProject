@@ -4,39 +4,39 @@
         li 
             a(href= `${prefixAdmin}/dashboard`)
                 i.bi.bi-speedometer2.mr-2
-                | Dashboard
+                span(class="text-white") Dashboard
 
         if(role.permissions.includes("products-category_view"))
             li 
                 a(href= `${prefixAdmin}/products-category`)
                     i.bi.bi-tags.mr-2
-                    | Product Categories
+                    span(class="text-white") Product Categories
 
         if(role.permissions.includes("products_view"))
             li 
                 a(href= `${prefixAdmin}/products`)
                     i.bi.bi-box-seam.mr-2
-                    | Product List
+                    span(class="text-white") Product List
 
         if(role.permissions.includes("roles_view"))
             li 
                 a(href= `${prefixAdmin}/roles`)
                     i.bi.bi-people.mr-2
-                    | Role Groups
+                    span(class="text-white") Role Groups
 
         if(role.permissions.includes("roles_permissions")) 
             li 
                 a(href= `${prefixAdmin}/roles/permissions`)
                     i.bi.bi-shield-lock.mr-2
-                    | Permissions
+                    span(class="text-white") Permissions
 
         if(role.permissions.includes("accounts_view"))
             li 
                 a(href= `${prefixAdmin}/accounts`)
                     i.bi.bi-person-lines-fill.mr-2
-                    | User Accounts
+                    span(class="text-white") Admin Accounts
         
         li 
             a(href= `${prefixAdmin}/settings/general`) 
                 i.bi.bi-gear.mr-2
-                | General Settings
+                span(class="text-white") General Settings

@@ -26,3 +26,20 @@ if(buttonGoBack.length > 0){
     })
 }
 // End button go back
+
+// Giao hàng nhanh
+const isPlaceRushOrder = document.querySelector('#isPlaceRushOrder');
+if(isPlaceRushOrder){
+    isPlaceRushOrder.addEventListener('change', function() {
+        const fullName = document.querySelector('#fullName').value;
+        const phone = document.querySelector('#phone').value;
+        const address = document.querySelector('#address').value;
+        const paymentMethod = document.querySelector('#paymentMethod').value;
+        const isPlaceRushOrder = document.querySelector('#isPlaceRushOrder').value;
+        
+        window.location.href = `/checkout/placeRushOrder/${fullName}/${phone}/${address}/${isPlaceRushOrder}/${paymentMethod}`;
+            
+        
+    });
+}
+// End giao hàng nhanh

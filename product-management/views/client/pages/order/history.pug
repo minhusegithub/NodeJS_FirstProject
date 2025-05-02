@@ -1,6 +1,7 @@
 extends ../../layouts/default.pug
 include ../../mixins/box-head.pug
 include ../../mixins/alert.pug
+include ../../mixins/moment.pug
 
 block main 
     +alert-success(5000)
@@ -21,6 +22,8 @@ block main
                             th Tên sản phẩm
                             th Giá
                             th Số lượng
+                            th Phương thức thanh toán
+                            th Giao hàng nhanh ? 
                             th Tổng tiền
                             th Ngày đặt hàng
                     tbody 
@@ -42,8 +45,11 @@ block main
                                     td #{product.priceNew}$
                                     td #{product.quantity}
                                     if productIndex === 0
+                                        td(rowspan=rowSpan) #{item.paymentMethod}
+                                        td(rowspan=rowSpan) #{item.isPlaceRushOrder ? "Có" : "Không"}
                                         td(rowspan=rowSpan) #{item.totalPrice}$
-                                        td(rowspan=rowSpan) #{moment(item.createdAt).format('DD/MM/YYYY')}
+                                        td(rowspan=rowSpan) 
+                                            +formatDateTime(item.createdAt)
 
 
 

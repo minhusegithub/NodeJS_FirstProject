@@ -14,15 +14,35 @@ block main
                     p(class="mb-0") Chúc mừng bạn đã đặt hàng thành công! Chúng tôi sẽ xử lí đơn hàng trong thời gian sớm nhất
 
         if(order)
-            //- .row.mt-4
-            //-     .col-12 
-            //-         .card.shadow-sm                        
-            //-             h5(class="mb-0")
-            //-                 i(class="fas fa-user-circle me-2")
-            //-                 | Thông tin cá nhân 
-            //-             .card-body
-            //-                 table(class="table table-striped mb-0")
-            //-                     tbody 
+            .row.mt-4
+                .col-12 
+                    .card.shadow-sm                        
+                        h5(class="mb-0")
+                            i(class="fas fa-user-circle me-2")
+                            | Thông tin cá nhân 
+                        .card-body
+                            table(class="table table-striped mb-0")
+                                tbody 
+                                    tr 
+                                        td Họ tên 
+                                        td 
+                                            b #{order.userInfo.fullName}
+                                    tr 
+                                        td Số điện thoại 
+                                        td 
+                                            b #{order.userInfo.phone}
+                                    tr 
+                                        td Địa chỉ
+                                        td 
+                                            b #{order.userInfo.address}
+                                    tr 
+                                        td Giao hàng nhanh
+                                        td 
+                                            b #{order.isPlaceRushOrder ? "Có" : "Không"}
+                                    tr 
+                                        td Phương thức thanh toán
+                                        td 
+                                            b #{order.paymentMethod}
             
             .row.mt-4
                 .col-12 
@@ -59,7 +79,7 @@ block main
 
                             if(order.products.length > 0)
                                 .card-footer.bg-white
-                                    h4(class="text-end mb-0") 
+                                    h4(class="text-right mb-0") 
                                         | Tổng đơn hàng: 
                                         span(class="text-success") #{order.totalPrice}$
 

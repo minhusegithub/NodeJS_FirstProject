@@ -16,7 +16,13 @@ const orderSchema = new mongoose.Schema(
                 discountPercentage: Number,
                 quantity: Number
             }
-        ]
+        ],
+        isPlaceRushOrder:{
+            type: Boolean,
+            default: false
+        },
+        paymentMethod:String
+
     },
     {
         timestamps: true  
