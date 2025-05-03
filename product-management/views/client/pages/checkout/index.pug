@@ -68,7 +68,7 @@ block main
                                     class="form-control"
                                     id="fullName"
                                     name="fullName"
-                                    value= order.userInfo ? order.userInfo.fullName : ""
+                                    value= order ? order.userInfo.fullName : ""
                                     required
                                 ) 
                             div(class="form-group")
@@ -78,7 +78,7 @@ block main
                                     class="form-control"
                                     id="phone"
                                     name="phone"
-                                    value= order.userInfo ? order.userInfo.phone : ""
+                                    value= order ? order.userInfo.phone : ""
                                     required
                                 ) 
                             div(class="form-group")
@@ -88,7 +88,7 @@ block main
                                     class="form-control"
                                     id="address"
                                     name="address"
-                                    value= order.userInfo ? order.userInfo.address : ""
+                                    value= order ? order.userInfo.address : ""
                                     required
                                 )
                             div(class="form-group")
@@ -100,16 +100,17 @@ block main
                                     name="paymentMethod"
                                     required
                                 )
-                                    if(order.paymentMethod === "COD")
-                                        option(value="COD" selected="selected") Thanh toán khi nhận hàng (COD)
-                                        option(value="VNPAY") Thanh toán qua VNPay                   
-                                    else if(order.paymentMethod === "VNPAY")
-                                        option(value="VNPAY" selected="selected") Thanh toán qua VNPay                   
-                                        option(value="COD") Thanh toán khi nhận hàng (COD)                   
-                                    else
-                                        option(value="" disabled="disabled" selected="selected" ) -- Chọn phương thức thanh toán --
-                                        option(value="COD") Thanh toán khi nhận hàng (COD)
-                                        option(value="VNPAY") Thanh toán qua VNPay
+                                    if(order)
+                                        if(order.paymentMethod === "COD")
+                                            option(value="COD" selected="selected") Thanh toán khi nhận hàng (COD)
+                                            option(value="VNPAY") Thanh toán qua VNPay                   
+                                        else if(order.paymentMethod === "VNPAY")
+                                            option(value="VNPAY" selected="selected") Thanh toán qua VNPay                   
+                                            option(value="COD") Thanh toán khi nhận hàng (COD)                   
+                                        else
+                                            option(value="" disabled="disabled" selected="selected" ) -- Chọn phương thức thanh toán --
+                                            option(value="COD") Thanh toán khi nhận hàng (COD)
+                                            option(value="VNPAY") Thanh toán qua VNPay
                             div(class="form-group")
                                 label(for="isPlaceRushOrder") 
                                    span(class="text-success") Giao hàng nhanh? (Mặc định áp dụng 5% phí cơ bản )
@@ -119,19 +120,17 @@ block main
                                     name="isPlaceRushOrder"
                                     required
                                 )
-                                    if(order.isPlaceRushOrder)                                      
-                                        option(value="yes" selected="selected") Có 
-                                        option(value="no" ) Không
-                                    else                              
-                                        option(value="no" selected="selected") Không
-                                        option(value="yes") Có 
-                           
-                            
-                                    
-                           
-                            
-                            
-                            
+                                    if(order)
+                                        if(order.isPlaceRushOrder === true)                                      
+                                            option(value="yes" selected="selected") Có 
+                                            option(value="no" ) Không
+                                        else if(order.isPlaceRushOrder === false)                             
+                                            option(value="no" selected="selected") Không
+                                            option(value="yes") Có 
+                                        else
+                                            option(value="" disabled="disabled" selected="selected" ) -- Chọn phương thức giao hàng --
+                                            option(value="yes") Có 
+                                            option(value="no") Không                  
                             div(class="form-group mt-3")
                                 button(
                                     type="submit"

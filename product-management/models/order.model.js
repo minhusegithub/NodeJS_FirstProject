@@ -17,10 +17,7 @@ const orderSchema = new mongoose.Schema(
                 quantity: Number
             }
         ],
-        isPlaceRushOrder:{
-            type: Boolean,
-            default: false
-        },
+        isPlaceRushOrder: Boolean,
         paymentMethod:String
 
     },

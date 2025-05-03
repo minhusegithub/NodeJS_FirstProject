@@ -17,7 +17,7 @@ block main
             .row.mt-4
                 .col-12 
                     .card.shadow-sm                        
-                        h5(class="mb-0")
+                        h5(class="order_information_design")
                             i(class="fas fa-user-circle me-2")
                             | Thông tin cá nhân 
                         .card-body
@@ -82,6 +82,8 @@ block main
                                     h4(class="text-right mb-0") 
                                         | Tổng đơn hàng: 
                                         span(class="text-success") #{order.totalPrice}$
+    //- Sau khi đặt hàng thành công thì quay về trang chủ
+    button(class="btn btn-info" onclick="window.location.href='/'") Quay về trang chủ
 
 
         
