@@ -11,45 +11,47 @@ block main
         .row 
             .col-12 
                 +box-head("Lịch sử đặt hàng")
+                    
 
         .row 
             .col-12 
-                table(class="table table-bordered table-hover")
-                    thead 
-                        tr 
-                            th STT
-                            th Ảnh
-                            th Tên sản phẩm
-                            th Giá
-                            th Số lượng
-                            th Phương thức thanh toán
-                            th Giao hàng nhanh ? 
-                            th Tổng tiền
-                            th Ngày đặt hàng
-                    tbody 
-                        each item, index in orders
-                            - const rowSpan = item.products.length
-                            each product, productIndex in item.products
-                                tr 
-                                    if productIndex === 0
-                                        td(rowspan=rowSpan) #{index + 1}
-                                    td
-                                        img(
-                                            src=product.thumbnail
-                                            alt=product.title
-                                            width="80px"
-                                            height="80px"
-                                            style="object-fit: cover;"
-                                        )
-                                    td #{product.title}
-                                    td #{product.priceNew}$
-                                    td #{product.quantity}
-                                    if productIndex === 0
-                                        td(rowspan=rowSpan) #{item.paymentMethod}
-                                        td(rowspan=rowSpan) #{item.isPlaceRushOrder ? "Có" : "Không"}
-                                        td(rowspan=rowSpan) #{item.totalPrice}$
-                                        td(rowspan=rowSpan) 
-                                            +formatDateTime(item.createdAt)
+                .table-responsive(style="max-height: 600px; overflow-y: auto;")
+                    table(class="table table-bordered table-hover")
+                        thead 
+                            tr 
+                                th STT
+                                th Ảnh
+                                th Tên sản phẩm
+                                th Giá
+                                th Số lượng
+                                th Phương thức thanh toán
+                                th Giao hàng nhanh ? 
+                                th Tổng tiền
+                                th Ngày đặt hàng
+                        tbody 
+                            each item, index in orders
+                                - const rowSpan = item.products.length
+                                each product, productIndex in item.products
+                                    tr 
+                                        if productIndex === 0
+                                            td(rowspan=rowSpan) #{index + 1}
+                                        td
+                                            img(
+                                                src=product.thumbnail
+                                                alt=product.title
+                                                width="80px"
+                                                height="80px"
+                                                style="object-fit: cover;"
+                                            )
+                                        td #{product.title}
+                                        td #{product.priceNew}$
+                                        td #{product.quantity}
+                                        if productIndex === 0
+                                            td(rowspan=rowSpan) #{item.paymentMethod}
+                                            td(rowspan=rowSpan) #{item.isPlaceRushOrder ? "Có" : "Không"}
+                                            td(rowspan=rowSpan) #{item.totalPrice}$
+                                            td(rowspan=rowSpan) 
+                                                +formatDateTime(item.createdAt)
 
 
 

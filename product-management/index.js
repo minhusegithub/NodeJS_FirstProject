@@ -1,4 +1,3 @@
-
 // nhung express
 const express = require('express');
 const path = require("path");
@@ -62,6 +61,13 @@ app.locals.moment = moment;
 
 // nhung file tinh
 app.use(express.static(`${__dirname}/public`));
+app.use('/node_modules', express.static(path.join(__dirname, "node_modules"), {
+  setHeaders: (res, path) => {
+    if (path.endsWith('.js')) {
+      res.setHeader('Content-Type', 'application/javascript');
+    }
+  }
+}));
 
 
 

@@ -25,17 +25,19 @@ header.header
                     class="d-flex"
                 )
                     div(class="form-group d-flex mb-0 w-100")
-                        input(
-                            type="text"
-                            placeholder="Nhập từ khóa..."
-                            class="form-control"
-                            name="keyword"
-                            value=keyword
-                        )
-                        button(
-                            type="submit"
-                            class="btn btn-success"
-                        ) Tìm 
+                        .input-group
+                            input.form-control(
+                                type="text",
+                                placeholder="Nhập từ khóa...",
+                                class="form-control",
+                                name="keyword",
+                                value=keyword,
+                                aria-label="Search"
+                            )
+                            .input-group-append
+                                button.btn.btn-success(type="submit")
+                                    i.bi.bi-search.mr-1
+                                    | Tìm kiếm
 
             .col-5
                     if(user)

@@ -6,8 +6,10 @@
 }
 
 .header .inner-logo img {
-    max-height: 50px;
+    max-height: 75px;
     max-width: 100%;
+    display: block;
+    margin: 0 auto;
 }
 
 .header .inner-menu > ul {
@@ -284,7 +286,7 @@
     background: #ffffff;
     border-radius: 18px;
     box-shadow: 0 2px 16px rgba(0,0,0,0.08);
-    max-width: 400px;
+    max-width: 600px;
     margin: 40px auto;
     padding: 0;
     display: flex;
@@ -301,6 +303,56 @@
     flex-direction: column;
     gap: 10px;
 }
+
+.chat .inner-body .inner-images img{
+    width: 80px;
+    height: 80px;
+    object-fit: contain;
+    background: #efefef;
+    padding: 10px;
+    margin: 0 5px 5px 0;
+    border-radius: 5px;
+}
+
+.chat .inner-body .inner-outgoing .inner-images{
+    margin-left: auto;
+    text-align: right;
+}
+.chat .inner-body .inner-outgoing .inner-images img{
+   margin:0 0 5px 5px;
+}
+
+.chat  .inner-preview-images{
+    position: relative;
+}
+
+.chat  .inner-preview-images .label-container{
+    display: none;
+}
+
+.chat  .inner-preview-images .input-container{
+    display: none;
+}
+
+.chat  .inner-preview-images .image-preview{
+    padding: 0;
+    height: auto;
+    border-radius: 0;
+}
+
+.chat  .inner-preview-images .image-preview-item{
+    width: 90px;
+    background-size: contain;
+}
+
+
+
+
+
+
+
+
+
 
 .inner-incoming {
     align-self: flex-start;
@@ -376,6 +428,8 @@
     background: #d45b8c;
 }
 /* End Chat */
+
+
 
 /* emoji-picker */
 .tooltip{
