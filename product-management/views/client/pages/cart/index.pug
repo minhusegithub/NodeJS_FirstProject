@@ -3,6 +3,7 @@ include ../../mixins/box-head.pug
 include ../../mixins/alert.pug
 
 block main 
+    
     +alert-success(5000)
     +alert-error(5000)
 
@@ -55,9 +56,9 @@ block main
                             
                 h3(class="text-right") Tổng đơn hàng: 
                     span(class="text-success") #{cartDetail.totalPrice}$
-
-                div(class="text-right  mt-3")
-                    a(href="/checkout" class="btn btn-success") THANH TOÁN 
+                if(cartDetail.products.length > 0)
+                    div(class="text-right  mt-3")
+                        a(href="/checkout" class="btn btn-success") THANH TOÁN 
 
     script(src="/js/cart.js")
 
