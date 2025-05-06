@@ -1,0 +1,92 @@
+extends ../../layouts/default.pug
+
+include ../../mixins/alert.pug
+
+block main  
+  .container.mt-4
+    .card.shadow.p-4(style="max-width: 600px; margin: 0 auto;")
+      .card-body
+        h2.mb-4.text-center 
+          i.bi.bi-pencil-square.mr-2
+          | Cập nhật thông tin cá nhân
+
+        +alert-success(5000)
+        +alert-error(5000)
+
+        form(
+          action=`/user/edit?_method=PATCH`
+          method="POST"
+          enctype="multipart/form-data"   
+        )
+          .form-group
+            label(for="fullName") 
+              i.bi.bi-person-fill.mr-1
+              | Full name 
+            input.form-control(
+              type="text",
+              id="fullName",
+              name="fullName",
+              required,
+              value=user.fullName
+            )
+
+          .form-group
+            label(for="email") 
+              i.bi.bi-envelope-fill.mr-1
+              | Email 
+            input.form-control(
+              type="email",
+              id="email",
+              name="email",
+              required,
+              value=user.email
+            )
+
+          .form-group
+            label(for="password") 
+              i.bi.bi-lock-fill.mr-1
+              | Password 
+            input.form-control(
+              type="password",
+              id="password",
+              name="password",
+              placeholder="Nhập mật khẩu mới..."
+            )
+
+          .form-group
+            label(for="phone") 
+              i.bi.bi-telephone-fill.mr-1
+              | Phone
+            input.form-control(
+              type="text",
+              id="phone",
+              name="phone",
+              value=user.phone
+            )
+
+          .form-group(upload-image)
+            label(for="avatar") 
+              i.bi.bi-image-fill.mr-1
+              | Avatar
+            input.form-control-file(
+              type="file",
+              id="avatar",
+              name="avatar",
+              accept="image/*",
+              upload-image-input
+            )
+            if user.avatar
+              img.mt-2.rounded.border(
+                src=user.avatar ,
+                width="120",
+                upload-image-preview
+              )
+
+          .text-center.mt-4
+            a.btn.btn-secondary.px-4(href="/user/info")
+              i.bi.bi-arrow-left.mr-1
+              | Quay lại
+            button.btn.btn-success.px-4(type="submit")
+              i.bi.bi-arrow-repeat.mr-1
+              | Cập nhật
+  script(src="/js/script.js")

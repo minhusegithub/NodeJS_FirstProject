@@ -1,13 +1,43 @@
 extends ../../layouts/default.pug
 include ../../mixins/box-head.pug
 
-
 block main  
     .container.my-3     
         .row  
             .col-12 
                 +box-head("Thông tin tài khoản")
-    div #{user}
+        .row
+            .col-12
+                .card.shadow-sm
+                    .card-body
+                        .row
+                            .col-md-4.text-center.mb-3
+                                img.rounded-circle.img-thumbnail(src=user.avatar || "/images/default-avatar.png", alt="Avatar", style="width: 150px; height: 150px; object-fit: cover;")
+                            .col-md-8
+                               
+                                .row.mb-3
+                                    .col-md-4
+                                        strong Họ và tên:
+                                    .col-md-8
+                                        span #{user.fullName}
+                                .row.mb-3
+                                    .col-md-4
+                                        strong Email:
+                                    .col-md-8
+                                        span #{user.email}
+                                .row.mb-3
+                                    .col-md-4
+                                        strong Số điện thoại:
+                                    .col-md-8
+                                        span #{user.phone || "Chưa cập nhật"}                           
+                                .row.mb-3
+                                    .col-md-4
+                                        strong Ngày tham gia:
+                                    .col-md-8
+                                        span #{user.createdAt ? new Date(user.createdAt).toLocaleDateString('vi-VN') : "Chưa cập nhật"}
+                                .row
+                                    .col-12.text-end
+                                        a.btn.btn-primary(href="/user/edit") Chỉnh sửa thông tin
 
 
 

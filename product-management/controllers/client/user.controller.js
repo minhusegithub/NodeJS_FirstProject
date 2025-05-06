@@ -209,3 +209,45 @@ module.exports.info = async (req, res ,next)=>{
     });
 }
 
+// [GET] /user/edit
+module.exports.edit = async (req, res ,next)=>{
+    res.render("client/pages/user/edit" , {
+        pageTitle: "Chỉnh sửa thông tin",
+    });
+}
+
+
+// [PATCH] /user/edit
+module.exports.editPatch = async (req, res ,next)=>{
+
+    const id = res.locals.user.id;
+
+    const emailExist = await User.findOne({
+        _id: { $ne: id}, // ne : not equal
+        email: req.body.email,
+        deleted: false
+    });
+
+    if(emailExist){
+        req.flash("error" , `Email ${req.body.email} đã tồn tại !` );
+       
+    }else{
+
+        if(req.body.password){
+            req.body.password = md5(req.body.password);
+        }else{
+            delete req.body.password;
+        }
+    
+        await User.updateOne({_id: id} , req.body )
+       
+        req.flash("success" , "Cập nhật thành công thông tin cá nhân !");
+          
+    }
+    res.redirect("back");
+
+  
+}
+
+
+

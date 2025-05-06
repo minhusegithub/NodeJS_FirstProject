@@ -12,14 +12,15 @@ module.exports.orderId = async (req , res , next)=>{
         res.cookie("orderId" , order.id , {
             expires: new Date(Date.now() +expiresTime )
         });
+        res.locals.order = order;
     } 
     else{
         const order = await Order.findOne({
             _id: req.cookies.orderId
         });
-
+        
         res.locals.order = order;
     }
-
+    
     next();
 }

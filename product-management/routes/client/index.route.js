@@ -14,6 +14,9 @@ const userRoutes = require("./user.route");
 const chatRoutes = require("./chat.route");
 const orderRoutes = require("./order.route");
 const orderMiddleware = require("../../middlewares/clients/order.middleware");
+const usersRoutes = require("./users.route");
+
+
 module.exports = (app)=>{ 
 
     app.use( categoryMiddleware.category );
@@ -36,4 +39,6 @@ module.exports = (app)=>{
     app.use('/chat', authMiddleware.requireAuth , chatRoutes );
 
     app.use('/order', orderRoutes );
+
+    app.use('/users', usersRoutes );
 }

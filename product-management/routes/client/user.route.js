@@ -1,11 +1,13 @@
 const express = require('express');
 const router = express.Router();
-
-
+const multer = require("multer");
+const upload = multer();
 //khai bao controller
 const controller = require("../../controllers/client/user.controller");
 const validate = require("../../validates/client/user.validate")
 const authMiddleware = require("../../middlewares/clients/auth.middleware");
+
+const uploadCloud = require("../../middlewares/admin/uploadCloud.middleware")
 
 //goi controller
 router.get('/register', controller.register);
@@ -32,7 +34,16 @@ router.post('/password/reset', validate.resetPasswordPost , controller.resetPass
 
 router.get('/info', authMiddleware.requireAuth , controller.info);
 
+router.get('/edit',  controller.edit);
 
+
+router.patch( 
+    '/edit',
+    upload.single('avatar'),
+    uploadCloud.upload,
+    controller.editPatch
+    
+);
 
 module.exports = router;
 
