@@ -337,6 +337,8 @@ module.exports.success = async (req, res ,next)=>{
     }
     // Xóa cookie orderId khi đặt hàng thành công
     res.clearCookie("orderId");
+
+    
     res.render("client/pages/checkout/success" , {
         pageTitle: "Đặt hàng thành công",
         order:order

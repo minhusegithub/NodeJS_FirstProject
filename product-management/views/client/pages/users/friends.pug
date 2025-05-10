@@ -5,13 +5,14 @@ block main
     .container.my-3
         include ../../partials/list-btn-users.pug
 
+
         .row
             .col-12
                 +box-head('Danh sách bạn bè')
         
-        .row 
+        .row(data-users-friend)
             each user in users
-                .col-6 
+                .col-6(user-id=user.id)
                     div(class="box-user")
                         div(class="inner-avatar")
                             img(
@@ -19,7 +20,17 @@ block main
                                 alt=user.fullName
                             )
                         div(class="inner-info")
-                            div(class="inner-name") #{user.fullName}                        
+                            div(class="inner-name") #{user.fullName}  
+                            div(class="inner-buttons") 
+                                a(
+                                    href="#"
+                                    class="btn btn-sm btn-primary mr-1"
+                                ) Nhắn tin
+                        div(
+                            class="inner-status"
+                            status=user.statusOnline
+                        )   <i class= "fa-solid fa-circle"></i> 
+
                             
     block script
         script(type="module" src="/js/users.js")

@@ -80,25 +80,29 @@ module.exports.accept = async (req, res, next) => {
     });
 }
 
-// [GET] /users/friend
-module.exports.friend = async (req, res, next) => {
+// [GET] /users/friends
+module.exports.friends = async (req, res, next) => {
 
     usersSocket(res);
     const userId = res.locals.user.id;
 
     const myUser = await User.findOne({_id: userId});
+    
     const friendList = myUser.friendList;     
     
+    const friendListId = friendList.map(item => item.user_id);
+   
+
     const users = await User.find({
-        _id: { $in: friendList },
+        _id: { $in: friendListId },
         status: 'active',
-        deleted: false,
-        
-    }).select('id avatar fullName');
+        deleted: false,    
+    }).select('id avatar fullName statusOnline');
 
-    console.log(users);
+    // console.log(users);
 
-    res.render('client/pages/users/friend', {
+    
+    res.render('client/pages/users/friends', {
         pageTitle: 'Danh sách bạn bè',
         users: users,
     });
