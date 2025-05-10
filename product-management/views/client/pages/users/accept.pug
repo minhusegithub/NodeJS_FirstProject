@@ -7,11 +7,11 @@ block main
 
         .row
             .col-12
-                +box-head('Danh sách người dùng')
+                +box-head('Lời mời kết bạn')
         
-        .row(data-users-not-friend=user.id)
+        .row(data-users-accept=user.id) 
             each user in users
-                .col-6(user-id=user.id) 
+                .col-6(user-id=user.id)
                     div(class="box-user")
                         div(class="inner-avatar")
                             img(
@@ -23,11 +23,22 @@ block main
                             div(class="inner-button")
                                 button(
                                     class="btn btn-sm btn-primary mr-1"
-                                    btn-add-friend= user._id
-                                ) Kết bạn
+                                    btn-accept-friend= user._id
+                                ) Chấp nhận
                                 button(
                                     class="btn btn-sm btn-secondary mr-1"
-                                    btn-cancel-friend= user._id
-                                ) Hủy
+                                    btn-refuse-friend= user._id
+                                ) Xóa
+                                button(
+                                    class="btn btn-sm btn-secondary mr-1"
+                                    btn-deleted-friend 
+                                    disabled
+                                ) Đã xóa
+                                button(
+                                    class="btn btn-sm btn-primary mr-1"
+                                    btn-accepted-friend 
+                                    disabled
+                                ) Đã chấp nhận
+                                
     block script
         script(type="module" src="/js/users.js")

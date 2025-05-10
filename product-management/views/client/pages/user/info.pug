@@ -29,15 +29,11 @@ block main
                                     .col-md-4
                                         strong Số điện thoại:
                                     .col-md-8
-                                        span #{user.phone || "Chưa cập nhật"}                           
+                                        span #{user.phone || "Chưa cập nhật"}
                                 .row.mb-3
-                                    .col-md-4
-                                        strong Ngày tham gia:
-                                    .col-md-8
-                                        span #{user.createdAt ? new Date(user.createdAt).toLocaleDateString('vi-VN') : "Chưa cập nhật"}
-                                .row
                                     .col-12.text-end
                                         a.btn.btn-primary(href="/user/edit") Chỉnh sửa thông tin
+                                
 
 
 

@@ -16,7 +16,15 @@ const userSchema = new mongoose.Schema(
             type: String,
             default: "https://robohash.org/test.png"
         },
-        role_id: String,
+        friendList:[
+            {
+                user_id: String,
+                room_chat_id: String,
+            }
+        ], // mảng những user đã kết bạn
+        acceptFriends: Array,   // mảng những user đã gửi lời mời kết bạn cho mình
+        requestFriends: Array, // mảng những user mình đã gửi lời mời kết bạn
+        statusOnline:String,
         status:{
             type: String,
             default: "active"
