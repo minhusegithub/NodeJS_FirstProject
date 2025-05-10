@@ -3,12 +3,13 @@ const uploadToCloudinary = require("../../helpers/uploadToCloudinary");
 
 
 
-module.exports = async (res) => {
+module.exports = async (req, res) => {
     const userId = res.locals.user.id;
     const fullName = res.locals.user.fullName;
-
+    const roomChatId = req.params.roomChatId;
     // [SOCKET]
     _io.once('connection', (socket) => {
+        socket.join(roomChatId); // gộp ông A và ông B vào cùng 1 phòng
 
         socket.on('CLIENT_SEND_MESSAGE', async (data)=>{
 
@@ -20,8 +21,8 @@ module.exports = async (res) => {
 
             // Lưu vào DB
             const chat = new Chat({   
-
                 user_id: userId,
+                room_chat_id: roomChatId,
                 content: data.content,
                 images: images,
             });
@@ -29,7 +30,7 @@ module.exports = async (res) => {
 
 
             // Trả data lại cho client
-            _io.emit('SERVER_RETURN_MESSAGE', {
+            _io.to(roomChatId).emit('SERVER_RETURN_MESSAGE', {
                 userId: userId,
                 fullName: fullName,
                 content: data.content,
@@ -38,7 +39,7 @@ module.exports = async (res) => {
         });
 
         socket.on('CLIENT_SEND_TYPING', (type)=>{
-            socket.broadcast.emit('SERVER_RETURN_TYPING', {
+            socket.broadcast.to(roomChatId).emit('SERVER_RETURN_TYPING', {
                 userId: userId,
                 fullName: fullName,
                 type: type,
