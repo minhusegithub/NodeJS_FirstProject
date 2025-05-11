@@ -43,13 +43,17 @@ header.header
                     if(user)
                        
                         a(href="/users/friends", class="option_design btn btn-light") Bạn bè   
+
+                        a(href="/rooms-chat", class="option_design btn btn-light") Phòng chat  
                     
                         a(href="/order/history", class="option_design btn btn-light") Lịch sử đặt hàng    
                     
-                        a(href="/cart", class="option_design btn btn-light") Giỏ hàng (#{miniCart ? miniCart.totalQuantity : "0" })        
-                    
-                        a(href="/user/logout", class="option_design btn btn-light") Đăng xuất 
+                        a(href="/user/logout", class="option_design btn btn-light") 
+                            i.bi.bi-box-arrow-right.mr-1
+                            | Đăng xuất 
 
+                        a(href="/cart", class="option_design btn btn-light") Giỏ hàng (#{miniCart ? miniCart.totalQuantity : "0" })        
+            
                         a(href="/user/info", class="option_design btn btn-light") #{user.fullName}     
                     
                     else
