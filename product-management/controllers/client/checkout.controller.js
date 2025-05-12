@@ -165,8 +165,8 @@ module.exports.createPaymentUrl = async (req, res, next) => {
         {
            vnp_Amount: cart.totalPrice * 1000,
            vnp_IpAddr: "127.0.0.1",
-           vnp_TxnRef: cart.id + "_" + orderId, // là duy nhất
-           vnp_OrderInfo: `Thanh toán đơn hàng ${cart.id}`,
+           vnp_TxnRef: orderId + Date.now(), // là duy nhất
+           vnp_OrderInfo: `Thanh toán đơn hàng ${orderId}`,
            vnp_OrderType: ProductCode.Other,
            vnp_ReturnUrl: "http://localhost:3000/checkout/vnpay/return",
            vnp_Locale: VnpLocale.VN,
@@ -182,65 +182,75 @@ module.exports.createPaymentUrl = async (req, res, next) => {
 
 // //[GET] /checkout/vnpay/return
 module.exports.vnpayReturn = async (req, res) => {
-    // Tìm order hiện tại
-    const orderId = req.cookies.orderId;
-    const order = await Order.findOne({
-        _id:orderId
-    });
+
+
+
     
-    const cartId = req.cookies.cartId;
-    const cart = await Cart.findOne({
-        _id:cartId
-    });
-
-    let products =[];
-
-    for(const product of cart.products){
-        const objectProduct = {
-            product_id: product.product_id,
-            price:0,
-            discountPercentage: 0,
-            quantity: product.quantity
-        };
-        const productInfo = await Product.findOne({
-            _id: product.product_id
-        }).select("price discountPercentage");
-
-        objectProduct.price = productInfo.price;
-        objectProduct.discountPercentage = productInfo.discountPercentage;
-        products.push(objectProduct);
+    if(req.query.vnp_ResponseCode !== "00"){ // Nếu không thành công
+        res.redirect(`/checkout`);
+    }else{
+        // Tìm order hiện tại
+        const orderId = req.cookies.orderId;
+        const order = await Order.findOne({
+            _id:orderId
+        });
         
+        const cartId = req.cookies.cartId;
+        const cart = await Cart.findOne({
+            _id:cartId
+        });
+
+        let products =[];
+
+        for(const product of cart.products){
+            const objectProduct = {
+                product_id: product.product_id,
+                price:0,
+                discountPercentage: 0,
+                quantity: product.quantity
+            };
+            const productInfo = await Product.findOne({
+                _id: product.product_id
+            }).select("price discountPercentage");
+
+            objectProduct.price = productInfo.price;
+            objectProduct.discountPercentage = productInfo.discountPercentage;
+            products.push(objectProduct);
+            
+        }
+
+        await Order.updateOne(
+            {
+                _id:orderId
+            },
+            {
+                // userInfo:{
+                //     fullName:req.body.fullName,
+                //     phone:req.body.phone,
+                //     address:req.body.address
+                // },
+                // isPlaceRushOrder:req.body.isPlaceRushOrder,
+                // paymentMethod:req.body.paymentMethod,
+                products:products
+            }
+        );
+
+    
+
+        //Làm trống giỏ hàng
+        await Cart.updateOne(
+            {
+                _id: cartId
+            },
+            {
+                products:[]
+            }
+        );
+
+        res.redirect(`/checkout/success`);
     }
 
-    await Order.updateOne(
-        {
-            _id:orderId
-        },
-        {
-            // userInfo:{
-            //     fullName:req.body.fullName,
-            //     phone:req.body.phone,
-            //     address:req.body.address
-            // },
-            // isPlaceRushOrder:req.body.isPlaceRushOrder,
-            // paymentMethod:req.body.paymentMethod,
-            products:products
-        }
-    );
-
-  
-
-    //Làm trống giỏ hàng
-    await Cart.updateOne(
-        {
-            _id: cartId
-        },
-        {
-            products:[]
-        }
-    );
-
-    res.redirect(`/checkout/success`);
+    
     
 };
 

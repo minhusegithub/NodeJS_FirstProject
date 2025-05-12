@@ -4,7 +4,33 @@ include ../../mixins/product-layout.pug
 
 
 block main  
-   .section-products-featured.my-5 
+   .banner-section.d-flex
+      .banner-slider.flex-grow-1.mr-3
+         .banner-container
+            .banner-item.active
+               a(href="#")
+                  img(src="/images/banner.jpg", alt="Banner 1")
+            .banner-item
+               a(href="#")
+                  img(src="/images/banner1.jpg", alt="Banner 2")
+            .banner-item
+               a(href="#")
+                  img(src="/images/banner2.jpg", alt="Banner 3")
+            .banner-item 
+               a(href="#")
+                  img(src="/images/banner-side-1.jpg", alt="Banner 4")
+            .banner-item
+               a(href="#")
+                  img(src="/images/banner-side-2.jpg", alt="Banner 5")
+            .banner-nav
+               button.banner-prev
+                  i.fas.fa-chevron-left
+               button.banner-next
+                  i.fas.fa-chevron-right
+
+      
+
+   .section-products-featured
       .container 
          .row 
             .col-12 
@@ -12,7 +38,7 @@ block main
 
          +product-grid(productsFeatured)
 
-   .section-products-new.my-5 
+   .section-products-new
       .container 
          .row 
             .col-12 
@@ -20,6 +46,40 @@ block main
 
          +product-grid(productsNew)
 
+   script.
+      document.addEventListener('DOMContentLoaded', function() {
+         const bannerItems = document.querySelectorAll('.banner-item');
+         const prevButton = document.querySelector('.banner-prev');
+         const nextButton = document.querySelector('.banner-next');
+         let currentIndex = 0;
 
+         // Hàm chuyển banner
+         function showBanner(index) {
+            // Ẩn tất cả banner
+            bannerItems.forEach(item => item.classList.remove('active'));
+            
+            // Hiển thị banner được chọn
+            bannerItems[index].classList.add('active');
+         }
 
+         // Xử lý nút Previous
+         prevButton.addEventListener('click', () => {
+            currentIndex = (currentIndex - 1 + bannerItems.length) % bannerItems.length;
+            showBanner(currentIndex);
+         });
+
+         // Xử lý nút Next
+         nextButton.addEventListener('click', () => {
+            currentIndex = (currentIndex + 1) % bannerItems.length;
+            showBanner(currentIndex);
+         });
+
+         // Tự động chuyển banner mỗi 5 giây
+         setInterval(() => {
+            currentIndex = (currentIndex + 1) % bannerItems.length;
+            showBanner(currentIndex);
+         }, 3000);
+      }); 
+    
+      
 

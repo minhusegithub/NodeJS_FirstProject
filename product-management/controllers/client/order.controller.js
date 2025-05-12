@@ -13,7 +13,10 @@ module.exports.history = async (req, res ,next)=>{
     const carts = await Cart.find({user_id: user.id});
     let orderHistory = [];
     const cartIds = carts.map(cart => cart.id);
-    const orders = await Order.find({cart_id: {$in: cartIds}});
+    const orders = await Order.find({
+        cart_id: { $in: cartIds },
+        "products.0": { $exists: true }  // Kiểm tra mảng products có phần tử đầu tiên (length > 0)
+    });
     // Thêm thuộc tính thumbnail và title vào mảng products của đơn hàng
     for(const order of orders){
         let totalPrice = 0;
@@ -26,6 +29,8 @@ module.exports.history = async (req, res ,next)=>{
         }
         order.totalPrice = totalPrice;
     }
+    // Chỉ những order có products.length > 0 mới được hiển thị
+    
     
     // console.log(orders);
    

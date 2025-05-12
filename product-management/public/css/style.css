@@ -83,6 +83,13 @@
     border-radius: 8px;
     overflow: hidden;
     height: 100%;
+    width: 100%;
+    transition: all 0.3s ease;
+}
+
+.product-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
 }
 
 .product-item .inner-image {
@@ -113,12 +120,22 @@
 
 .product-item .inner-content{
     padding: 15px;
+    text-align: center;
+    background-color: #ecebe5;
 }
+
 
 .product-item .inner-content .inner-title{
     font-size: 20px;
     font-weight: 600;
+    height: 40px;
 }
+
+.product-item .inner-content .inner-title a{
+    color: #122449;
+    
+}
+
 .product-item .inner-content .inner-price-new{
     font-size: 18px;
     font-weight: 600;
@@ -635,6 +652,100 @@
 }
 
 
+
+
+
+
+
+
+
+.section-products-featured {
+    background-color: #f8f8f8;
+    margin-top: 0px;
+}
+
+.section-products-new {
+    background-color: #f8f8f8;
+    margin-top: 0px;
+}
+
+/* Banner Slider */
+.banner-section {
+    display: flex;
+    width: 100%;
+    margin-bottom: 0;
+    gap: 0;
+}
+
+.banner-slider {
+    flex: 2 1 0;
+    min-width: 0;
+    height: 300px;
+    margin-bottom: 0;
+    border-radius: 8px 0 0 8px;
+    overflow: hidden;
+}
+
+.banner-container {
+    width: 100%;
+    height: 100%;
+    position: relative;
+}
+
+.banner-item {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+}
+
+.banner-item.active {
+    opacity: 1;
+}
+
+.banner-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    /* background-color: #f8f8f8; */
+}
+
+.banner-nav button {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(255, 255, 255, 0.7);
+    border: none;
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    color: #333;
+    transition: all 0.3s ease;
+    z-index: 10;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.banner-nav button:hover {
+    background: rgba(255, 255, 255, 0.9);
+    transform: translateY(-50%) scale(1.1);
+}
+
+.banner-prev {
+    left: 475px;
+}
+
+.banner-next {
+    right: 475px;
+}
+/* End Banner Slider */
 
 
 
