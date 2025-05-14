@@ -1,2 +1,60 @@
-h1 404 Not Found
-button(onclick="history.back()") Trở lại
+doctype html
+html(lang="en")
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport", content="width=device-width, initial-scale=1.0")
+    title 404 - Page Not Found
+    link(rel="stylesheet", href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css")
+    style.
+      body {
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        background-color: #f8f9fa;
+        font-family: Arial, sans-serif;
+      }
+      .error-container {
+        text-align: center;
+        padding: 2rem;
+      }
+      .error-icon {
+        font-size: 6rem;
+        color: #dc3545;
+        margin-bottom: 1rem;
+      }
+      h1 {
+        font-size: 3rem;
+        color: #343a40;
+        margin-bottom: 1rem;
+      }
+      p {
+        font-size: 1.2rem;
+        color: #6c757d;
+        margin-bottom: 2rem;
+      }
+      .back-button {
+        padding: 0.8rem 1.5rem;
+        font-size: 1rem;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+      }
+      .back-button:hover {
+        background-color: #0056b3;
+      }
+
+  body
+    .error-container
+      i.fas.fa-exclamation-circle.error-icon
+      h1 404
+      p Trang bạn đang tìm kiếm không tồn tại
+      button.back-button(onclick="history.back()")
+        i.fas.fa-arrow-left
+        |  Trở lại
