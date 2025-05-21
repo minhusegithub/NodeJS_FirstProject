@@ -53,16 +53,26 @@ block main
               placeholder="Nhập mật khẩu mới..."
             )
 
-          .form-group
-            label(for="phone") 
-              i.bi.bi-telephone-fill.mr-1
-              | Phone
-            input.form-control(
-              type="text",
-              id="phone",
-              name="phone",
-              value=user.phone
-            )
+            .form-group
+              label(for="phone") 
+                i.bi.bi-telephone-fill.mr-1
+                | Phone
+              input.form-control(
+                type="text",
+                id="phone",
+                name="phone",
+                value=user.phone
+              )
+            .form-group
+              label(for="address") 
+                i.bi.bi-geo-alt-fill.mr-1
+                | Address
+              input.form-control(
+                type="text",
+                id="address",
+                name="address",
+                value=user.address
+              )
 
           .form-group(upload-image)
             label(for="avatar") 

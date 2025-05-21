@@ -12,6 +12,7 @@ const userSchema = new mongoose.Schema(
             default: generate.generateRandomString(20)  
         },
         phone: String,
+        address: String,
         avatar: {
             type: String,
             default: "https://robohash.org/test.png"

@@ -34,7 +34,7 @@ block main
                                     td 
                                         img(src=item.productInfo.thumbnail , alt="" width="80px")
                                     td 
-                                        a(href='/products/detail/:slug') #{item.productInfo.title}
+                                        a(href=`/products/detail/${item.productInfo.slug}`) #{item.productInfo.title}
                                     td #{item.productInfo.priceNew}$
                                     td 
                                         input(
@@ -52,14 +52,17 @@ block main
                                             class="btn btn-danger"
                                         ) Xóa
                         else 
-                            p Không có sản phẩm nào trong giỏ hàng
+                             p(class="text-danger") Không có sản phẩm nào trong giỏ hàng
                             
                 h3(class="text-right") Tổng đơn hàng: 
                     span(class="text-success") #{cartDetail.totalPrice}$
-                if(cartDetail.products.length > 0)
+                if(miniCart.totalQuantity > 0 && miniCart.totalQuantity <= 20)
                     div(class="text-right  mt-3")
                         a(href="/checkout" class="btn btn-success") THANH TOÁN 
-
+                if(miniCart.totalQuantity > 20)
+                    div(class="text-right  mt-3")
+                        p(class="text-danger") Số lượng sản phẩm trong giỏ hàng không được vượt quá 20 sản phẩm
+                
     script(src="/js/cart.js")
 
 
