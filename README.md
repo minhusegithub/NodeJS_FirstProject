@@ -20,7 +20,7 @@ Một website thời trang với chức năng quản lí sản phẩm , quản l
   - Đặt hàng , thanh toán
   - Trò chuyện / Tạo phòng chat với các khách khác của cửa hàng
     
-## Công nghệ
+## Công nghệ  
 - Frontend: HTML, CSS, JavaScript , Bootstrap4
 - Backend: Node.js, Express
 - Cơ sở dữ liệu: MongoDB

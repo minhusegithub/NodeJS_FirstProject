@@ -4,22 +4,22 @@ include ../../mixins/alert.pug
 include ../../mixins/moment.pug
 
 block main 
-    +alert-success(5000)
-    +alert-error(5000)
+    +alert-success(10000)
+    +alert-error(10000)
 
     .container-fluid.my-3(style="max-width: 80%;") 
         .row 
             .col-12 
-                +box-head("Lịch sử đặt hàng")
+                +box-head("Chờ lấy hàng")
         button(
                 class= "btn btn-secondary"
-                button-go-back
+                onclick= "window.location.href='/order'"
             ) Trở lại
                     
 
         .row 
             .col-12 
-                .table-responsive(style="max-height: 600px; overflow-y: auto;")
+                .table-responsive(style="max-height: 600px; overflow-y: auto; max-width: 100%;")
                     table(class="table table-bordered table-hover")
                         thead 
                             tr 
@@ -32,6 +32,8 @@ block main
                                 th(style="text-align: center;") Giao hàng nhanh ? 
                                 th(style="text-align: center;") Tổng tiền
                                 th(style="text-align: center;") Ngày đặt hàng
+                                th(style="text-align: center;") Trạng thái
+                                th(style="text-align: center;") Hành động
                         tbody 
                             each item, index in orders
                                 - const rowSpan = item.products.length
@@ -56,7 +58,34 @@ block main
                                             td(rowspan=rowSpan style="text-align: center;") #{item.totalPrice}$
                                             td(rowspan=rowSpan style="text-align: center;") 
                                                 +formatDateTime(item.createdAt)
-
+                                            td(rowspan=rowSpan style="text-align: center; color: #007bff;") #{item.status}
+                                            td(rowspan=rowSpan)
+                                                if(item.status === "Delivering")
+                                                    a(
+                                                    href="javascript:;"
+                                                    data-status= item.status
+                                                    data-id= item.id  
+                                                    button-change-order-status
+                                                    class="badge badge-success"
+                                                )  Đã nhận hàng
+                                                if(item.status === "Processing")
+                                                    a(
+                                                    href="javascript:;"
+                                                    data-status= item.status
+                                                    data-id= item.id 
+                                                    button-change-order-status 
+                                                    class="badge badge-danger"
+                                                )  Hủy đơn hàng  
+                                                
+                                                //- a(href=`/order/cancel/${item.id}`).btn.btn-danger Hủy bỏ
+        form(
+            action=""
+            method="POST"
+            id="form-change-order-status"
+            data-path= `/order/change-status`
+        ) 
+        
+    script(src="/js/script.js")   
 
 
 

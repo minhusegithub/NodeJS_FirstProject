@@ -18,7 +18,8 @@ const orderSchema = new mongoose.Schema(
             }
         ],
         isPlaceRushOrder: Boolean,
-        paymentMethod:String
+        paymentMethod:String,
+        status: String
 
     },
     {

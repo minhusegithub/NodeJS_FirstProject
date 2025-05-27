@@ -63,5 +63,36 @@ if(uploadImage){
 
 }
 
-
 // End upload image
+
+
+// Change status order
+
+const buttonChangeOrderStatus = document.querySelectorAll("[button-change-order-status]");
+if(buttonChangeOrderStatus.length > 0){
+    const formChangeStatus = document.querySelector("#form-change-order-status");
+    const path = formChangeStatus.getAttribute("data-path");
+   
+    buttonChangeOrderStatus.forEach(button =>{
+        button.addEventListener("click" , ()=>{
+            const statusCurrent = button.getAttribute("data-status");
+            const id = button.getAttribute("data-id");
+             // nếu trạng thái là "Processing" thì sẽ thành "Cancelled"  , nếu là "Delivering" thì sẽ thành "Received" 
+            if(statusCurrent == "Processing"){
+                let statusChange = "Cancelled"
+                const action = path + `/${statusChange}/${id}?_method=PATCH`;          
+                formChangeStatus.action = action;
+            }
+            if(statusCurrent == "Delivering"){
+                let statusChange = "Received"
+                const action = path + `/${statusChange}/${id}?_method=PATCH`;          
+                formChangeStatus.action = action;
+            }        
+
+            formChangeStatus.submit();
+        })
+
+    })
+}
+
+// End change status order

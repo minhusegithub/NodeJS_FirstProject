@@ -346,6 +346,8 @@ module.exports.success = async (req, res ,next)=>{
         order.totalPrice = Number((order.totalPrice * 1.05).toFixed(0));
     }
     // Xóa cookie orderId khi đặt hàng thành công
+    order.status = "Processing";
+    await order.save();
     res.clearCookie("orderId");
 
     

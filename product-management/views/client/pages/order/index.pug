@@ -1,0 +1,31 @@
+extends ../../layouts/default.pug
+include ../../mixins/box-head.pug
+include ../../mixins/alert.pug
+include ../../mixins/moment.pug
+
+block main 
+    +alert-success(5000)
+    +alert-error(5000)
+
+    .container.my-3 
+        .row 
+            .col-12 
+                +box-head("Đơn hàng của tôi")
+        .row 
+            .col-12
+                a(
+                    class="btn btn-info m-1"
+                    href="/order/waiting"
+                ) Chờ lấy hàng (#{orders.length}) 
+                a(
+                    class="btn btn-secondary m-1"
+                    href="/order/history"
+                ) Lịch sử đơn hàng
+               
+                
+                
+
+
+
+
+
