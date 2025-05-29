@@ -35,13 +35,15 @@
                 a(href= `${prefixAdmin}/accounts`)
                     i.bi.bi-person-lines-fill.mr-2
                     span(class="text-white") Admin Accounts
+
+        if(role.permissions.includes("general_settings_edit"))
+            li 
+                a(href= `${prefixAdmin}/settings/general`) 
+                    i.bi.bi-gear.mr-2
+                    span(class="text-white") General Settings
         
-        li 
-            a(href= `${prefixAdmin}/settings/general`) 
-                i.bi.bi-gear.mr-2
-                span(class="text-white") General Settings
-        
-        li 
-            a(href= `${prefixAdmin}/orders`) 
-                i.bi.bi-cart-fill.mr-2
-                span(class="text-white") Orders
+        if(role.permissions.includes("orders_view"))
+            li 
+                a(href= `${prefixAdmin}/orders`) 
+                    i.bi.bi-cart-fill.mr-2
+                    span(class="text-white") Orders

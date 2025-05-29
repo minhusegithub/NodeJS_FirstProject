@@ -62,12 +62,13 @@ block main
                             a(class="btn btn-outline-secondary" onclick="window.history.back()")
                                 i(class="fas fa-arrow-left me-2")
                                 | Quay lại
-                            a(
-                                href=`${prefixAdmin}/products-category/edit/${data.id}`
-                                class="btn btn-primary"
-                            )
-                                i(class="fas fa-edit me-2")
-                                | Chỉnh sửa
+                            if(role.permissions.includes("products_category_edit"))
+                                a(
+                                    href=`${prefixAdmin}/products-category/edit/${data.id}`
+                                    class="btn btn-primary"
+                                )
+                                    i(class="fas fa-edit me-2")
+                                    | Chỉnh sửa
 
     style.
         .bg-gradient-primary {

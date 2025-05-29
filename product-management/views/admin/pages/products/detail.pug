@@ -38,10 +38,11 @@ block main
     if(product.description)
           div(class="mb-4") Mô tả: !{product.description} 
 
-    a(
-        href= `${prefixAdmin}/products/edit/${product.id}`
-        class= "btn btn-warning"
-    )   Chỉnh sửa
+    if(role.permissions.includes("products_edit"))
+        a(
+            href= `${prefixAdmin}/products/edit/${product.id}`
+            class= "btn btn-warning"
+        )   Chỉnh sửa
      
 
 

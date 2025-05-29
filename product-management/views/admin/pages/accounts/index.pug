@@ -3,6 +3,7 @@ extends ../../layouts/default.pug
 include ../../mixins/alert.pug
 
 block main
+  
   if role.permissions.includes("accounts_view")
     .container.mt-4
       h2.mb-4.text-center 
@@ -74,7 +75,7 @@ block main
                       button.btn.btn-danger.btn-sm(button-delete data-id=item.id)
                         i.bi.bi-trash-fill
 
-      // Form xóa
+      //- Form xóa
       form(
         action=""
         method="POST"

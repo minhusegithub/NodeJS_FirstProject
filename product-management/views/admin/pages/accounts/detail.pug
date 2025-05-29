@@ -1,109 +1,113 @@
 extend ../../layouts/default.pug
 
 block main  
-    .container.py-5
-        .row.justify-content-center
-            .col-lg-8.col-md-10
-                .card.border-0.shadow-lg.rounded-4.overflow-hidden
-                    .card-header.bg-gradient-primary.text-white.py-4
-                        .d-flex.align-items-center
-                            .icon-circle.bg-white.text-primary.rounded-circle.p-3.me-3
-                                i(class="fas fa-user fa-2x")
-                            div
-                                h1(class="h3 mb-0 fw-bold") Chi tiết tài khoản
-                                p(class="text-white-50 mb-0") Thông tin chi tiết về tài khoản
-                    
-                    .card-body.p-4.bg-light
-                        .row.g-4
-                            .col-12
-                                .card.border-0.shadow-sm
-                                    .card-body
-                                        if(data.avatar)
-                                            .text-center.mb-4
-                                                img(
-                                                    src=data.avatar 
-                                                    class="rounded-circle shadow-sm"
-                                                    style="width: 150px; height: 150px; object-fit: cover;"
-                                                )
-                            
-                            .col-md-6
-                                .card.border-0.shadow-sm
-                                    .card-body
-                                        .d-flex.align-items-center.mb-3
-                                            i(class="fas fa-user text-primary me-2")
-                                            h5(class="mb-0") Họ tên
-                                        if(data.fullName)
-                                            p(class="mb-0 text-muted") #{data.fullName}
-                            
-                            .col-md-6
-                                .card.border-0.shadow-sm
-                                    .card-body
-                                        .d-flex.align-items-center.mb-3
-                                            i(class="fas fa-envelope text-primary me-2")
-                                            h5(class="mb-0") Email
-                                        if(data.email)
-                                            p(class="mb-0 text-muted") #{data.email}
-                            
-                            .col-md-6
-                                .card.border-0.shadow-sm
-                                    .card-body
-                                        .d-flex.align-items-center.mb-3
-                                            i(class="fas fa-user-shield text-primary me-2")
-                                            h5(class="mb-0") Phân quyền
-                                        if(data.role_id)
-                                            p(class="mb-0 text-muted") #{role.title}
-                            
-                            .col-md-6
-                                .card.border-0.shadow-sm
-                                    .card-body
-                                        .d-flex.align-items-center.mb-3
-                                            i(class="fas fa-toggle-on text-primary me-2")
-                                            h5(class="mb-0") Trạng thái
-                                        if(data.status)
-                                            if (data.status === "active")
-                                                span(class="badge bg-success p-2") 
-                                                    i(class="fas fa-check-circle me-1")
-                                                    | Hoạt động
-                                            else 
-                                                span(class="badge bg-danger p-2")
-                                                    i(class="fas fa-times-circle me-1")
-                                                    | Dừng hoạt động
+   
+    if(role.permissions.includes("accounts_view"))
+        .container.py-5
+            .row.justify-content-center
+                .col-lg-8.col-md-10
+                    .card.border-0.shadow-lg.rounded-4.overflow-hidden
+                        .card-header.bg-gradient-primary.text-white.py-4
+                            .d-flex.align-items-center
+                                .icon-circle.bg-white.text-primary.rounded-circle.p-3.me-3
+                                    i(class="fas fa-user fa-2x")
+                                div
+                                    h1(class="h3 mb-0 fw-bold") Chi tiết tài khoản
+                                    p(class="text-white-50 mb-0") Thông tin chi tiết về tài khoản
+                        
+                        .card-body.p-4.bg-light
+                            .row.g-4
+                                .col-12
+                                    .card.border-0.shadow-sm
+                                        .card-body
+                                            if(data.avatar)
+                                                .text-center.mb-4
+                                                    img(
+                                                        src=data.avatar 
+                                                        class="rounded-circle shadow-sm"
+                                                        style="width: 150px; height: 150px; object-fit: cover;"
+                                                    )
+                                
+                                .col-md-6
+                                    .card.border-0.shadow-sm
+                                        .card-body
+                                            .d-flex.align-items-center.mb-3
+                                                i(class="fas fa-user text-primary me-2")
+                                                h5(class="mb-0") Họ tên
+                                            if(data.fullName)
+                                                p(class="mb-0 text-muted") #{data.fullName}
+                                
+                                .col-md-6
+                                    .card.border-0.shadow-sm
+                                        .card-body
+                                            .d-flex.align-items-center.mb-3
+                                                i(class="fas fa-envelope text-primary me-2")
+                                                h5(class="mb-0") Email
+                                            if(data.email)
+                                                p(class="mb-0 text-muted") #{data.email}
+                                
+                                .col-md-6
+                                    .card.border-0.shadow-sm
+                                        .card-body
+                                            .d-flex.align-items-center.mb-3
+                                                i(class="fas fa-user-shield text-primary me-2")
+                                                h5(class="mb-0") Phân quyền
+                                            if(data.role_id)
+                                                p(class="mb-0 text-muted") #{role.title}
+                                
+                                .col-md-6
+                                    .card.border-0.shadow-sm
+                                        .card-body
+                                            .d-flex.align-items-center.mb-3
+                                                i(class="fas fa-toggle-on text-primary me-2")
+                                                h5(class="mb-0") Trạng thái
+                                            if(data.status)
+                                                if (data.status === "active")
+                                                    span(class="badge bg-success p-2") 
+                                                        i(class="fas fa-check-circle me-1")
+                                                        | Hoạt động
+                                                else 
+                                                    span(class="badge bg-danger p-2")
+                                                        i(class="fas fa-times-circle me-1")
+                                                        | Dừng hoạt động
 
-                        .d-grid.gap-3.d-md-flex.justify-content-md-end.mt-5
-                            a(
-                                onclick="window.history.back()"
-                                class="btn btn-outline-secondary btn-lg me-md-2"
-                            )
-                                i(class="fas fa-arrow-left me-2")
-                                | Quay lại
-                            a(
-                                href=`${prefixAdmin}/accounts/edit/${data.id}`
-                                class="btn btn-primary btn-lg px-4"
-                            )
-                                i(class="fas fa-edit me-2")
-                                | Chỉnh sửa
-    style.
-        .bg-gradient-primary {
-            background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
-        }
-        .icon-circle {
-            width: 60px;
-            height: 60px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .card {
-            transition: all 0.3s ease;
-        }
-        .card:hover {
-            transform: translateY(-2px);
-        }
-        .btn {
-            transition: all 0.3s ease;
-        }
-        .btn:hover {
-            transform: translateY(-1px);
-        }
+                            .d-grid.gap-3.d-md-flex.justify-content-md-end.mt-5
+                                a(
+                                    href=`${prefixAdmin}/accounts`
+                                    class="btn btn-outline-secondary btn-lg me-md-2"
+                                )
+                                    i(class="fas fa-arrow-left me-2")
+                                    | Quay lại
+                                if(role.permissions.includes("accounts_edit"))
+                                    a(
+                                        href=`${prefixAdmin}/accounts/edit/${data.id}`
+                                        class="btn btn-primary btn-lg px-4"
+                                    )
+                                        i(class="fas fa-edit me-2")
+                                        | Chỉnh sửa
+                                    
+        style.
+            .bg-gradient-primary {
+                background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
+            }
+            .icon-circle {
+                width: 60px;
+                height: 60px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            .card {
+                transition: all 0.3s ease;
+            }
+            .card:hover {
+                transform: translateY(-2px);
+            }
+            .btn {
+                transition: all 0.3s ease;
+            }
+            .btn:hover {
+                transform: translateY(-1px);
+            }
 
 
