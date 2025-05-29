@@ -12,3 +12,6 @@ mixin product-item(item)
                 .inner-price-new #{item.priceNew}$
                 .inner-price-old #{item.price}$
                 .inner-discount -#{item.discountPercentage}%
+                .inner-stock 
+                    span.inner-stock-title <i>Còn lại: 
+                    span.inner-stock-value <i> #{item.stock}

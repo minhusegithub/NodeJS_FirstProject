@@ -59,6 +59,9 @@ block main
                                         .fw-medium !{data.description}
 
                         .d-flex.justify-content-end.mt-4
+                            a(class="btn btn-outline-secondary" onclick="window.history.back()")
+                                i(class="fas fa-arrow-left me-2")
+                                | Quay lại
                             a(
                                 href=`${prefixAdmin}/products-category/edit/${data.id}`
                                 class="btn btn-primary"

@@ -351,6 +351,7 @@ module.exports.success = async (req, res ,next)=>{
     res.clearCookie("orderId");
 
     
+    
     res.render("client/pages/checkout/success" , {
         pageTitle: "Đặt hàng thành công",
         order:order

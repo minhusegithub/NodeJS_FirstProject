@@ -26,34 +26,38 @@ block main
                             span Danh mục:
                             a(href=`/products/${product.category.slug}`) #{product.category.title} 
                 
-                    if(product.priceNew)
+                    if(product.priceNew >= 0 )
                         div(class="inner-price-new") #{product.priceNew}$ 
                     
-                    if(product.price)
+                    if(product.price >= 0)
                         div(class="inner-price-old") #{product.price}$ 
                 
-                    if(product.discountPercentage)
+                    if(product.discountPercentage >= 0)
                         div(class="inner-percent") Giảm tới: <span>#{product.discountPercentage}% </span>
                     
-                    if(product.stock)
+                    if(product.stock >= 0)
                         div(class="inner-stock") Còn lại:<span>  #{product.stock}</span> sản phẩm
+
                     if(user)
-                        form(
-                            action=`/cart/add/${product.id}`
-                            method="POST"
-                        )
-                            input(
-                                class="form-control mb-2"
-                                type= "number"
-                                name ="quantity"
-                                value="1"
-                                min="1"
-                                max=product.stock 
+                        if(product.stock > 0)
+                            form(
+                                action=`/cart/add/${product.id}`
+                                method="POST"
                             )
-                            button(
-                                type="submit"
-                                class="btn btn-success btn-block"
-                            ) Thêm vào giỏ hàng
+                                input(
+                                    class="form-control mb-2"
+                                    type= "number"
+                                    name ="quantity"
+                                    value="1"
+                                    min="1"
+                                    max=product.stock 
+                                )
+                                button(
+                                    type="submit"
+                                    class="btn btn-success btn-block"
+                                ) Thêm vào giỏ hàng
+                        else
+                            div(class="inner-stock" style="color: red;") Hết hàng
 
         hr
 

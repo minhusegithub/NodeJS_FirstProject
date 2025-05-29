@@ -229,22 +229,26 @@ if(buttonChangeOrderStatus.length > 0){
    
     buttonChangeOrderStatus.forEach(button =>{
         button.addEventListener("click" , (e)=>{
-            e.preventDefault();
-            const statusCurrent = button.getAttribute("data-status");
-            const id = button.getAttribute("data-id");
-            const statusChange = button.getAttribute("data-status-change");
+            const isConfirm = confirm("Bạn có chắc muốn thay đổi trạng thái đơn hàng này?");
+            if(isConfirm){
+                
+            
+                e.preventDefault();
+                const statusCurrent = button.getAttribute("data-status");
+                const id = button.getAttribute("data-id");
+                const statusChange = button.getAttribute("data-status-change");
 
-            if(statusCurrent == "Processing"){        
-                const action = path + `/${statusChange}/${id}?_method=PATCH`;          
-                formChangeStatus.action = action;
+                if(statusCurrent == "Processing"){        
+                    const action = path + `/${statusChange}/${id}?_method=PATCH`;          
+                    formChangeStatus.action = action;
+                }
+                else{
+                    return;
+                }
+                formChangeStatus.submit();
             }
-            else{
-                return;
-            }
-            formChangeStatus.submit();
-        })
-
-    })
+        });
+    });
 }
 
 // End change status order

@@ -74,22 +74,26 @@ if(buttonChangeOrderStatus.length > 0){
     const path = formChangeStatus.getAttribute("data-path");
    
     buttonChangeOrderStatus.forEach(button =>{
-        button.addEventListener("click" , ()=>{
-            const statusCurrent = button.getAttribute("data-status");
-            const id = button.getAttribute("data-id");
-             // nếu trạng thái là "Processing" thì sẽ thành "Cancelled"  , nếu là "Delivering" thì sẽ thành "Received" 
-            if(statusCurrent == "Processing"){
-                let statusChange = "Cancelled"
-                const action = path + `/${statusChange}/${id}?_method=PATCH`;          
-                formChangeStatus.action = action;
+        button.addEventListener("click" , (e)=>{
+            const isConfirm = confirm("Bạn có chắc muốn thay đổi trạng thái đơn hàng này?");
+            if(isConfirm){
+                
+                const statusCurrent = button.getAttribute("data-status");
+                const id = button.getAttribute("data-id");
+                 // nếu trạng thái là "Processing" thì sẽ thành "Cancelled"  , nếu là "Delivering" thì sẽ thành "Received" 
+                if(statusCurrent == "Processing"){
+                    let statusChange = "Cancelled"
+                    const action = path + `/${statusChange}/${id}?_method=PATCH`;          
+                    formChangeStatus.action = action;
+                }
+                if(statusCurrent == "Delivering"){
+                    let statusChange = "Received"
+                    const action = path + `/${statusChange}/${id}?_method=PATCH`;          
+                    formChangeStatus.action = action;
+                }        
+    
+                formChangeStatus.submit();
             }
-            if(statusCurrent == "Delivering"){
-                let statusChange = "Received"
-                const action = path + `/${statusChange}/${id}?_method=PATCH`;          
-                formChangeStatus.action = action;
-            }        
-
-            formChangeStatus.submit();
         })
 
     })
