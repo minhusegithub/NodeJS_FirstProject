@@ -1,6 +1,6 @@
 const Order = require("../../models/order.model");
 const orderHelper = require("../../helpers/order");
-
+const Product = require("../../models/product.model");
 //[GET] /admin/orders
 module.exports.index = async (req , res) => {
 
@@ -23,9 +23,16 @@ module.exports.changeStatus = async (req , res) => {
     const id = req.params.id;
 
     const order = await Order.findOne({_id: id});
+    
+    // update trạng thái đơn hàng
     await Order.updateOne({_id: id} ,{
         status: status,
-    })   
+    });
+
+    
+    
+    
+    // Nếu bấm "Hủy đơn hàng"
     if(status == "Cancelled"){ 
         // Nếu hủy đơn hàng và phương thức thanh toán  khác "COD" thì trả lại tiền cho khách hàng
         if(order.paymentMethod != "COD"){
@@ -35,7 +42,29 @@ module.exports.changeStatus = async (req , res) => {
         }else{
             req.flash("success" , "Đơn hàng đã được hủy bỏ!");
         }
-    }else{
+    }
+    //Nếu bấm "Giao hàng"
+    else{
+        // Giảm số lượng sản phẩm trong cửa hàng dựa trên order.products
+        for(const item of order.products){
+            const product = await Product.findOne({_id: item.product_id});
+            if(!product){
+                req.flash("error" , "Sản phẩm không tồn tại!");
+                return res.redirect("back");
+            }
+            if(product.stock < item.quantity){
+                req.flash("error" , "Sản phẩm không đủ số lượng!");
+                return res.redirect("back");
+            }
+            await Product.updateOne({_id: product.id} , {
+                $inc: {
+                    stock: -item.quantity
+                }
+            });
+        
+        }  
+
+        //Thông báo đang giao hàng
         req.flash("success" , "Đơn hàng đang được giao!");
     }
 
