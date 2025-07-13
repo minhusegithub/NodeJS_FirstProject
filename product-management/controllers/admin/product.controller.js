@@ -13,6 +13,7 @@ const searchHelper = require("../../helpers/search");
 
 const createTreeHelper = require("../../helpers/createTree")
 
+const paginationHelper = require("../../helpers/pagination");
 
 //[GET] /admin/products
 module.exports.index = async (req , res) => {
@@ -35,19 +36,17 @@ module.exports.index = async (req , res) => {
 
 
     //Pagination
-    let objectPagination = {
+    let initPagination = {
         currentPage: 1,
         limitItems: 4
     };
 
-    if(req.query.page){
-        objectPagination.currentPage = parseInt(req.query.page);
-    }
-    objectPagination.skip = (objectPagination.currentPage - 1) * objectPagination.limitItems;
-
     const countProducts = await Product.countDocuments(find);
-    const totalPage = Math.ceil (countProducts /objectPagination.limitItems) ;
-    objectPagination.totalPage = totalPage;
+    const objectPagination = paginationHelper(
+        initPagination,
+        req.query,
+        countProducts
+    );
 
     // Sap xep theo tieu chi
     let sort = {};
