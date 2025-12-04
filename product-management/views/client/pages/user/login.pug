@@ -1,4 +1,4 @@
-extends ../../layouts/default.pug
+extends ../../layouts/auth.pug
 include ../../mixins/alert.pug
 
 block main 
@@ -10,6 +10,8 @@ block main
                 .col-11.col-sm-6.col-md-5.col-lg-4
                     .card.border-0.shadow.rounded-4
                         .card-body.p-4
+                            .text-center.mb-4
+                                h2.fw-bold.text-primary Đăng nhập
                             form(
                                 action=`/user/login`
                                 method="POST"
@@ -48,38 +50,50 @@ block main
 
     style.
         .login-page {
-            background-color: #f0f2f5;
+            background: linear-gradient(135deg, #163a63 0%, #ffffff 100%);
             min-height: 100vh;
         }
-        .form-control {
-            padding: 0.8rem 1rem;
+        .login-page .card {
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2) !important;
         }
-        .form-control:focus {
+        .login-page .form-control {
+            padding: 0.8rem 1rem;
+            font-size: 15px;
+        }
+        .login-page .form-control:focus {
             background-color: #fff;
-            box-shadow: 0 0 0 2px rgba(24, 119, 242, 0.2);
+            box-shadow: 0 0 0 3px rgba(30, 74, 123, 0.25);
             border: none;
         }
-        .btn-primary {
-            background-color: #1877f2;
-            border-color: #1877f2;
-        }
-        .btn-primary:hover {
-            background-color: #166fe5;
-            border-color: #166fe5;
-        }
-        .btn-success {
-            background-color: #42b72a;
-            border-color: #42b72a;
-        }
-        .btn-success:hover {
-            background-color: #36a420;
-            border-color: #36a420;
-        }
-        .card {
-            box-shadow: 0 2px 4px rgba(0, 0, 0, .1), 0 8px 16px rgba(0, 0, 0, .1) !important;
-        }
-        .form-control::placeholder {
+        .login-page .form-control::placeholder {
             color: #90949c;
+        }
+        .login-page .btn-primary {
+            background: #1E4A7B;
+            border: none;
+            font-weight: 600;
+            padding: 12px;
+            transition: all 0.3s ease;
+        }
+        .login-page .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(30, 74, 123, 0.4);
+            background: #163a63;
+        }
+        .login-page .btn-success {
+            background: #E5989B;
+            border: none;
+            font-weight: 600;
+            padding: 12px;
+            transition: all 0.3s ease;
+        }
+        .login-page .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(229, 152, 155, 0.4);
+            background: #d17f82;
+        }
+        .login-page .text-primary {
+            color: #1E4A7B !important;
         }
 
 

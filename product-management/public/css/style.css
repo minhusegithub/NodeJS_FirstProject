@@ -1,6 +1,20 @@
 /* Font imports */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&family=Roboto:wght@400;500;700&display=swap');
 
+/* Layout */
+html, body {
+    height: 100%;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+}
+
+body > main {
+    flex: 1;
+}
+
 /* header */
 .header {
     background-color: #1E4A7B;
@@ -182,7 +196,7 @@
     content: '';
     position: absolute;
     top: -10px;
-    left: 0;
+    left: 0; 
     right: 0;
     height: 10px;
     background: transparent;
@@ -228,15 +242,6 @@
     border-color: rgba(255, 255, 255, 0.5);
 }
 
-.register-link {
-    background-color: #E5989B;
-    border-color: #E5989B;
-}
-
-.register-link:hover {
-    background-color: #d17f82;
-    border-color: #d17f82;
-}
 
 /* Sub-menu override */
 .header .sub-menu ul {
@@ -262,12 +267,41 @@
 
 /* footer */
 
-.footer{
-    
-    color: #fff;
-    text-align: center;
-    padding: 10px;
+.footer {
+    background-color: #2c3e50 !important;
+    margin-top: auto;
+    padding-top: 40px;
+    padding-bottom: 20px;
+    border-top: 1px solid #1a252f;
 }
+
+.footer h5 {
+    color: #E5989B;
+    font-weight: 700;
+    font-size: 18px;
+}
+
+.footer a {
+    transition: color 0.2s ease;
+}
+
+.footer a:hover {
+    color: #E5989B !important;
+}
+
+.footer .text-white-50 {
+    color: #aaa !important;
+    line-height: 1.6;
+}
+
+.footer .text-white {
+    color: #fff !important;
+}
+
+.footer hr {
+    border-color: #435a73 !important;
+}
+
 /* End footer */
 
 
@@ -304,7 +338,7 @@
 .product-item:hover {
     transform: translateY(-8px);
     box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
-    border-color: #E5989B;
+    border-color: #163a63;
 }
 
 /* Product Image */
