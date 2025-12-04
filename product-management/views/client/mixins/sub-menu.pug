@@ -2,8 +2,8 @@ mixin sub-menu(items , path)
     ul 
         each item in items 
             li
-                a(href=`${path}/${item.slug}` class="option_design btn btn-light")
-                    span(class="text-decoration-none text-dark") #{item.title}
+                a(href=`${path}/${item.slug}`)
+                    span #{item.title}
                 if item.children && item.children.length > 0
                     +sub-menu(item.children , path)
 

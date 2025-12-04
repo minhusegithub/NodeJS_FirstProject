@@ -5,67 +5,116 @@ include ../../mixins/alert.pug
 block main  
     +alert-success(2000)
 
-    
+    .product-detail-modern
+        .container.my-5
+            .back-navigation.mb-4
+                a(href="javascript:history.back()" class="btn-back")
+                    i.bi.bi-arrow-left
+                    span Quay lại
 
-    .product-detail
-        .container.my-5  
-            button(
-                class= "btn btn-secondary"
-                button-go-back
-            ) Trở lại
+            .row.g-5
+                .col-12.col-lg-6
+                    .product-gallery
+                        .main-image
+                            img(src=product.thumbnail, alt=product.title, id="mainImage")
+                            if(product.featured == "1")
+                                .badge-featured-detail
+                                    i.bi.bi-star-fill
+                                    | Nổi bật
+                            if(product.discountPercentage > 0)
+                                .badge-discount-detail -#{product.discountPercentage}%
+                        
+                .col-12.col-lg-6
+                    .product-info
+                        if(product.category)
+                            .product-category
+                                a(href=`/products/${product.category.slug}`) #{product.category.title}
+                        
+                        h1.product-name #{product.title}
+                        
+                        .product-price-section
+                            -const priceNew = Math.round(product.price * (1 - product.discountPercentage / 100));
+                            .price-current #{priceNew.toLocaleString()}₫
+                            if(product.price > priceNew)
+                                .price-original #{Math.round(product.price).toLocaleString()}₫
+                                .price-save Tiết kiệm #{((product.price - priceNew)).toLocaleString()}₫ (#{product.discountPercentage}%)
+                        
+                        .product-stock-status
+                            if(product.stock > 0)                
+                                .stock-badge.stock-low
+                                    i.bi.bi-exclamation-circle
+                                    span Hiện còn #{product.stock} sản phẩm
+                               
+                            else
+                                .stock-badge.stock-out
+                                    i.bi.bi-x-circle
+                                    span Hết hàng
+                        
+                        .divider
 
-            .row 
-                .col-12.col-md-6.mb-4.mb-md-0
-                    .inner-thumb.border.rounded.p-3.bg-light
-                        img.img-fluid.rounded(src=product.thumbnail, alt=product.title)                     
-                .col-12.col-md-6
-                    h1.inner-title.mb-4 #{product.title}
-
-                    if(product.category)
-                        div(class="inner-category") 
-                            span Danh mục:
-                            a(href=`/products/${product.category.slug}`) #{product.category.title} 
-                
-                    if(product.priceNew >= 0 )
-                        div(class="inner-price-new") #{product.priceNew}$ 
-                    
-                    if(product.price >= 0)
-                        div(class="inner-price-old") #{product.price}$ 
-                
-                    if(product.discountPercentage >= 0)
-                        div(class="inner-percent") Giảm tới: <span>#{product.discountPercentage}% </span>
-                    
-                    if(product.stock >= 0)
-                        div(class="inner-stock") Còn lại:<span>  #{product.stock}</span> sản phẩm
-
-                    if(user)
-                        if(product.stock > 0)
-                            form(
-                                action=`/cart/add/${product.id}`
-                                method="POST"
-                            )
-                                input(
-                                    class="form-control mb-2"
-                                    type= "number"
-                                    name ="quantity"
-                                    value="1"
-                                    min="1"
-                                    max=product.stock 
+                        if(user)
+                            if(product.stock > 0)
+                                form.product-actions-form(
+                                    action=`/cart/add/${product.id}`
+                                    method="POST"
                                 )
-                                button(
-                                    type="submit"
-                                    class="btn btn-success btn-block"
-                                ) Thêm vào giỏ hàng
+                                    .quantity-selector
+                                        label.quantity-label Số lượng:
+                                        .quantity-input-group
+                                            button.quantity-btn(type="button", onclick="decreaseQuantity()")
+                                                i.bi.bi-dash
+                                            input.quantity-input(
+                                                type="number"
+                                                name="quantity"
+                                                value="1"
+                                                min="1"
+                                                max=product.stock
+                                                id="quantityInput"
+                                            )
+                                            button.quantity-btn(type="button", onclick="increaseQuantity()")
+                                                i.bi.bi-plus
+                                    
+                                    .action-buttons
+                                        button.btn-add-to-cart(type="submit")
+                                            i.bi.bi-cart-plus
+                                            span Thêm vào giỏ hàng
+                            else
+                                .out-of-stock-notice
+                                    i.bi.bi-exclamation-triangle
+                                    span Sản phẩm hiện đang hết hàng
                         else
-                            div(class="inner-stock" style="color: red;") Hết hàng
+                            .login-notice
+                                i.bi.bi-info-circle
+                                | Vui lòng 
+                                a(href="/user/login") đăng nhập
+                                |  để mua hàng
 
-        hr
+            .row.mt-5
+                .col-12
+                    .product-description-section
+                        .section-header
+                            h2.section-title Mô tả sản phẩm
+                        .section-content
+                            .description-content !{product.description}
 
-        .container.my-5 
-            .row 
-                .col-12 
-                    +box-head("Mô tả sản phẩm")
-                    .inner-desc !{product.description}
+    script.
+        function increaseQuantity() {
+            const input = document.getElementById('quantityInput');
+            const max = parseInt(input.max);
+            const current = parseInt(input.value);
+            if (current < max) {
+                input.value = current + 1;
+            }
+        }
+        
+        function decreaseQuantity() {
+            const input = document.getElementById('quantityInput');
+            const min = parseInt(input.min);
+            const current = parseInt(input.value);
+            if (current > min) {
+                input.value = current - 1;
+            }
+        }
 
                      
 

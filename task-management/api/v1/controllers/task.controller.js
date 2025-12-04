@@ -2,6 +2,8 @@ const Task = require("../models/task.model");
 
 const paginationHelper = require("../../../helpers/pagination");
 
+const searchHelper = require("../../../helpers/search");
+
 module.exports.index = async (req, res) => {
     const find = {
         deleted: false
@@ -9,6 +11,12 @@ module.exports.index = async (req, res) => {
     
     if(req.query.status){
         find.status = req.query.status;
+    }
+
+    //Search
+    const objectSearch = searchHelper(req.query);
+    if(objectSearch.keyword){
+        find.title = objectSearch.regex;
     }
 
     //Pagination
@@ -37,10 +45,10 @@ module.exports.index = async (req, res) => {
     .skip(objectPagination.skip)
     .limit(objectPagination.limitItems);
 
-    res.json({
+    res.json(
         tasks
        
-    });
+    );
    
 }
 
@@ -55,3 +63,25 @@ module.exports.detail = async (req, res) => {
     }
 
 };
+
+module.exports.changeStatus = async (req , res) =>{
+    try {
+        const id = req.params.id;
+    
+        const task = await Task.updateOne({_id :id}, {status: req.body.status});
+        res.json({
+            code: 200,
+            message: "Update status success",
+        });
+    } catch (error) {
+        res.json({
+            code: 400,
+            message: "Update status failed",
+        });
+    }
+   
+   
+      
+    
+
+}
