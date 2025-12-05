@@ -2,50 +2,99 @@ extends ../../layouts/default.pug
 
 block main 
   .container.mt-4
-    .card.shadow.p-4(style="max-width: 600px; margin: 0 auto;")
+    .card.profile-card.border-0.p-4(style="max-width: 640px; margin: 0 auto;")
       .card-body
-        h2.mb-4.text-center Personal Information
+        h2.mb-4.text-center(style="font-weight: 700; color: #111827;") Thông tin cá nhân
 
         .text-center.mb-4
           if user.avatar
-            img(src= user.avatar, width="120", class="rounded-circle border")
+            img(src= user.avatar, width="120", height="120", class="avatar-lg rounded-circle")
           else 
-            img(src="/admin/images/avatar.pug", width="120", class="rounded-circle border")
+            img(src="/admin/images/avatar.pug", width="120", height="120", class="avatar-lg rounded-circle")
 
         ul.list-group.list-group-flush
           if user.fullName
-            li.list-group-item
-              i.bi.bi-person-fill.mr-2
-              | Full name: 
-              b.ml-1 #{user.fullName}
+            li.list-group-item.info-item
+              i.bi.bi-person-fill.text-primary
+              span.text-muted Họ và tên
+              b.flex-fill.text-right #{user.fullName}
 
           if user.email
-            li.list-group-item
-              i.bi.bi-envelope-fill.mr-2
-              | Email:
-              b.ml-1 #{user.email}
+            li.list-group-item.info-item
+              i.bi.bi-envelope-fill.text-primary
+              span.text-muted Email
+              b.flex-fill.text-right #{user.email}
 
           if user.phone
-            li.list-group-item
-              i.bi.bi-telephone-fill.mr-2
-              | Phone:
-              b.ml-1 #{user.phone}
+            li.list-group-item.info-item
+              i.bi.bi-telephone-fill.text-primary
+              span.text-muted Số điện thoại
+              b.flex-fill.text-right #{user.phone}
 
-          li.list-group-item
-            i.bi.bi-check-circle-fill.mr-2
-            | Status: 
-            b.ml-1 #{user.status === "active" ? "Hoạt động" : "Dừng hoạt động"}
+          li.list-group-item.info-item
+            i.bi.bi-check-circle-fill.text-primary
+            span.text-muted Trạng thái
+            if user.status === "active"
+              span.badge.badge-pill.badge-active Hoạt động
+            else 
+              span.badge.badge-pill.badge-inactive Dừng hoạt động
 
           if role.title
-            li.list-group-item
-              i.bi.bi-shield-lock-fill.mr-2
-              | Role:
-              b.ml-1 #{role.title}
+            li.list-group-item.info-item
+              i.bi.bi-shield-lock-fill.text-primary
+              span.text-muted Vai trò
+              b.flex-fill.text-right #{role.title}
 
         .text-center.mt-4
           a(
             href= `${prefixAdmin}/my-account/edit`
             class= "btn btn-primary px-4"
+            style="min-width: 180px;"
           ) 
             i.bi.bi-pencil-fill.mr-1
-            | Edit Profile
+            | Chỉnh sửa hồ sơ
+
+    style.
+      .profile-card {
+        border: 1px solid #e5e7eb;
+        border-radius: 18px;
+        box-shadow: 0 10px 30px rgba(15,47,79,0.08);
+        transition: all 0.3s ease;
+      }
+      .profile-card:hover {
+        border-color: #1E4A7B;
+        box-shadow: 0 16px 38px rgba(15,47,79,0.14);
+      }
+      .avatar-lg {
+        border: 4px solid #e8f2ff;
+        object-fit: cover;
+        box-shadow: 0 8px 18px rgba(0,0,0,0.08);
+      }
+      .info-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 0;
+        border-bottom: 1px solid #f1f5f9;
+        font-size: 14px;
+      }
+      .info-item:last-child { border-bottom: none; }
+      .info-item i { width: 18px; height: 18px; color: #1E4A7B; }
+      .badge-active {
+        background: #e8f2ff;
+        color: #1E4A7B;
+        font-weight: 600;
+      }
+      .badge-inactive {
+        background: #fef2f2;
+        color: #E5989B;
+        font-weight: 600;
+      }
+      .btn-primary {
+        background: #1E4A7B;
+        border-color: #1E4A7B;
+      }
+      .btn-primary:hover {
+        background: #16385c;
+        border-color: #16385c;
+      }

@@ -163,7 +163,7 @@ block main
                                     | Tạo mới
     style.
         .bg-gradient-primary {
-            background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
+            background: linear-gradient(135deg, #1E4A7B 0%, #16385c 100%);
         }
         .icon-circle {
             width: 60px;
@@ -172,30 +172,57 @@ block main
             align-items: center;
             justify-content: center;
         }
+        .card {
+            border-radius: 16px;
+            box-shadow: 0 6px 20px rgba(15,47,79,0.06);
+            border: none;
+            transition: all 0.25s ease;
+        }
+        .card:hover {
+            box-shadow: 0 12px 30px rgba(15,47,79,0.12);
+            transform: translateY(-2px);
+        }
+        .card-header {
+            border-radius: 16px 16px 0 0;
+            padding: 24px;
+        }
+        .card-body {
+            padding: 24px;
+        }
+        .form-floating > .form-control,
+        .form-floating > .form-select {
+            border-radius: 12px;
+            border: 1px solid #e5e7eb;
+            background: #f8fafc;
+        }
         .form-floating > .form-control:focus,
-        .form-floating > .form-control:not(:placeholder-shown) {
-            padding-top: 1.625rem;
-            padding-bottom: 0.625rem;
+        .form-floating > .form-select:focus {
+            border-color: #1E4A7B;
+            box-shadow: 0 0 0 3px rgba(30, 74, 123, 0.1);
+            background: #fff;
         }
         .form-floating > label {
             padding: 1rem 0.75rem;
+            color: #475569;
         }
-        .card {
-            transition: all 0.3s ease;
+        .btn-primary {
+            background: #1E4A7B;
+            border-color: #1E4A7B;
         }
-        .card:hover {
-            transform: translateY(-2px);
+        .btn-primary:hover,
+        .btn-primary:focus {
+            background: #16385c;
+            border-color: #16385c;
         }
-        .btn {
-            transition: all 0.3s ease;
+        .btn-outline-secondary {
+            color: #6b7280;
+            border-color: #d1d5db;
         }
-        .btn:hover {
-            transform: translateY(-1px);
-        }
-        .form-control:focus,
-        .form-select:focus {
-            box-shadow: 0 0 0 0.25rem rgba(78, 115, 223, 0.25);
-            border-color: #4e73df;
+        .btn-outline-secondary:hover,
+        .btn-outline-secondary:focus {
+            color: #fff;
+            background: #6b7280;
+            border-color: #6b7280;
         }
 
     script.

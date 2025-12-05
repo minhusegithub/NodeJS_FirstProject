@@ -9,11 +9,10 @@ block main
                 .card.border-0.shadow-lg.rounded-4.overflow-hidden
                     .card-header.bg-gradient-primary.text-white.py-4
                         .d-flex.align-items-center
-                            .icon-circle.bg-white.text-primary.rounded-circle.p-3.me-3
-                                i(class="fas fa-user-shield fa-2x")
+                            
                             div
                                 h1(class="h3 mb-0 fw-bold") Chỉnh sửa nhóm quyền
-                                p(class="text-white-50 mb-0") Cập nhật thông tin nhóm quyền
+                                
                     
                     .card-body.p-4.bg-light
                         if(role.permissions.includes("roles_edit"))
@@ -26,13 +25,13 @@ block main
                             )
                                 .row.g-4
                                     .col-12
-                                        .form-floating
-                                            label(for="title")
-                                                i(class="fas fa-heading me-2")
+                                        .form-floating.mb-5
+                                            label(for="title").mb-1
+                                               
                                                 | Tiêu đề
                                             input(
                                                 type="text"
-                                                class="form-control border-0 shadow-sm"
+                                                class="form-control"
                                                 id="title"
                                                 name="title"
                                                 placeholder="Tiêu đề"
@@ -42,12 +41,12 @@ block main
                                     
                                     .col-12
                                         .form-floating
-                                            label(for="desc")
-                                                i(class="fas fa-info-circle me-2")
+                                            label(for="desc").mb-1
+                                               
                                                 | Mô tả
                                             input(
                                                 type="text"
-                                                class="form-control border-0 shadow-sm"
+                                                class="form-control"
                                                 id="desc"                
                                                 name="description"
                                                 placeholder="Mô tả"
@@ -56,25 +55,26 @@ block main
 
                                 .d-grid.gap-3.d-md-flex.justify-content-md-end.mt-5
                                     a(href=`${prefixAdmin}/roles` class="btn btn-outline-secondary btn-lg me-md-2")
-                                        i(class="fas fa-arrow-left me-2")
+                                        
                                         | Quay lại
                                     button(
                                         type="submit"
                                         class="btn btn-primary btn-lg px-4"
                                     )
-                                        i(class="fas fa-save me-2")
+                                       
                                         | Cập nhật
     style.
-        .bg-gradient-primary {
-            background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
-        }
+        .card { border-radius: 18px; box-shadow: 0 12px 28px rgba(15,47,79,0.12); }
+        .bg-gradient-primary { background: linear-gradient(135deg, #1E4A7B 0%, #16385c 100%); }
         .icon-circle {
             width: 60px;
             height: 60px;
             display: flex;
             align-items: center;
             justify-content: center;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.12);
         }
+        .card-body { background: #fff; }
         .form-floating > .form-control:focus,
         .form-floating > .form-control:not(:placeholder-shown) {
             padding-top: 1.625rem;
@@ -83,20 +83,23 @@ block main
         .form-floating > label {
             padding: 1rem 0.75rem;
         }
-        .card {
+        .btn { transition: all 0.3s ease; }
+        .btn:hover { transform: translateY(-1px); }
+        .btn-primary { background: #1E4A7B; border-color: #1E4A7B; }
+        .btn-primary:hover { background: #16385c; border-color: #16385c; }
+        .btn-outline-secondary:hover { color: #1E4A7B; border-color: #1E4A7B; }
+        .form-control {
             transition: all 0.3s ease;
-        }
-        .card:hover {
-            transform: translateY(-2px);
-        }
-        .btn {
-            transition: all 0.3s ease;
-        }
-        .btn:hover {
-            transform: translateY(-1px);
+            border-radius: 12px;
+            border: 1px solid #e5e7eb;
+            background: #f8fbff;
+            padding: 0.875rem 0.75rem;
+            line-height: 1.0;
+            height: auto;
+            
         }
         .form-control:focus {
-            box-shadow: 0 0 0 0.25rem rgba(78, 115, 223, 0.25);
-            border-color: #4e73df;
+            box-shadow: 0 0 0 0.25rem rgba(30, 74, 123, 0.18);
+            border-color: #1E4A7B;
         }
 

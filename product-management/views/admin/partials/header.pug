@@ -1,20 +1,36 @@
-header.header 
-    .container-fluid 
-        .row.align-items-center 
-            .col-3 
-                .inner-logo 
-                    a(href="/admin/dashboard") Admin 
-            
+header.admin-header.shadow-sm
+    .container-fluid
+        .topbar.d-flex.align-items-center.justify-content-between
+            .brand.d-flex.align-items-center
+                a.logo(href="/admin/dashboard")
+                    span.logo-mark(data-lucide="layout-dashboard")
+                    span.logo-text Admin
 
-            .col-9
-                div(class="text-right")
+            .top-actions.d-flex.align-items-center
+              
 
-                    a(
-                        href=`${prefixAdmin}/my-account`
-                        class="btn btn-primary btn-sm mr-2"
-                    ) #{user.fullName}
-                    a(
-                        href=`${prefixAdmin}/auth/logout`
-                        class="btn btn-danger btn-sm"
-                    ) Đăng xuất
+                //- User dropdown
+                .dropdown.user-dropdown
+                    button.btn-user.dropdown-toggle(type="button" data-toggle="dropdown" aria-expanded="false")
+                        if user && user.avatar
+                            img.avatar(src=user.avatar alt="Avatar")
+                        else
+                            .avatar.avatar-fallback
+                                span(data-lucide="user")
+                        .user-meta.d-none.d-md-flex
+                            span.user-name #{user.fullName}
+                            if role && role.title
+                                span.user-role #{role.title}
+                    .dropdown-menu.dropdown-menu-right
+                        a.dropdown-item(href=`${prefixAdmin}/my-account`)
+                            span(data-lucide="user" class="mr-2")
+                            | Tài khoản của tôi
+                        if(role.permissions.includes("general_settings_edit"))
+                            a.dropdown-item(href=`${prefixAdmin}/settings/general`)
+                                span(data-lucide="settings" class="mr-2")
+                                | Cài đặt chung
+                        div.dropdown-divider
+                        a.dropdown-item.text-danger-600(href=`${prefixAdmin}/auth/logout`)
+                            span(data-lucide="log-out" class="mr-2")
+                            | Đăng xuất
 

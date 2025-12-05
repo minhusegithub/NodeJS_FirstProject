@@ -10,11 +10,10 @@ block main
                     .card.border-0.shadow-lg.rounded-4.overflow-hidden
                         .card-header.bg-gradient-primary.text-white.py-4
                             .d-flex.align-items-center
-                                .icon-circle.bg-white.text-primary.rounded-circle.p-3.me-3
-                                    i(class="fas fa-user-edit fa-2x")
+                               
                                 div
                                     h1(class="h3 mb-0 fw-bold") Cập nhật tài khoản
-                                    p(class="text-white-50 mb-0") Chỉnh sửa thông tin tài khoản
+                                    
                         
                         .card-body.p-4.bg-light
                             +alert-success(5000)
@@ -29,6 +28,9 @@ block main
                                     .row.g-4
                                         .col-md-6
                                             .form-floating
+                                                label(for="fullName")
+                                                    i(class="fas fa-user me-2")
+                                                    | Họ tên *
                                                 input(
                                                     type="text"
                                                     class="form-control border-0 shadow-sm"
@@ -38,12 +40,13 @@ block main
                                                     required
                                                     value=data.fullName 
                                                 )
-                                                label(for="fullName")
-                                                    i(class="fas fa-user me-2")
-                                                    | Họ tên *
+                                                
                                         
                                         .col-md-6
                                             .form-floating
+                                                label(for="email")
+                                                    
+                                                    | Email *
                                                 input(
                                                     type="email"
                                                     class="form-control border-0 shadow-sm"
@@ -53,12 +56,13 @@ block main
                                                     required
                                                     value=data.email 
                                                 )
-                                                label(for="email")
-                                                    i(class="fas fa-envelope me-2")
-                                                    | Email *
+                                                
                                         
                                         .col-md-6
                                             .form-floating
+                                                label(for="password")
+                                                    
+                                                    | Mật khẩu mới
                                                 input(
                                                     type="password"
                                                     class="form-control border-0 shadow-sm"
@@ -66,12 +70,13 @@ block main
                                                     name="password"
                                                     placeholder="Mật khẩu"
                                                 )
-                                                label(for="password")
-                                                    i(class="fas fa-lock me-2")
-                                                    | Mật khẩu mới
+                                                
                                         
                                         .col-md-6
                                             .form-floating
+                                                label(for="phone")
+                                                    
+                                                    | Số điện thoại
                                                 input(
                                                     type="text"
                                                     class="form-control border-0 shadow-sm"
@@ -80,15 +85,13 @@ block main
                                                     placeholder="Số điện thoại"
                                                     value=data.phone 
                                                 )
-                                                label(for="phone")
-                                                    i(class="fas fa-phone me-2")
-                                                    | Số điện thoại
+                                                
                                         
                                         .col-12
                                             .card.border-0.shadow-sm
                                                 .card-body
                                                     label(for="avatar" class="form-label fw-medium d-block")
-                                                        i(class="fas fa-image me-2")
+                                                       
                                                         | Avatar
                                                     .upload-area.border.rounded-3.p-3.text-center(
                                                         upload-image
@@ -116,22 +119,23 @@ block main
                                         
                                         .col-12
                                             .form-floating
+                                                label(for="role_id")
+                                                    
+                                                    | Phân quyền
                                                 select(name="role_id" id="role_id" class="form-select border-0 shadow-sm")
-                                                    option(disabled) --Chọn quyền-- 
+                                                    option(disabled) Chọn quyền 
                                                     each item in roles      
                                                         option(
                                                             value=item.id
                                                             selected= (item.id == data.role_id ? true : false)
-                                                        ) #{item.title}
-                                                label(for="role_id")
-                                                    i(class="fas fa-user-shield me-2")
-                                                    | Phân quyền
+                                                        ) # #{item.title}
+                                               
                                         
                                         .col-12
                                             .card.border-0.shadow-sm
                                                 .card-body
                                                     label(class="form-label fw-medium d-block mb-3")
-                                                        i(class="fas fa-toggle-on me-2")
+                                                       
                                                         | Trạng thái
                                                     .d-flex.gap-4
                                                         .form-check
@@ -144,7 +148,7 @@ block main
                                                                 checked= (data.status =="active" ? true : false) 
                                                             )     
                                                             label(for="statusActive" class="form-check-label")
-                                                                i(class="fas fa-check-circle text-success me-1")
+                                                                
                                                                 | Hoạt động
                                                         
                                                         .form-check
@@ -157,23 +161,23 @@ block main
                                                                 checked= (data.status == "inactive" ? true : false) 
                                                             )     
                                                             label(for="statusInactive" class="form-check-label")
-                                                                i(class="fas fa-times-circle text-danger me-1")
+                                                               
                                                                 | Dừng hoạt động
 
                                     .d-grid.gap-3.d-md-flex.justify-content-md-end.mt-5
                                         a(href=`${prefixAdmin}/accounts` class="btn btn-outline-secondary btn-lg me-md-2")
-                                            i(class="fas fa-arrow-left me-2")
+                                            
                                             | Quay lại
                                         button(
                                             type="submit"
                                             class="btn btn-primary btn-lg px-4"
                                         )
-                                            i(class="fas fa-save me-2")
+                                           
                                             | Cập nhật
 
         style.
             .bg-gradient-primary {
-                background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
+                background: linear-gradient(135deg, #1E4A7B 0%, #16385c 100%);
             }
             .icon-circle {
                 width: 60px;
@@ -182,30 +186,59 @@ block main
                 align-items: center;
                 justify-content: center;
             }
+            .card {
+                border-radius: 16px;
+                box-shadow: 0 6px 20px rgba(15,47,79,0.06);
+                border: none;
+                transition: all 0.25s ease;
+            }
+            .card:hover {
+                box-shadow: 0 12px 30px rgba(15,47,79,0.12);
+                transform: translateY(-2px);
+            }
+            .card-header {
+                border-radius: 16px 16px 0 0;
+                padding: 24px;
+            }
+            .card-body {
+                padding: 24px;
+            }
+            .form-floating > .form-control,
+            .form-floating > .form-select {
+                border-radius: 12px;
+                border: 2px solid #e5e7eb;
+                background: #f8fafc;
+                transition: all 0.3s ease;
+            }
             .form-floating > .form-control:focus,
-            .form-floating > .form-control:not(:placeholder-shown) {
-                padding-top: 1.625rem;
-                padding-bottom: 0.625rem;
+            .form-floating > .form-select:focus {
+                border-color: #1E4A7B;
+                box-shadow: 0 0 0 0.25rem rgba(30, 74, 123, 0.18);
+                background: #fff;
+                outline: none;
             }
             .form-floating > label {
                 padding: 1rem 0.75rem;
+                color: #475569;
             }
-            .card {
-                transition: all 0.3s ease;
+            .btn-primary {
+                background: #1E4A7B;
+                border-color: #1E4A7B;
             }
-            .card:hover {
-                transform: translateY(-2px);
+            .btn-primary:hover,
+            .btn-primary:focus {
+                background: #16385c;
+                border-color: #16385c;
             }
-            .btn {
-                transition: all 0.3s ease;
+            .btn-outline-secondary {
+                color: #6b7280;
+                border-color: #d1d5db;
             }
-            .btn:hover {
-                transform: translateY(-1px);
-            }
-            .form-control:focus,
-            .form-select:focus {
-                box-shadow: 0 0 0 0.25rem rgba(78, 115, 223, 0.25);
-                border-color: #4e73df;
+            .btn-outline-secondary:hover,
+            .btn-outline-secondary:focus {
+                color: #fff;
+                background: #6b7280;
+                border-color: #6b7280;
             }
 
         script(src="/admin/js/script.js")

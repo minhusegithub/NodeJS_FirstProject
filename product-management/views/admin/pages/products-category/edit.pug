@@ -8,14 +8,13 @@ block main
         .container.py-4
             .row.justify-content-center
                 .col-lg-8
-                    .card.border-0.shadow-lg.rounded-4.overflow-hidden
+                    .card.edit-card.border-0.shadow-lg.rounded-4.overflow-hidden
                         .card-header.bg-gradient-primary.text-white.py-4
                             .d-flex.align-items-center
-                                .icon-circle.bg-white.text-primary.rounded-circle.p-3.me-3
-                                    i(class="fas fa-edit fa-2x")
+                                
                                 div
                                     h1(class="h3 mb-0 fw-bold") Chỉnh sửa danh mục
-                                    p(class="text-white-50 mb-0") Cập nhật thông tin danh mục sản phẩm
+                                    
                         
                         .card-body.p-4
                             +alert-success(5000)
@@ -48,7 +47,7 @@ block main
                                                 id="parent_id"
                                                 class="form-select form-select-lg"
                                             )
-                                                option(value="") --Chọn danh mục cha--
+                                                option(value="")  Chọn danh mục cha 
                                                 if(records)
                                                     +select-tree(records, 1, data.parent_id)
 
@@ -116,10 +115,9 @@ block main
                                                     checked=(data.status == "active" ? true : false)
                                                 )
                                                 label(
-                                                    class="btn btn-outline-success"
+                                                    class="btn btn-status"
                                                     for="statusActive"
                                                 )
-                                                    i(class="fas fa-check-circle me-2")
                                                     | Hoạt động
                                                 
                                                 input(
@@ -131,54 +129,81 @@ block main
                                                     checked=(data.status == "inactive" ? true : false)
                                                 )
                                                 label(
-                                                    class="btn btn-outline-danger"
+                                                    class="btn btn-status"
                                                     for="statusInactive"
-                                                )
-                                                    i(class="fas fa-times-circle me-2")
+                                                )                                                
                                                     | Dừng hoạt động
 
                                 .d-flex.justify-content-end.mt-4
                                     a(class="btn btn-outline-secondary" href=`${prefixAdmin}/products-category`)
-                                        i(class="fas fa-arrow-left me-2")
+                                        
                                         | Quay lại
                                     button(
                                         type="submit"
                                         class="btn btn-primary"
                                     )
-                                        i(class="fas fa-save me-2")
+                                        
                                         | Cập nhật
 
     style.
-        .bg-gradient-primary {
-            background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
-        }
+        .edit-card { border-radius: 18px; box-shadow: 0 12px 28px rgba(15,47,79,0.12); }
+        .bg-gradient-primary { background: linear-gradient(135deg, #1E4A7B 0%, #16385c 100%); }
         .icon-circle {
             width: 60px;
             height: 60px;
             display: flex;
             align-items: center;
             justify-content: center;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.12);
         }
         .upload-area {
             transition: all 0.3s ease;
             cursor: pointer;
+            background: #f8fbff;
+            border: 1px solid #e5e7eb;
         }
         .upload-area:hover {
-            border-color: #4e73df !important;
-            background-color: rgba(78, 115, 223, 0.05);
+            border-color: #1E4A7B !important;
+            background-color: rgba(30, 74, 123, 0.06);
         }
-        .btn {
-            transition: all 0.3s ease;
+        .btn { transition: all 0.3s ease; }
+        .btn:hover { transform: translateY(-1px); }
+        .btn-primary { background: #1E4A7B; border-color: #1E4A7B; }
+        .btn-primary:hover { background: #16385c; border-color: #16385c; }
+        .btn-outline-secondary:hover { color: #1E4A7B; border-color: #1E4A7B; }
+        .btn-outline-primary {
+            color: #1E4A7B;
+            border-color: #1E4A7B;
         }
-        .btn:hover {
-            transform: translateY(-1px);
+        .btn-outline-primary:hover, .btn-outline-primary.active, .btn-outline-primary:focus {
+            background: #e8f2ff;
+            color: #1E4A7B;
+            border-color: #1E4A7B;
+        }
+        .btn-outline-rose {
+            color: #E5989B;
+            border-color: #E5989B;
+        }
+        .btn-outline-rose:hover, .btn-outline-rose.active, .btn-outline-rose:focus {
+            background: #fdecef;
+            color: #E5989B;
+            border-color: #E5989B;
+        }
+        .btn-status { 
+            flex: 1;
+            border-radius: 12px;
+            padding: 10px 0;
+            font-weight: 600;
+
         }
         .form-control, .form-select {
             transition: all 0.3s ease;
+            border-radius: 12px;
+            border: 1px solid #e5e7eb;
         }
         .form-control:focus, .form-select:focus {
-            border-color: #4e73df;
-            box-shadow: 0 0 0 0.25rem rgba(78, 115, 223, 0.25);
+            border-color: #1E4A7B;
+            box-shadow: 0 0 0 0.25rem rgba(30, 74, 123, 0.18);
         }
 
     

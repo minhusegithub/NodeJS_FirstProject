@@ -2,152 +2,228 @@ extends ../../layouts/default.pug
 
 block main 
     .container-fluid
-        h1.mb-4
-            i.bi.bi-speedometer2.me-2.text-primary
-            | Tổng quan 
+        .d-flex.align-items-center.mb-4
+            span(data-lucide="layout-dashboard" style="width: 32px; height: 32px; color: #1E4A7B;")
+            h2.mb-0.ms-3(style="font-weight: 700; color: #111827;") Tổng quan
+        //- Statistics Overview
+        .row.mb-4
+            .col-lg-3.col-md-6.mb-4
+                .card.stat-card.border-0
+                    .card-body
+                        .d-flex.justify-content-between.align-items-start
+                            div
+                                .stat-card-title.mb-2 Danh mục sản phẩm
+                                .stat-value.mb-1 #{statistic.categoryProduct.total}
+                                .stat-sub
+                                    span(style="color: #1E4A7B;") #{statistic.categoryProduct.active} active
+                            .icon-badge
+                                span(data-lucide="grid-3x3" style="width: 20px; height: 20px;")
+            
+            .col-lg-3.col-md-6.mb-4
+                .card.stat-card.border-0
+                    .card-body
+                        .d-flex.justify-content-between.align-items-start
+                            div
+                                .stat-card-title.mb-2 Sản phẩm
+                                .stat-value.mb-1 #{statistic.product.total}
+                                .stat-sub
+                                    span(style="color: #1E4A7B;") #{statistic.product.active} active
+                            .icon-badge.green
+                                span(data-lucide="package" style="width: 20px; height: 20px;")
+            
+            .col-lg-3.col-md-6.mb-4
+                .card.stat-card.border-0
+                    .card-body
+                        .d-flex.justify-content-between.align-items-start
+                            div
+                                .stat-card-title.mb-2 Tài khoản quản trị
+                                .stat-value.mb-1 #{statistic.account.total}
+                                .stat-sub
+                                    span(style="color: #1E4A7B;") #{statistic.account.active} active
+                            .icon-badge.pink
+                                span(data-lucide="shield" style="width: 20px; height: 20px;")
+            
+            .col-lg-3.col-md-6.mb-4
+                .card.stat-card.border-0
+                    .card-body
+                        .d-flex.justify-content-between.align-items-start
+                            div
+                                .stat-card-title.mb-2 Tài khoản người dùng
+                                .stat-value.mb-1 #{statistic.user.total}
+                                .stat-sub
+                                    span(style="color: #1E4A7B;") #{statistic.user.active} active
+                            .icon-badge(style="background: #fef3c7; color: #d97706;")
+                                span(data-lucide="users" style="width: 20px; height: 20px;")
         
-        .row.mt-4
-            .col-12
-                .card.shadow-sm.mb-4
-                    .card-header.bg-white
-                        h5.mb-0
-                            i.bi.bi-person-circle.me-2
-                            | Thông tin tài khoản
-                    .card-body
-                        .d-flex.align-items-center.mb-4
-                            if(user.avatar)
-                                img.rounded-circle.me-4(src= user.avatar, alt="Avatar", style="width: 100px; height: 100px; object-fit: cover;")
-                            else
-                                .rounded-circle.me-4.d-flex.align-items-center.justify-content-center.bg-light(style="width: 100px; height: 100px;")
-                                    i.bi.bi-person-circle(style="font-size: 3rem; color: #6c757d;")
-                            
-                            .user-info
-                                if(user.fullName)
-                                    p.mb-2
-                                        i.bi.bi-person.me-2
-                                        | Họ tên: 
-                                        strong #{user.fullName}
-                                if(user.email)
-                                    p.mb-2
-                                        i.bi.bi-envelope.me-2
-                                        | Email: 
-                                        strong #{user.email}
-                                if(user.phone)
-                                    p.mb-2
-                                        i.bi.bi-telephone.me-2
-                                        | Số điện thoại: 
-                                        strong #{user.phone}
-                                if(user.address)
-                                    p.mb-2
-                                        i.bi.bi-geo-alt.me-2
-                                        | Địa chỉ: 
-                                        strong #{user.address}
-                                if(role.title)
-                                    p.mb-0
-                                        i.bi.bi-shield-check.me-2
-                                        | Phân quyền: 
-                                        strong #{role.title}
-
+        //- Chart Statistics
         .row
-            .col-md-6.mb-4
-                .card.shadow-sm.h-100
+            .col-lg-6.mb-4
+                .card.chart-card.border-0
                     .card-body
-                        .d-flex.align-items-center.mb-3
-                            i.bi.bi-grid.text-primary(style="font-size: 2rem;")
-                            h5.mb-0.ms-3 Danh mục sản phẩm
-                        .d-flex.justify-content-between.mb-2
-                            span
-                                i.bi.bi-check-circle-fill.text-success.me-1
-                                | Hoạt động
-                            strong #{statistic.categoryProduct.active}
-                        .d-flex.justify-content-between
-                            span
-                                i.bi.bi-x-circle-fill.text-danger.me-1
-                                | Dừng hoạt động
-                            strong #{statistic.categoryProduct.inactive}
-                        .text-end.mt-3
-                            h3.mb-0 Tổng : #{statistic.categoryProduct.total}
+                        .d-flex.justify-content-between.align-items-center.mb-4
+                            div
+                                h5.mb-1(style="font-weight: 600; color: #111827;") Danh mục & Sản phẩm
+                                p.mb-0.text-muted(style="font-size: 13px;") Trạng thái hoạt động
+                            span(data-lucide="bar-chart-3" style="width: 20px; height: 20px; color: #6b7280;")
+                        canvas#chartCategory(style="max-height: 280px;")
+            
+            .col-lg-6.mb-4
+                .card.chart-card.border-0
+                    .card-body
+                        .d-flex.justify-content-between.align-items-center.mb-4
+                            div
+                                h5.mb-1(style="font-weight: 600; color: #111827;") Thống kê tài khoản
+                                p.mb-0.text-muted(style="font-size: 13px;") Quản trị & Người dùng
+                            span(data-lucide="pie-chart" style="width: 20px; height: 20px; color: #6b7280;")
+                        canvas#chartAccounts(style="max-height: 280px;")
 
-            .col-md-6.mb-4
-                .card.shadow-sm.h-100
-                    .card-body
-                        .d-flex.align-items-center.mb-3
-                            i.bi.bi-box-seam.text-success(style="font-size: 2rem;")
-                            h5.mb-0.ms-3 Sản phẩm
-                        .d-flex.justify-content-between.mb-2
-                            span
-                                i.bi.bi-check-circle-fill.text-success.me-1
-                                | Hoạt động
-                            strong #{statistic.product.active}
-                        .d-flex.justify-content-between
-                            span
-                                i.bi.bi-x-circle-fill.text-danger.me-1
-                                | Dừng hoạt động
-                            strong #{statistic.product.inactive}
-                        .text-end.mt-3
-                            h3.mb-0 Tổng : #{statistic.product.total}
+    script.
+        document.addEventListener('DOMContentLoaded', function() {
+            // Statistics Data
+            const stats = {
+                categoryProduct: {
+                    active: #{statistic.categoryProduct.active},
+                    inactive: #{statistic.categoryProduct.inactive},
+                    total: #{statistic.categoryProduct.total}
+                },
+                product: {
+                    active: #{statistic.product.active},
+                    inactive: #{statistic.product.inactive},
+                    total: #{statistic.product.total}
+                },
+                account: {
+                    active: #{statistic.account.active},
+                    inactive: #{statistic.account.inactive},
+                    total: #{statistic.account.total}
+                },
+                user: {
+                    active: #{statistic.user.active},
+                    inactive: #{statistic.user.inactive},
+                    total: #{statistic.user.total}
+                }
+            };
 
-            .col-md-6.mb-4
-                .card.shadow-sm.h-100
-                    .card-body
-                        .d-flex.align-items-center.mb-3
-                            i.bi.bi-person-badge.text-info(style="font-size: 2rem;")
-                            h5.mb-0.ms-3 Tài khoản admin
-                        .d-flex.justify-content-between.mb-2
-                            span
-                                i.bi.bi-check-circle-fill.text-success.me-1
-                                | Hoạt động
-                            strong #{statistic.account.active}
-                        .d-flex.justify-content-between
-                            span
-                                i.bi.bi-x-circle-fill.text-danger.me-1
-                                | Dừng hoạt động
-                            strong #{statistic.account.inactive}
-                        .text-end.mt-3
-                            h3.mb-0 Tổng : #{statistic.account.total}
+            // Colors
+            const colors = {
+                active: '#1E4A7B',
+                inactive: '#E5989B'
+            };
 
-            .col-md-6.mb-4
-                .card.shadow-sm.h-100
-                    .card-body
-                        .d-flex.align-items-center.mb-3
-                            i.bi.bi-people.text-warning(style="font-size: 2rem;")
-                            h5.mb-0.ms-3 Tài khoản client
-                        .d-flex.justify-content-between.mb-2
-                            span
-                                i.bi.bi-check-circle-fill.text-success.me-1
-                                | Hoạt động
-                            strong #{statistic.user.active}
-                        .d-flex.justify-content-between
-                            span
-                                i.bi.bi-x-circle-fill.text-danger.me-1
-                                | Dừng hoạt động
-                            strong #{statistic.user.inactive}
-                        .text-end.mt-3
-                            h3.mb-0 Tổng : #{statistic.user.total}
-    style.
-        .card {
-            border: none;
-            border-radius: 0.5rem;
-            transition: all 0.3s ease;
-        }
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
-        }
-        .card-header {
-            background-color: #fff;
-            border-bottom: 1px solid rgba(0,0,0,.125);
-            padding: 1.25rem 1.5rem;
-        }
-        .card-body {
-            padding: 1.5rem;
-        }
-        .user-info p {
-            margin-bottom: 0.5rem;
-        }
-        @media (max-width: 768px) {
-            .card-body {
-                padding: 1rem;
+            // Bar Chart - Categories & Products
+            const ctxCategory = document.getElementById('chartCategory');
+            if (ctxCategory) {
+                new Chart(ctxCategory, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Danh mục', 'Sản phẩm'],
+                        datasets: [
+                            {
+                                label: 'Hoạt động',
+                                data: [stats.categoryProduct.active, stats.product.active],
+                                backgroundColor: colors.active,
+                                borderRadius: 8,
+                                barThickness: 40
+                            },
+                            {
+                                label: 'Dừng hoạt động',
+                                data: [stats.categoryProduct.inactive, stats.product.inactive],
+                                backgroundColor: colors.inactive,
+                                borderRadius: 8,
+                                barThickness: 40
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    padding: 15,
+                                    font: { size: 12, family: 'Inter' },
+                                    usePointStyle: true,
+                                    pointStyle: 'circle'
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                grid: { color: '#f3f4f6' },
+                                ticks: { font: { family: 'Inter' } }
+                            },
+                            x: {
+                                grid: { display: false },
+                                ticks: { font: { family: 'Inter', weight: '500' } }
+                            }
+                        }
+                    }
+                });
             }
+
+            // Bar Chart - Accounts
+            const ctxAccounts = document.getElementById('chartAccounts');
+            if (ctxAccounts) {
+                new Chart(ctxAccounts, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Quản trị', 'Người dùng'],
+                        datasets: [
+                            {
+                                label: 'Hoạt động',
+                                data: [stats.account.active, stats.user.active],
+                                backgroundColor: colors.active,
+                                borderRadius: 8,
+                                barThickness: 40
+                            },
+                            {
+                                label: 'Dừng hoạt động',
+                                data: [stats.account.inactive, stats.user.inactive],
+                                backgroundColor: colors.inactive,
+                                borderRadius: 8,
+                                barThickness: 40
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    padding: 15,
+                                    font: { size: 12, family: 'Inter' },
+                                    usePointStyle: true,
+                                    pointStyle: 'circle'
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                grid: { color: '#f3f4f6' },
+                                ticks: { font: { family: 'Inter' } }
+                            },
+                            x: {
+                                grid: { display: false },
+                                ticks: { font: { family: 'Inter', weight: '500' } }
+                            }
+                        }
+                    }
+                });
+            }
+        });
+    style.
+        .stat-card, .chart-card {
+            transition: all 0.3s ease;
+            border: 2px solid transparent !important;
+            border-radius: 16px;
+        }
+        .stat-card:hover, .chart-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 32px rgba(15,47,79,0.14) !important;
+            border: 2px solid #1E4A7B !important;
         }
 
