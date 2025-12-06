@@ -4,7 +4,7 @@ block main
   .container.mt-4
     .card.profile-card.border-0.p-4(style="max-width: 640px; margin: 0 auto;")
       .card-body
-        h2.mb-4.text-center(style="font-weight: 700; color: #111827;") Thông tin cá nhân
+        h2.mb-4.text-center(style="font-weight: 700; color: #1E4A7B;") Thông tin cá nhân
 
         .text-center.mb-4
           if user.avatar
@@ -16,24 +16,25 @@ block main
           if user.fullName
             li.list-group-item.info-item
               i.bi.bi-person-fill.text-primary
-              span.text-muted Họ và tên
+              span Họ và tên
               b.flex-fill.text-right #{user.fullName}
 
           if user.email
             li.list-group-item.info-item
               i.bi.bi-envelope-fill.text-primary
-              span.text-muted Email
+              span Email
               b.flex-fill.text-right #{user.email}
 
           if user.phone
             li.list-group-item.info-item
               i.bi.bi-telephone-fill.text-primary
-              span.text-muted Số điện thoại
+              span Số điện thoại
               b.flex-fill.text-right #{user.phone}
 
           li.list-group-item.info-item
             i.bi.bi-check-circle-fill.text-primary
-            span.text-muted Trạng thái
+            span Trạng thái
+            span.flex-fill
             if user.status === "active"
               span.badge.badge-pill.badge-active Hoạt động
             else 
@@ -42,7 +43,7 @@ block main
           if role.title
             li.list-group-item.info-item
               i.bi.bi-shield-lock-fill.text-primary
-              span.text-muted Vai trò
+              span Vai trò
               b.flex-fill.text-right #{role.title}
 
         .text-center.mt-4
@@ -51,10 +52,11 @@ block main
             class= "btn btn-primary px-4"
             style="min-width: 180px;"
           ) 
-            i.bi.bi-pencil-fill.mr-1
+           
             | Chỉnh sửa hồ sơ
 
     style.
+      
       .profile-card {
         border: 1px solid #e5e7eb;
         border-radius: 18px;
@@ -62,7 +64,7 @@ block main
         transition: all 0.3s ease;
       }
       .profile-card:hover {
-        border-color: #1E4A7B;
+        border: 5px solid #1E4A7B;
         box-shadow: 0 16px 38px rgba(15,47,79,0.14);
       }
       .avatar-lg {
@@ -79,10 +81,10 @@ block main
         font-size: 14px;
       }
       .info-item:last-child { border-bottom: none; }
-      .info-item i { width: 18px; height: 18px; color: #1E4A7B; }
+      .info-item i { width: 18px; height: 18px; color: #1E4A7B !important; }
       .badge-active {
-        background: #e8f2ff;
-        color: #1E4A7B;
+        background: #1E4A7B;
+        color: #ffffff;
         font-weight: 600;
       }
       .badge-inactive {

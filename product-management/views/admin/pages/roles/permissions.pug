@@ -7,11 +7,10 @@ block main
             .card.border-0.shadow-lg.rounded-4.overflow-hidden
                 .card-header.bg-gradient-primary.text-white.py-4
                     .d-flex.align-items-center
-                        .icon-circle.bg-white.text-primary.rounded-circle.p-3.me-3
-                            i(class="fas fa-user-lock fa-2x")
+                        
                         div
                             h1(class="h3 mb-0 fw-bold") Phân quyền
-                            p(class="text-white-50 mb-0") Quản lý quyền truy cập cho các nhóm quyền
+                            
                 
                 .card-body.p-4.bg-light
                     +alert-success(5000)
@@ -40,12 +39,9 @@ block main
                                     //- Danh mục sản phẩm
                                     tr.bg-light
                                         td(colspan="4")
-                                            i(class="fas fa-folder me-2 text-primary")
                                             b Danh mục sản phẩm 
                                     tr(data-name="products-category_view")
-                                        td 
-                                            i(class="fas fa-eye me-2 text-muted")
-                                            | Xem
+                                        td Xem
                                         each item in records
                                             td(class="text-center")
                                                 .form-check.d-inline-block
@@ -58,9 +54,7 @@ block main
                                                     )
                                             
                                     tr(data-name="products-category_create")
-                                        td
-                                            i(class="fas fa-plus me-2 text-muted")
-                                            | Thêm mới
+                                        td Thêm mới
                                         each item in records
                                             td(class="text-center")
                                                 .form-check.d-inline-block
@@ -72,9 +66,7 @@ block main
                                                         checked=item.permissions.includes("products-category_create")
                                                     )
                                     tr(data-name="products-category_edit")
-                                        td
-                                            i(class="fas fa-edit me-2 text-muted")
-                                            | Chỉnh sửa
+                                        td Chỉnh sửa
                                         each item in records
                                             td(class="text-center")
                                                 .form-check.d-inline-block
@@ -86,9 +78,7 @@ block main
                                                         checked=item.permissions.includes("products-category_edit")
                                                     )
                                     tr(data-name="products-category_delete")
-                                        td
-                                            i(class="fas fa-trash me-2 text-muted")
-                                            | Xóa
+                                        td Xóa
                                         each item in records
                                             td(class="text-center")
                                                 .form-check.d-inline-block
@@ -103,12 +93,9 @@ block main
                                     //- Sản phẩm
                                     tr.bg-light
                                         td(colspan="4")
-                                            i(class="fas fa-box me-2 text-primary")
                                             b Sản phẩm 
                                     tr(data-name="products_view")
-                                        td
-                                            i(class="fas fa-eye me-2 text-muted")
-                                            | Xem
+                                        td Xem
                                         each item in records
                                             td(class="text-center")
                                                 .form-check.d-inline-block
@@ -121,9 +108,7 @@ block main
                                                     )
                                             
                                     tr(data-name="products_create")
-                                        td
-                                            i(class="fas fa-plus me-2 text-muted")
-                                            | Thêm mới
+                                        td Thêm mới
                                         each item in records
                                             td(class="text-center")
                                                 .form-check.d-inline-block
@@ -135,9 +120,7 @@ block main
                                                         checked=item.permissions.includes("products_create")
                                                     )
                                     tr(data-name="products_edit")
-                                        td
-                                            i(class="fas fa-edit me-2 text-muted")
-                                            | Chỉnh sửa
+                                        td Chỉnh sửa
                                         each item in records
                                             td(class="text-center")
                                                 .form-check.d-inline-block
@@ -149,9 +132,7 @@ block main
                                                         checked=item.permissions.includes("products_edit")
                                                     )
                                     tr(data-name="products_delete")
-                                        td
-                                            i(class="fas fa-trash me-2 text-muted")
-                                            | Xóa
+                                        td Xóa
                                         each item in records
                                             td(class="text-center")
                                                 .form-check.d-inline-block
@@ -166,12 +147,9 @@ block main
                                     //- Nhóm quyền
                                     tr.bg-light
                                         td(colspan="4")
-                                            i(class="fas fa-user-shield me-2 text-primary")
                                             b Phân quyền 
                                     tr(data-name="roles_view")
-                                        td
-                                            i(class="fas fa-eye me-2 text-muted")
-                                            | Xem
+                                        td Xem
                                         each item in records
                                             td(class="text-center")
                                                 .form-check.d-inline-block
@@ -184,9 +162,7 @@ block main
                                                     )
                                             
                                     tr(data-name="roles_create")
-                                        td
-                                            i(class="fas fa-plus me-2 text-muted")
-                                            | Thêm mới
+                                        td Thêm mới
                                         each item in records
                                             td(class="text-center")
                                                 .form-check.d-inline-block
@@ -198,9 +174,7 @@ block main
                                                         checked=item.permissions.includes("roles_create")
                                                     )
                                     tr(data-name="roles_edit")
-                                        td
-                                            i(class="fas fa-edit me-2 text-muted")
-                                            | Chỉnh sửa
+                                        td Chỉnh sửa
                                         each item in records
                                             td(class="text-center")
                                                 .form-check.d-inline-block
@@ -212,9 +186,7 @@ block main
                                                         checked=item.permissions.includes("roles_edit")
                                                     )
                                     tr(data-name="roles_delete")
-                                        td
-                                            i(class="fas fa-trash me-2 text-muted")
-                                            | Xóa
+                                        td Xóa
                                         each item in records
                                             td(class="text-center")
                                                 .form-check.d-inline-block
@@ -226,9 +198,7 @@ block main
                                                         checked=item.permissions.includes("roles_delete")
                                                     )
                                     tr(data-name="roles_permissions")
-                                        td
-                                            i(class="fas fa-key me-2 text-muted")
-                                            | Phân quyền
+                                        td Phân quyền
                                         each item in records
                                             td(class="text-center")
                                                 .form-check.d-inline-block
@@ -243,12 +213,9 @@ block main
                                     //- Tài khoản
                                     tr.bg-light
                                         td(colspan="4")
-                                            i(class="fas fa-users me-2 text-primary")
                                             b Tài khoản
                                     tr(data-name="accounts_view")
-                                        td
-                                            i(class="fas fa-eye me-2 text-muted")
-                                            | Xem
+                                        td Xem
                                         each item in records
                                             td(class="text-center")
                                                 .form-check.d-inline-block
@@ -261,9 +228,7 @@ block main
                                                     )
                                             
                                     tr(data-name="accounts_create")
-                                        td
-                                            i(class="fas fa-plus me-2 text-muted")
-                                            | Thêm mới
+                                        td Thêm mới
                                         each item in records
                                             td(class="text-center")
                                                 .form-check.d-inline-block
@@ -275,9 +240,7 @@ block main
                                                         checked=item.permissions.includes("accounts_create")
                                                     )
                                     tr(data-name="accounts_edit")
-                                        td
-                                            i(class="fas fa-edit me-2 text-muted")
-                                            | Chỉnh sửa
+                                        td Chỉnh sửa
                                         each item in records
                                             td(class="text-center")
                                                 .form-check.d-inline-block
@@ -289,9 +252,7 @@ block main
                                                         checked=item.permissions.includes("accounts_edit")
                                                     )
                                     tr(data-name="accounts_delete")
-                                        td
-                                            i(class="fas fa-trash me-2 text-muted")
-                                            | Xóa
+                                        td Xóa
                                         each item in records
                                             td(class="text-center")
                                                 .form-check.d-inline-block
@@ -306,12 +267,9 @@ block main
                                     //- General Settings
                                     tr.bg-light
                                         td(colspan="4")
-                                            i(class="fas fa-cog me-2 text-primary")
                                             b Cài đặt chung
                                     tr(data-name="general_settings_edit")
-                                        td 
-                                            i(class="fas fa-edit me-2 text-muted")
-                                            | Chỉnh sửa
+                                        td Chỉnh sửa
                                         each item in records
                                             td(class="text-center")
                                                 .form-check.d-inline-block
@@ -325,12 +283,9 @@ block main
                                     //- Orders
                                     tr.bg-light
                                         td(colspan="4")
-                                            i(class="fas fa-cart-shopping me-2 text-primary")
                                             b Đơn hàng
                                     tr(data-name="orders_view")
-                                        td 
-                                            i(class="fas fa-eye me-2 text-muted")
-                                            | Xem
+                                        td Xem
                                         each item in records
                                             td(class="text-center")
                                                 .form-check.d-inline-block
@@ -342,9 +297,7 @@ block main
                                                         checked=item.permissions.includes("orders_view")
                                                     )
                                     tr(data-name="orders_edit")
-                                        td
-                                            i(class="fas fa-edit me-2 text-muted")
-                                            | Chỉnh sửa
+                                        td Chỉnh sửa
                                         each item in records
                                             td(class="text-center")
                                                 .form-check.d-inline-block
@@ -361,14 +314,14 @@ block main
 
                         .d-grid.gap-3.d-md-flex.justify-content-md-end.mt-4
                             a(href=`${prefixAdmin}/roles` class="btn btn-outline-secondary btn-lg me-md-2")
-                                i(class="fas fa-arrow-left me-2")
+                                
                                 | Quay lại
                             button(
                                 type="submit"
                                 class="btn btn-primary btn-lg px-4"
                                 button-submit
                             )
-                                i(class="fas fa-save me-2")
+                               
                                 | Cập nhật
 
                 form(
@@ -386,7 +339,24 @@ block main
 
     style.
         .bg-gradient-primary {
-            background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
+            background: linear-gradient(135deg, #1E4A7B 0%, #16385c 100%);
+        }
+        .card {
+            border: none;
+            border-radius: 16px;
+            box-shadow: 0 6px 20px rgba(15,47,79,0.06);
+            transition: all 0.25s ease;
+        }
+        .card:hover {
+            box-shadow: 0 12px 30px rgba(15,47,79,0.12);
+        }
+        .card-header {
+            border-radius: 16px 16px 0 0;
+            border: none;
+            padding: 24px;
+        }
+        .card-body {
+            padding: 24px;
         }
         .icon-circle {
             width: 60px;
@@ -395,48 +365,88 @@ block main
             align-items: center;
             justify-content: center;
         }
+        .table {
+            font-family: 'Inter','Poppins',sans-serif;
+            margin-bottom: 0;
+        }
+        .table thead th {
+            background: #f1f5f9;
+            color: #475569;
+            font-weight: 600;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 14px;
+            text-align: center;
+        }
         .table > :not(caption) > * > * {
-            padding: 1rem;
+            padding: 14px;
+            vertical-align: middle;
+            border-top: 1px solid #e5e7eb;
+        }
+        .table tbody tr:last-child td {
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .table tbody tr.bg-light {
+            background: #f8fafc;
+        }
+        .table tbody tr:hover:not(.bg-light) {
+            background: #f8fbff;
+        }
+        .table tbody tr.bg-light:hover {
+            background: #f8fafc;
+        }
+        .table tbody tr.bg-light td {
+            font-weight: 600;
+            color: #1E4A7B;
+            padding: 16px 14px;
         }
         .form-check-input {
-            width: 1.2em;
-            height: 1.2em;
-            margin-top: 0;
+            width: 1.25em;
+            height: 1.25em;
+            border: 2px solid #d1d5db;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
         }
         .form-check-input:checked {
-            background-color: #4e73df;
-            border-color: #4e73df;
+            background-color: #1E4A7B;
+            border-color: #1E4A7B;
         }
         .form-check-input:focus {
-            box-shadow: 0 0 0 0.25rem rgba(78, 115, 223, 0.25);
-            border-color: #4e73df;
+            border-color: #1E4A7B;
+            box-shadow: 0 0 0 0.25rem rgba(30, 74, 123, 0.25);
+        }
+        .form-check-input:hover:not(:checked) {
+            border-color: #1E4A7B;
         }
         .btn {
             transition: all 0.3s ease;
+            border-radius: 12px;
         }
         .btn:hover {
             transform: translateY(-1px);
         }
-        .table tbody tr:hover {
-            background-color: rgba(78, 115, 223, 0.05);
+        .btn-primary {
+            background: #1E4A7B;
+            border-color: #1E4A7B;
         }
-        .table tbody tr.bg-light:hover {
-            background-color: rgba(78, 115, 223, 0.1) !important;
+        .btn-primary:hover {
+            background: #16385c;
+            border-color: #16385c;
         }
-        .table tbody tr td {
-            vertical-align: middle;
+        .btn-outline-secondary {
+            color: #6b7280;
+            border-color: #d1d5db;
         }
-        .card {
-            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
-        }
-        .card-header {
-            border-bottom: none;
+        .btn-outline-secondary:hover {
+            background: #6b7280;
+            border-color: #6b7280;
+            color: #fff;
         }
         .text-muted {
             color: #6c757d !important;
         }
         .text-primary {
-            color: #4e73df !important;
+            color: #1E4A7B !important;
         }
 
                     

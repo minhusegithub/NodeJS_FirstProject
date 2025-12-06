@@ -6,8 +6,8 @@ block main
   .container.mt-4
     .card.form-card.border-0.p-4(style="max-width: 640px; margin: 0 auto;")
       .card-body
-        h2.mb-4.text-center(style="font-weight: 700; color: #111827;") 
-          i.bi.bi-pencil-square.mr-2
+        h2.mb-4.text-center(style="font-weight: 700; color: #1E4A7B;") 
+          
           | Cập nhật thông tin cá nhân
 
         +alert-success(5000)
@@ -20,8 +20,8 @@ block main
         )
           .form-group
             label(for="fullName") 
-              i.bi.bi-person-fill.mr-1
-              | Họ và tên *
+             
+              | Họ và tên 
             input.form-control(
               type="text",
               id="fullName",
@@ -32,8 +32,8 @@ block main
 
           .form-group
             label(for="email") 
-              i.bi.bi-envelope-fill.mr-1
-              | Email *
+             
+              | Email 
             input.form-control(
               type="email",
               id="email",
@@ -44,8 +44,8 @@ block main
 
           .form-group
             label(for="password") 
-              i.bi.bi-lock-fill.mr-1
-              | Mật khẩu *
+              
+              | Mật khẩu 
             input.form-control(
               type="password",
               id="password",
@@ -54,7 +54,7 @@ block main
 
           .form-group
             label(for="phone") 
-              i.bi.bi-telephone-fill.mr-1
+              
               | Số điện thoại
             input.form-control(
               type="text",
@@ -65,7 +65,7 @@ block main
 
           .form-group(upload-image)
             label(for="avatar") 
-              i.bi.bi-image-fill.mr-1
+              
               | Ảnh đại diện
             input.form-control-file(
               type="file",
@@ -82,8 +82,11 @@ block main
               )
 
           .text-center.mt-4
+            a(class="btn btn-secondary px-4" href=`${prefixAdmin}/my-account`)
+                                        
+                                        | Quay lại
             button.btn.btn-primary.px-4(type="submit")
-              i.bi.bi-arrow-repeat.mr-1
+              
               | Cập nhật
 
     style.
@@ -117,4 +120,17 @@ block main
       .btn-primary:hover {
         background: #16385c;
         border-color: #16385c;
+      }
+      .btn-secondary {
+        background: #6b7280;
+        border-color: #6b7280;
+        color: #ffffff;
+        border-radius: 12px;
+        padding: 10px 20px;
+        font-weight: 600;
+      }
+      .btn-secondary:hover {
+        background: #4b5563;
+        border-color: #4b5563;
+        color: #ffffff;
       }

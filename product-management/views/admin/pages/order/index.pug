@@ -25,10 +25,12 @@ block main
               thead
                 tr.text-center
                   th(style="width: 50px") #
+                  th Khách hàng
                   th Ảnh
                   th Tên sản phẩm
                   th Giá
                   th Số lượng
+                  
                   th Phương thức thanh toán
                   th Giao hàng nhanh?
                   th Tổng tiền
@@ -43,6 +45,14 @@ block main
                     tr.table-row.align-middle
                       if productIndex === 0
                         td(rowspan=rowSpan) #{index + 1}
+                        td(rowspan=rowSpan class="text-left")
+                          if item.userInfo
+                            div.fw-semibold #{item.userInfo.fullName || 'Khách lẻ'}
+                            div.text-muted.small #{item.userInfo.phone || 'Chưa có số điện thoại'}
+                            div.text-muted.small #{item.userInfo.address || 'Chưa có địa chỉ'}
+                          else
+                            span.text-muted Chưa có thông tin khách hàng
+                      
                       td
                         img.rounded.border(
                           src=product.thumbnail
@@ -54,6 +64,8 @@ block main
                       td.text-left #{product.title}
                       td #{product.priceNew}$
                       td #{product.quantity}
+                      
+                        
                       if productIndex === 0
                         td(rowspan=rowSpan) #{item.paymentMethod}
                         td(rowspan=rowSpan)
@@ -80,7 +92,7 @@ block main
                                   | Hủy đơn
                     if productIndex === rowSpan - 1
                       tr.item-divider
-                        td(colspan="11")
+                        td(colspan="12")
                           div.divider-line
 
     form(
@@ -108,6 +120,7 @@ block main
         font-family: 'Inter','Poppins',sans-serif;
         border-collapse: separate;
         border-spacing: 0;
+        min-width: 130%;
       }
       .custom-table thead th {
         background: #f1f5f9;
