@@ -1,0 +1,94 @@
+/* Cart Page - 100% Original CSS from cart/index.pug */
+
+.cart-card {
+    border-radius: 14px;
+    background: #fff;
+    box-shadow: 0 8px 24px rgba(15, 47, 79, 0.08);
+}
+
+.cart-card .card-body {
+    padding: 20px;
+}
+
+.cart-table thead th {
+    background: #f1f5f9;
+    color: #475569;
+    font-weight: 600;
+    border-bottom: 1px solid #e2e8f0;
+    text-align: center;
+    padding: 14px 12px;
+}
+
+.cart-table td {
+    vertical-align: middle;
+    padding: 14px 12px;
+    border-color: #e5e7eb;
+    text-align: center;
+}
+
+.cart-table tbody tr:hover {
+    background: #f8fbff;
+}
+
+.cart-table img {
+    object-fit: cover;
+    height: 64px;
+    width: 64px;
+}
+
+.quantity-input {
+    max-width: 150px;
+    border-radius: 10px;
+    border: 1px solid #d1d5db;
+    margin: 0 auto;
+}
+
+.quantity-input:focus {
+    border-color: #1E4A7B;
+    box-shadow: 0 0 0 0.2rem rgba(30, 74, 123, 0.15);
+}
+
+
+.btn-delete-cart {
+    color: #dc2626;
+    border: 1px solid #fecaca;
+    background: #fff5f5;
+    border-radius: 10px;
+}
+
+.btn-delete-cart:hover {
+    color: #dc2626;
+    transform: scale(1.2);
+    filter: brightness(0.8);
+}
+
+
+.btn-primary {
+    background: #1E4A7B;
+    border-color: #1E4A7B;
+    border-radius: 12px;
+    transition: all 0.2s ease;
+}
+
+.btn-primary:hover {
+    background: #16385c;
+    border-color: #16385c;
+}
+
+.text-primary {
+    color: #1E4A7B !important;
+}
+
+@media (max-width: 768px) {
+    .cart-card .card-body {
+        padding: 16px;
+    }
+
+    .cart-table thead {
+        font-size: 13px;
+    }
+
+    .quantity-input {
+        max-width: 70px;
+    }
+}

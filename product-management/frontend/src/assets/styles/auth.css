@@ -1,0 +1,115 @@
+/* Auth Pages - 100% Original CSS from login.pug and register.pug */
+
+/* Login Page */
+.login-page {
+    background: linear-gradient(135deg, #163a63 0%, #ffffff 100%);
+    min-height: 100vh;
+}
+
+.login-page .card {
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2) !important;
+}
+
+.login-page .form-control {
+    padding: 0.8rem 1rem;
+    font-size: 15px;
+}
+
+.login-page .form-control:focus {
+    background-color: #fff;
+    box-shadow: 0 0 0 3px rgba(30, 74, 123, 0.25);
+    border: none;
+}
+
+.login-page .form-control::placeholder {
+    color: #90949c;
+}
+
+.login-page .btn-primary {
+    background: #1E4A7B;
+    border: none;
+    font-weight: 600;
+    padding: 12px;
+    transition: all 0.3s ease;
+}
+
+.login-page .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px rgba(30, 74, 123, 0.4);
+    background: #163a63;
+}
+
+.login-page .btn-success {
+    background: #E5989B;
+    border: none;
+    font-weight: 600;
+    padding: 12px;
+    transition: all 0.3s ease;
+}
+
+.login-page .btn-success:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px rgba(229, 152, 155, 0.4);
+    background: #d17f82;
+}
+
+.login-page .text-primary {
+    color: #1E4A7B !important;
+}
+
+/* Register Page */
+.register-css {
+    color: #1E4A7B;
+}
+
+.register-page {
+    background: linear-gradient(135deg, #163a63 0%, #ffffff 100%);
+    min-height: 100vh;
+}
+
+.register-page .card {
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2) !important;
+}
+
+.register-page .form-control {
+    padding: 0.8rem 1rem;
+    font-size: 15px;
+}
+
+.register-page .form-control:focus {
+    background-color: #fff;
+    box-shadow: 0 0 0 3px rgba(30, 74, 123, 0.25);
+    border: none;
+}
+
+.register-page .form-control::placeholder {
+    color: #90949c;
+}
+
+.register-page .btn-success {
+    background: #E5989B;
+    border: none;
+    font-weight: 600;
+    padding: 12px;
+    transition: all 0.3s ease;
+}
+
+.register-page .btn-success:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px rgba(229, 152, 155, 0.4);
+    background: #d17f82;
+}
+
+.register-page .btn-primary {
+    background: #1E4A7B;
+    border: none;
+    font-weight: 600;
+    padding: 12px;
+    transition: all 0.3s ease;
+}
+
+.register-page .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px rgba(30, 74, 123, 0.4);
+    background: #163a63;
+}
