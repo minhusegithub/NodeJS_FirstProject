@@ -9,14 +9,22 @@ export const useProductStore = create((set) => ({
     loading: false,
     error: null,
 
-    // Get all products with filters
+    // Get all products with filters (PostgreSQL API)
     getProducts: async (params = {}) => {
         set({ loading: true, error: null });
         try {
-            const { data } = await api.get('/products', { params });
+            // Default pagination for client view
+            const queryParams = {
+                page: params.page || 1,
+                limit: params.limit || 9,
+                ...params
+            };
+            const { data } = await api.get('/products', { params: queryParams });
+
+            // PostgreSQL API returns { code, message, data, pagination }
             set({
-                products: data.data.products,
-                pagination: data.data.pagination,
+                products: data.data || [],
+                pagination: data.pagination || null,
                 loading: false
             });
         } catch (error) {
@@ -41,12 +49,16 @@ export const useProductStore = create((set) => ({
     getProductBySlug: async (slug) => {
         set({ loading: true, error: null });
         try {
+            console.log('📡 API Call: GET /products/' + slug);
             const { data } = await api.get(`/products/${slug}`);
+            console.log('✅ API Response:', data);
+            // PostgreSQL API returns { code, message, data }
             set({
-                currentProduct: data.data.product,
+                currentProduct: data.data, // Product object directly
                 loading: false
             });
         } catch (error) {
+            console.error('❌ API Error:', error.response || error);
             set({
                 error: error.response?.data?.message || 'Không tìm thấy sản phẩm',
                 loading: false

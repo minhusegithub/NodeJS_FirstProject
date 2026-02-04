@@ -92,3 +92,43 @@
         max-width: 70px;
     }
 }
+
+/* Store Grouping Styles */
+.store-group-header {
+    background-color: #f1f5f9;
+    padding: 12px 20px;
+    border-bottom: 2px solid #e2e8f0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.store-icon {
+    font-size: 1.2rem;
+    color: #1E4A7B;
+}
+
+.store-name {
+    font-weight: 700;
+    color: #1f2937;
+    font-size: 1.1rem;
+}
+
+.store-group-table {
+    margin-bottom: 20px;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.store-group-table:last-child {
+    margin-bottom: 0;
+}
+
+/* Custom Checkbox */
+.custom-checkbox {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    accent-color: #1E4A7B;
+}

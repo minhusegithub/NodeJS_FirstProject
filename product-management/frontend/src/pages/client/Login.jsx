@@ -32,7 +32,14 @@ const Login = () => {
         try {
             await login(formData.email, formData.password);
             toast.success('Đăng nhập thành công!');
-            navigate('/');
+
+            // Check roles for redirection
+            const user = useAuthStore.getState().user;
+            if (user?.roles && user.roles.length > 0) {
+                navigate('/admin/dashboard');
+            } else {
+                navigate('/');
+            }
         } catch (error) {
             toast.error(error.response?.data?.message || 'Đăng nhập thất bại!');
         } finally {

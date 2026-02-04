@@ -29,6 +29,48 @@
     border-radius: 2px;
 }
 
+/* Search Results Info */
+.search-results-info {
+    background: #fff;
+    border: 2px solid #1E4A7B;
+    border-radius: 12px;
+    padding: 16px 24px;
+    margin-bottom: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 4px 12px rgba(30, 74, 123, 0.1);
+}
+
+.search-results-info p {
+    margin: 0;
+    color: #1f2937;
+    font-size: 15px;
+}
+
+.search-results-info strong {
+    color: #1E4A7B;
+    font-weight: 700;
+}
+
+.clear-search-btn {
+    background: #e5e7eb;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    color: #6b7280;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.clear-search-btn:hover {
+    background: #d1d5db;
+    color: #374151;
+}
+
 /* Products Grid */
 .products-grid {
     display: grid;
@@ -90,6 +132,21 @@
     z-index: 2;
 }
 
+/* Featured Badge */
+.featured-badge {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    background: linear-gradient(135deg, #ffc107, #ff9800);
+    color: #fff;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-weight: 700;
+    font-size: 13px;
+    box-shadow: 0 4px 12px rgba(255, 193, 7, 0.4);
+    z-index: 2;
+}
+
 /* Product Info */
 .product-info {
     padding: 20px;
@@ -110,6 +167,13 @@
     overflow: hidden;
     min-height: 50px;
     font-family: 'Inter', 'Poppins', 'Roboto', sans-serif;
+}
+
+.product-brand {
+    color: #6b7280;
+    font-size: 14px;
+    margin: 0 0 10px 0;
+    font-weight: 500;
 }
 
 /* Product Price */
@@ -221,6 +285,18 @@
     color: #fff;
     border-color: #1E4A7B;
     box-shadow: 0 4px 15px rgba(30, 74, 123, 0.3);
+}
+
+.page-btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+.page-btn:disabled:hover {
+    background: #fff;
+    color: #1E4A7B;
+    border-color: #e2e8f0;
+    transform: none;
 }
 
 /* Loading State */

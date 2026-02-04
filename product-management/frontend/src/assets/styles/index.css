@@ -23,10 +23,19 @@
     color: var(--primary);
     text-decoration: none;
     transition: var(--transition);
+    white-space: nowrap;
+    flex-shrink: 0;
 }
 
 .logo:hover {
     color: var(--primary-dark);
+}
+
+/* Search Bar in Header */
+.header-search {
+    flex: 1;
+    max-width: 600px;
+    margin: 0 var(--spacing-lg);
 }
 
 .nav {

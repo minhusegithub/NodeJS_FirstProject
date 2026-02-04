@@ -345,3 +345,108 @@
         font-size: 14px;
     }
 }
+/* Product Meta Info */
+.product-meta {
+    background: #f8f9fa;
+    padding: 16px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+}
+
+.meta-item {
+    padding: 8px 0;
+    color: #4b5563;
+    font-size: 15px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.meta-item:last-child {
+    border-bottom: none;
+}
+
+.meta-item strong {
+    color: #1E4A7B;
+    margin-right: 8px;
+}
+
+/* Product Stores */
+.product-stores {
+    margin-top: 30px;
+    padding-top: 30px;
+    border-top: 2px solid #e5e7eb;
+}
+
+.product-stores h3 {
+    color: #1E4A7B;
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 20px;
+}
+
+.stores-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.store-item {
+    background: #f8f9fa;
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.3s ease;
+}
+
+.store-item:hover {
+    border-color: #1E4A7B;
+    box-shadow: 0 4px 12px rgba(30, 74, 123, 0.1);
+    transform: translateY(-2px);
+}
+
+.store-info h4 {
+    color: #1E4A7B;
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.store-address, .store-contact {
+    color: #6b7280;
+    font-size: 14px;
+    margin: 4px 0;
+}
+
+.stock-available {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: #fff;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.stock-out {
+    background: #ef4444;
+    color: #fff;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.featured-badge {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    background: linear-gradient(135deg, #ffc107, #ff9800);
+    color: #fff;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-weight: 700;
+    font-size: 14px;
+    box-shadow: 0 4px 12px rgba(255, 193, 7, 0.4);
+    z-index: 2;
+}

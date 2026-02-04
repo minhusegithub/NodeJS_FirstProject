@@ -1,122 +1,401 @@
-import Product from '../../models/product.model.js';
+import { Product, ProductCategory, ProductStoreInventory, Store } from '../../models/sequelize/index.js';
+import { Op } from 'sequelize';
 
-// [GET] /api/v1/products
-export const index = async (req, res) => {
+// [GET] /api/products
+export const getProducts = async (req, res) => {
     try {
-        const {
-            page = 1,
-            limit = 6,
-            keyword = '',
-            category = '',
-            sortKey = 'position',
-            sortValue = 'desc'
-        } = req.query;
+        const { page = 1, limit = 20, keyword, category_id, status, featured } = req.query;
+        const offset = (page - 1) * limit;
 
-        const find = {
-            deleted: false,
-            status: 'active'
-        };
+        const where = {};
 
-        // Search by keyword
         if (keyword) {
-            const regex = new RegExp(keyword, 'i');
-            find.title = regex;
+            where[Op.or] = [
+                { title: { [Op.iLike]: `%${keyword}%` } },
+                { sku: { [Op.iLike]: `%${keyword}%` } },
+                { brand: { [Op.iLike]: `%${keyword}%` } }
+            ];
         }
 
-        // Filter by category
-        if (category) {
-            find.product_category_id = category;
+        if (category_id) {
+            where.product_category_id = category_id;
         }
 
-        // Sorting
-        const sort = {};
-        sort[sortKey] = sortValue === 'asc' ? 1 : -1;
+        // Default to active products only (unless explicitly specified)
+        if (status) {
+            where.status = status;
+        } else {
+            where.status = 'active'; // Only show active products by default
+        }
 
-        // Pagination
-        const skip = (page - 1) * limit;
-        const total = await Product.countDocuments(find);
-        const totalPages = Math.ceil(total / limit);
+        if (featured !== undefined) {
+            where.featured = featured === 'true';
+        }
 
-        const products = await Product
-            .find(find)
-            .sort(sort)
-            .limit(parseInt(limit))
-            .skip(skip)
-            .select('-deleted -deletedBy -updatedBy -createdBy');
+        const { count, rows } = await Product.findAndCountAll({
+            where,
+            limit: parseInt(limit),
+            offset: parseInt(offset),
+            order: [['position', 'ASC'], ['created_at', 'DESC']],
+            include: [
+                {
+                    model: ProductCategory,
+                    as: 'category',
+                    attributes: ['id', 'title', 'slug']
+                },
+                {
+                    model: ProductStoreInventory,
+                    as: 'inventory',
+                    include: [
+                        {
+                            model: Store,
+                            as: 'store',
+                            attributes: ['id', 'code', 'name']
+                        }
+                    ]
+                }
+            ],
+            distinct: true
+        });
 
         res.json({
-            success: true,
-            data: {
-                products,
-                pagination: {
-                    currentPage: parseInt(page),
-                    totalPages,
-                    limit: parseInt(limit),
-                    total
-                }
+            code: 200,
+            message: "Success",
+            data: rows,
+            pagination: {
+                total: count,
+                page: parseInt(page),
+                limit: parseInt(limit),
+                totalPages: Math.ceil(count / limit)
             }
         });
     } catch (error) {
+        console.error('Get Products Error:', error);
         res.status(500).json({
-            success: false,
-            message: error.message
+            code: 500,
+            message: "Internal Server Error",
+            error: error.message
         });
     }
 };
 
-// [GET] /api/v1/products/:slug
-export const detail = async (req, res) => {
+// [GET] /api/products/:slug
+export const getProductDetail = async (req, res) => {
     try {
-        const { slug } = req.params;
+        const { id } = req.params; // Can be slug or id
 
-        const product = await Product
-            .findOne({
-                slug,
-                deleted: false,
-                status: 'active'
-            })
-            .select('-deleted -deletedBy -updatedBy -createdBy');
+        // Try to find by slug first, then by id
+        let product = await Product.findOne({
+            where: { slug: id },
+            include: [
+                {
+                    model: ProductCategory,
+                    as: 'category',
+                    attributes: ['id', 'title', 'slug']
+                },
+                {
+                    model: ProductStoreInventory,
+                    as: 'inventory',
+                    include: [
+                        {
+                            model: Store,
+                            as: 'store',
+                            attributes: ['id', 'code', 'name', 'address', 'contact']
+                        }
+                    ]
+                }
+            ]
+        });
+
+        // If not found by slug, try by id (for backward compatibility)
+        if (!product && !isNaN(id)) {
+            product = await Product.findByPk(id, {
+                include: [
+                    {
+                        model: ProductCategory,
+                        as: 'category',
+                        attributes: ['id', 'title', 'slug']
+                    },
+                    {
+                        model: ProductStoreInventory,
+                        as: 'inventory',
+                        include: [
+                            {
+                                model: Store,
+                                as: 'store',
+                                attributes: ['id', 'code', 'name', 'address', 'contact']
+                            }
+                        ]
+                    }
+                ]
+            });
+        }
 
         if (!product) {
             return res.status(404).json({
-                success: false,
-                message: 'Không tìm thấy sản phẩm!'
+                code: 404,
+                message: "Product not found"
             });
         }
 
         res.json({
-            success: true,
-            data: { product }
+            code: 200,
+            message: "Success",
+            data: product
         });
     } catch (error) {
+        console.error('Get Product Detail Error:', error);
         res.status(500).json({
-            success: false,
-            message: error.message
+            code: 500,
+            message: "Internal Server Error",
+            error: error.message
         });
     }
 };
 
-// [GET] /api/v1/products/featured
-export const featured = async (req, res) => {
+// [POST] /api/products
+export const createProduct = async (req, res) => {
     try {
-        const products = await Product
-            .find({
-                deleted: false,
-                status: 'active',
-                featured: '1'
-            })
-            .sort({ position: -1 })
-            .limit(6)
-            .select('-deleted -deletedBy -updatedBy -createdBy');
+        const {
+            sku,
+            title,
+            product_category_id,
+            description,
+            price,
+            discount_percentage,
+            brand,
+            weight,
+            dimensions,
+            thumbnail,
+            status,
+            featured,
+            position
+        } = req.body;
 
-        res.json({
-            success: true,
-            data: { products }
+        // Validation
+        if (!title || price === undefined) {
+            return res.status(400).json({
+                code: 400,
+                message: "Title and Price are required"
+            });
+        }
+
+        // Check duplicate SKU if provided
+        if (sku) {
+            const existingProduct = await Product.findOne({ where: { sku } });
+            if (existingProduct) {
+                return res.status(400).json({
+                    code: 400,
+                    message: `Product with SKU "${sku}" already exists`
+                });
+            }
+        }
+
+        const newProduct = await Product.create({
+            sku,
+            title,
+            product_category_id: product_category_id || null,
+            description,
+            price,
+            discount_percentage: discount_percentage || 0,
+            brand,
+            weight,
+            dimensions, // Expected: {length, width, height}
+            thumbnail,
+            status: status || 'active',
+            featured: featured || false,
+            position: position || 0,
+            is_variant_parent: false
+        });
+
+        // Fetch with relations
+        const productWithRelations = await Product.findByPk(newProduct.id, {
+            include: [
+                {
+                    model: ProductCategory,
+                    as: 'category',
+                    attributes: ['id', 'title', 'slug']
+                }
+            ]
+        });
+
+        res.status(201).json({
+            code: 201,
+            message: "Product created successfully",
+            data: productWithRelations
         });
     } catch (error) {
+        console.error('Create Product Error:', error);
         res.status(500).json({
-            success: false,
-            message: error.message
+            code: 500,
+            message: "Internal Server Error",
+            error: error.message
+        });
+    }
+};
+
+// [PUT] /api/products/:id
+export const updateProduct = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const updates = req.body;
+
+        const product = await Product.findByPk(id);
+        if (!product) {
+            return res.status(404).json({
+                code: 404,
+                message: "Product not found"
+            });
+        }
+
+        // Check duplicate SKU if updating
+        if (updates.sku && updates.sku !== product.sku) {
+            const existing = await Product.findOne({ where: { sku: updates.sku } });
+            if (existing) {
+                return res.status(400).json({
+                    code: 400,
+                    message: `Product with SKU "${updates.sku}" already exists`
+                });
+            }
+        }
+
+        await product.update(updates);
+
+        // Fetch updated product with relations
+        const updatedProduct = await Product.findByPk(id, {
+            include: [
+                {
+                    model: ProductCategory,
+                    as: 'category',
+                    attributes: ['id', 'title', 'slug']
+                },
+                {
+                    model: ProductStoreInventory,
+                    as: 'inventory',
+                    include: [
+                        {
+                            model: Store,
+                            as: 'store',
+                            attributes: ['id', 'code', 'name']
+                        }
+                    ]
+                }
+            ]
+        });
+
+        res.json({
+            code: 200,
+            message: "Product updated successfully",
+            data: updatedProduct
+        });
+    } catch (error) {
+        console.error('Update Product Error:', error);
+        res.status(500).json({
+            code: 500,
+            message: "Internal Server Error",
+            error: error.message
+        });
+    }
+};
+
+// [DELETE] /api/products/:id
+export const deleteProduct = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const product = await Product.findByPk(id);
+        if (!product) {
+            return res.status(404).json({
+                code: 404,
+                message: "Product not found"
+            });
+        }
+
+        // Soft delete (paranoid: true in model)
+        await product.destroy();
+
+        res.json({
+            code: 200,
+            message: "Product deleted successfully"
+        });
+    } catch (error) {
+        console.error('Delete Product Error:', error);
+        res.status(500).json({
+            code: 500,
+            message: "Internal Server Error",
+            error: error.message
+        });
+    }
+};
+
+// [POST] /api/products/:id/inventory
+// Add/Update inventory for a product at a specific store
+export const updateProductInventory = async (req, res) => {
+    try {
+        const { id: product_id } = req.params;
+        const { store_id, stock, min_stock, max_stock, store_price, location } = req.body;
+
+        if (!store_id) {
+            return res.status(400).json({
+                code: 400,
+                message: "store_id is required"
+            });
+        }
+
+        // Check if product exists
+        const product = await Product.findByPk(product_id);
+        if (!product) {
+            return res.status(404).json({
+                code: 404,
+                message: "Product not found"
+            });
+        }
+
+        // Check if store exists
+        const store = await Store.findByPk(store_id);
+        if (!store) {
+            return res.status(404).json({
+                code: 404,
+                message: "Store not found"
+            });
+        }
+
+        // Find or create inventory record
+        const [inventory, created] = await ProductStoreInventory.findOrCreate({
+            where: { product_id, store_id },
+            defaults: {
+                stock: stock || 0,
+                min_stock: min_stock || 0,
+                max_stock,
+                store_price,
+                location,
+                last_restock_date: new Date()
+            }
+        });
+
+        if (!created) {
+            // Update existing inventory
+            await inventory.update({
+                ...(stock !== undefined && { stock }),
+                ...(min_stock !== undefined && { min_stock }),
+                ...(max_stock !== undefined && { max_stock }),
+                ...(store_price !== undefined && { store_price }),
+                ...(location !== undefined && { location }),
+                last_restock_date: new Date()
+            });
+        }
+
+        res.json({
+            code: created ? 201 : 200,
+            message: created ? "Inventory created successfully" : "Inventory updated successfully",
+            data: inventory
+        });
+    } catch (error) {
+        console.error('Update Product Inventory Error:', error);
+        res.status(500).json({
+            code: 500,
+            message: "Internal Server Error",
+            error: error.message
         });
     }
 };

@@ -1,5 +1,5 @@
 import md5 from 'md5';
-import User from '../../models/user.model.js';
+import { User, Store, StoreStaff, Role, sequelize } from '../../models/sequelize/index.js'; // Sequelize models
 import * as jwtHelper from '../../config/jwt.js';
 import * as generateHelper from '../../helpers/generate.js';
 
@@ -8,7 +8,11 @@ export const register = async (req, res) => {
     try {
         const { email, password, fullName, phone } = req.body;
 
-        const existingUser = await User.findOne({ email, deleted: false });
+        const existingUser = await User.findOne({
+            where: { email },
+            paranoid: true // Exclude soft-deleted
+        });
+
         if (existingUser) {
             return res.status(400).json({
                 success: false,
@@ -16,18 +20,17 @@ export const register = async (req, res) => {
             });
         }
 
-        const user = new User({
+        const newUser = await User.create({
             email,
             password: md5(password),
-            fullName,
+            full_name: fullName,
             phone,
-            tokenUser: generateHelper.generateRandomString(20)
+            token_user: generateHelper.generateRandomString(20),
+            status: 'active'
         });
 
-        await user.save();
-
-        const accessToken = jwtHelper.generateAccessToken({ userId: user._id });
-        const refreshToken = jwtHelper.generateRefreshToken({ userId: user._id });
+        const accessToken = jwtHelper.generateAccessToken({ userId: newUser.id });
+        const refreshToken = jwtHelper.generateRefreshToken({ userId: newUser.id });
 
         // Set refresh token in HttpOnly cookie
         jwtHelper.setRefreshTokenCookie(res, refreshToken);
@@ -37,15 +40,16 @@ export const register = async (req, res) => {
             message: 'Đăng ký thành công!',
             data: {
                 user: {
-                    id: user._id,
-                    email: user.email,
-                    fullName: user.fullName,
-                    phone: user.phone
+                    id: newUser.id,
+                    email: newUser.email,
+                    fullName: newUser.full_name,
+                    phone: newUser.phone
                 },
                 accessToken
             }
         });
     } catch (error) {
+        console.error('Register Error:', error);
         res.status(500).json({
             success: false,
             message: error.message
@@ -58,7 +62,22 @@ export const login = async (req, res) => {
     try {
         const { email, password } = req.body;
 
-        const user = await User.findOne({ email, deleted: false });
+        const user = await User.findOne({
+            where: { email },
+            paranoid: true,
+            include: [
+                {
+                    model: StoreStaff,
+                    as: 'store_roles',
+                    where: { is_active: true },
+                    required: false,
+                    include: [
+                        { model: Store, as: 'store', attributes: ['id', 'name', 'code'] },
+                        { model: Role, as: 'role_data' }
+                    ]
+                }
+            ]
+        });
 
         if (!user) {
             return res.status(401).json({
@@ -81,31 +100,46 @@ export const login = async (req, res) => {
             });
         }
 
-        const accessToken = jwtHelper.generateAccessToken({ userId: user._id });
-        const refreshToken = jwtHelper.generateRefreshToken({ userId: user._id });
+        // Prepare Roles Data
+        const roles = user.store_roles ? user.store_roles.map(r => ({
+            storeId: r.store_id,
+            storeName: r.store?.name,
+            roleId: r.role_id,
+            roleName: r.role_data?.name,
+            permissions: r.role_data?.permissions || []
+        })) : [];
+
+        const accessToken = jwtHelper.generateAccessToken({
+            userId: user.id,
+            roles: roles // Embed full roles & permissions
+        });
+        const refreshToken = jwtHelper.generateRefreshToken({ userId: user.id });
 
         // Set refresh token in HttpOnly cookie
         jwtHelper.setRefreshTokenCookie(res, refreshToken);
 
         // Update user status to online
-        await User.updateOne({ _id: user.id }, { statusOnline: 'online' });
+        user.status_online = 'online';
+        await user.save();
 
         res.json({
             success: true,
             message: 'Đăng nhập thành công!',
             data: {
                 user: {
-                    id: user._id,
+                    id: user.id,
                     email: user.email,
-                    fullName: user.fullName,
+                    fullName: user.full_name,
                     phone: user.phone,
                     avatar: user.avatar,
-                    address: user.address
+                    address: user.address,
+                    roles: roles
                 },
                 accessToken
             }
         });
     } catch (error) {
+        console.error('Login Error:', error);
         res.status(500).json({
             success: false,
             message: error.message
@@ -144,7 +178,9 @@ export const refreshToken = async (req, res) => {
 export const logout = async (req, res) => {
     try {
         if (req.user) {
-            await User.updateOne({ _id: req.user.id }, { statusOnline: 'offline' });
+            // req.user is populated by middleware (Sequelize instance)
+            req.user.status_online = 'offline';
+            await req.user.save();
         }
 
         res.clearCookie('refreshToken');
@@ -163,17 +199,31 @@ export const logout = async (req, res) => {
 // [GET] /api/v1/auth/profile
 export const profile = async (req, res) => {
     try {
+        if (!req.user) {
+            return res.status(401).json({ success: false, message: "User not authenticated" });
+        }
+
+        // Map roles from req.user.store_roles (populated by authenticateUser middleware)
+        const roles = req.user.store_roles ? req.user.store_roles.map(r => ({
+            storeId: r.store_id,
+            storeName: r.store?.name,
+            roleId: r.role_id,
+            roleName: r.role_data?.name,
+            permissions: r.role_data?.permissions || []
+        })) : [];
+
         res.json({
             success: true,
             data: {
                 user: {
-                    id: req.user._id,
+                    id: req.user.id,
                     email: req.user.email,
-                    fullName: req.user.fullName,
+                    fullName: req.user.full_name,
                     phone: req.user.phone,
                     avatar: req.user.avatar,
                     address: req.user.address,
-                    status: req.user.status
+                    status: req.user.status,
+                    roles: roles
                 }
             }
         });

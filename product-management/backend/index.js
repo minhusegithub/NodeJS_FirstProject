@@ -7,6 +7,9 @@ import http from 'http';
 import { Server } from 'socket.io';
 import dotenv from 'dotenv';
 
+// Configure dotenv immediately
+dotenv.config();
+
 // Import configurations
 import * as database from './config/database.js';
 import corsMiddleware from './middlewares/cors.middleware.js';
@@ -15,15 +18,18 @@ import { errorHandler, notFound } from './middlewares/error.middleware.js';
 // Import routes
 import apiV1Routes from './routes/api/v1/index.js';
 
-// Configure dotenv
-dotenv.config();
-
 // ES6 __dirname alternative
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 // Connect to database
-database.connect();
+// database.connect(); // MongoDB (Optional now)
+
+// Connect PostgreSQL
+import { sequelize } from './models/sequelize/index.js';
+sequelize.authenticate()
+  .then(() => console.log('✅ PostgreSQL connected successfully'))
+  .catch(err => console.error('❌ PostgreSQL connection failed:', err));
 
 // Initialize Express app
 const app = express();

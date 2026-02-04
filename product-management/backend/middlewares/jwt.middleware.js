@@ -1,6 +1,5 @@
 import * as jwtHelper from '../config/jwt.js';
-import User from '../models/user.model.js';
-import Account from '../models/account.model.js';
+import { User, StoreStaff, Store, Role } from '../models/sequelize/index.js'; // Use Sequelize model
 
 export const authenticateUser = async (req, res, next) => {
     try {
@@ -14,12 +13,29 @@ export const authenticateUser = async (req, res, next) => {
         }
 
         const decoded = jwtHelper.verifyAccessToken(token);
-        const user = await User.findById(decoded.userId).select('-password');
 
-        if (!user || user.deleted) {
+        // Use Sequelize findByPk
+        const user = await User.findByPk(decoded.userId, {
+            attributes: { exclude: ['password'] }, // Sequelize uses exclude
+            include: [
+                {
+                    model: StoreStaff,
+                    as: 'store_roles',
+                    where: { is_active: true },
+                    required: false,
+                    include: [
+                        { model: Store, as: 'store' },
+                        { model: Role, as: 'role_data' }
+                    ]
+                }
+            ]
+        });
+
+        // Use paranoid: true so deletedAt check is automatic, but can check explicit
+        if (!user || user.status !== 'active') { // Assuming logic
             return res.status(401).json({
                 success: false,
-                message: 'Invalid token'
+                message: 'Invalid token or User inactive'
             });
         }
 

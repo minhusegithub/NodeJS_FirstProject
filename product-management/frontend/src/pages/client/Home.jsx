@@ -24,10 +24,7 @@ const Home = () => {
                             <h3>💳 Thanh toán an toàn</h3>
                             <p>Tích hợp VNPay - Thanh toán nhanh chóng, bảo mật</p>
                         </div>
-                        <div className="feature-card">
-                            <h3>💬 Chat real-time</h3>
-                            <p>Hỗ trợ khách hàng tức thì với Socket.io</p>
-                        </div>
+
                     </div>
                 </div>
             </div>

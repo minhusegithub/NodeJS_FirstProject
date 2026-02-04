@@ -1,23 +1,23 @@
 import jwt from 'jsonwebtoken';
 
 export const generateAccessToken = (payload) => {
-    return jwt.sign(payload, process.env.JWT_ACCESS_SECRET, {
+    return jwt.sign(payload, process.env.JWT_ACCESS_SECRET || 'secret123', {
         expiresIn: '15m'
     });
 };
 
 export const generateRefreshToken = (payload) => {
-    return jwt.sign(payload, process.env.JWT_REFRESH_SECRET, {
+    return jwt.sign(payload, process.env.JWT_REFRESH_SECRET || 'refresh123', {
         expiresIn: '7d'
     });
 };
 
 export const verifyAccessToken = (token) => {
-    return jwt.verify(token, process.env.JWT_ACCESS_SECRET);
+    return jwt.verify(token, process.env.JWT_ACCESS_SECRET || 'secret123');
 };
 
 export const verifyRefreshToken = (token) => {
-    return jwt.verify(token, process.env.JWT_REFRESH_SECRET);
+    return jwt.verify(token, process.env.JWT_REFRESH_SECRET || 'refresh123');
 };
 
 // Helper to set refresh token in HttpOnly cookie
