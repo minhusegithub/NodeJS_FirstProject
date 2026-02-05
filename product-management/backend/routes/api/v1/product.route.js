@@ -7,6 +7,7 @@ const router = express.Router();
 
 // Public routes (no auth required for viewing products)
 router.get('/', controller.getProducts);
+router.get('/categories/tree', controller.getCategoryTree);
 router.get('/:id', controller.getProductDetail);
 
 // Protected routes - require authentication and specific roles

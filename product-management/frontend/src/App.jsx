@@ -23,7 +23,7 @@ import Profile from './pages/client/Profile';
 import EditProfile from './pages/client/EditProfile';
 
 // Admin pages
-import AdminDashboard from './pages/admin/Dashboard';
+
 import AdminProducts from './pages/admin/Products';
 import AdminOrders from './pages/admin/Orders';
 import AdminStores from './pages/admin/Stores';
@@ -91,7 +91,7 @@ function App() {
                             <AdminLayout />
                         </ProtectedRoute>
                     }>
-                        <Route path="dashboard" element={<AdminDashboard />} />
+
                         <Route path="products" element={<AdminProducts />} />
                         <Route path="orders" element={<AdminOrders />} />
                         <Route path="stores" element={<AdminStores />} />

@@ -29,9 +29,6 @@ const AdminLayout = () => {
                 </div>
 
                 <nav className="admin-nav">
-                    <Link to="/admin/dashboard" className="admin-nav-item">
-                        📊 Dashboard
-                    </Link>
                     <Link to="/admin/products" className="admin-nav-item">
                         📦 Sản phẩm
                     </Link>

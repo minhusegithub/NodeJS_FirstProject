@@ -4,7 +4,7 @@ import { Op } from 'sequelize';
 // [GET] /api/products
 export const getProducts = async (req, res) => {
     try {
-        const { page = 1, limit = 20, keyword, category_id, status, featured } = req.query;
+        const { page = 1, limit = 12, keyword, category_id, status, featured, price_range } = req.query;
         const offset = (page - 1) * limit;
 
         const where = {};
@@ -12,13 +12,40 @@ export const getProducts = async (req, res) => {
         if (keyword) {
             where[Op.or] = [
                 { title: { [Op.iLike]: `%${keyword}%` } },
-                { sku: { [Op.iLike]: `%${keyword}%` } },
+
                 { brand: { [Op.iLike]: `%${keyword}%` } }
             ];
         }
 
         if (category_id) {
-            where.product_category_id = category_id;
+            // Get all subcategories recursively
+            const getSubCategoryIds = async (rootId) => {
+                const subIds = [parseInt(rootId)];
+                const children = await ProductCategory.findAll({
+                    where: { parent_id: rootId, status: 'active' },
+                    attributes: ['id']
+                });
+
+                for (const child of children) {
+                    const childIds = await getSubCategoryIds(child.id);
+                    subIds.push(...childIds);
+                }
+                return subIds;
+            };
+
+            const allCategoryIds = await getSubCategoryIds(category_id);
+            where.product_category_id = { [Op.in]: allCategoryIds };
+        }
+
+        // Price range filter
+        if (price_range) {
+            if (price_range === 'under_100') {
+                where.price = { [Op.lt]: 100 };
+            } else if (price_range === '100_to_500') {
+                where.price = { [Op.between]: [100, 500] };
+            } else if (price_range === 'over_500') {
+                where.price = { [Op.gt]: 500 };
+            }
         }
 
         // Default to active products only (unless explicitly specified)
@@ -392,6 +419,46 @@ export const updateProductInventory = async (req, res) => {
         });
     } catch (error) {
         console.error('Update Product Inventory Error:', error);
+        res.status(500).json({
+            code: 500,
+            message: "Internal Server Error",
+            error: error.message
+        });
+    }
+};
+
+// [GET] /api/products/categories/tree
+export const getCategoryTree = async (req, res) => {
+    try {
+        // Get all active categories
+        const categories = await ProductCategory.findAll({
+            where: { status: 'active' },
+            order: [['position', 'ASC'], ['title', 'ASC']],
+            attributes: ['id', 'title', 'slug', 'parent_id', 'thumbnail']
+        });
+
+        // Build tree structure
+        const buildTree = (parentId = null) => {
+            return categories
+                .filter(cat => cat.parent_id === parentId)
+                .map(cat => ({
+                    id: cat.id,
+                    title: cat.title,
+                    slug: cat.slug,
+                    thumbnail: cat.thumbnail,
+                    children: buildTree(cat.id)
+                }));
+        };
+
+        const tree = buildTree(null);
+
+        res.json({
+            code: 200,
+            message: "Success",
+            data: tree
+        });
+    } catch (error) {
+        console.error('Get Category Tree Error:', error);
         res.status(500).json({
             code: 500,
             message: "Internal Server Error",

@@ -2,7 +2,6 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../stores/authStore';
 import { useCartStore } from '../../stores/cartStore';
 import { useEffect } from 'react';
-import SearchBar from '../../pages/client/SearchBar';
 
 const Header = () => {
     const navigate = useNavigate();
@@ -28,11 +27,6 @@ const Header = () => {
                     <Link to="/" className="logo">
                         🛍️ MVN Shop
                     </Link>
-
-                    {/* Search Bar */}
-                    <div className="header-search">
-                        <SearchBar />
-                    </div>
 
                     <nav className="nav">
                         <Link to="/">Trang chủ</Link>
