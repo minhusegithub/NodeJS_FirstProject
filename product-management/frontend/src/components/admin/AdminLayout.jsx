@@ -1,10 +1,12 @@
 import { Link, Outlet, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../stores/authStore';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
+import AdminProfileModal from './AdminProfileModal';
 
 const AdminLayout = () => {
     const navigate = useNavigate();
     const { user, logout } = useAuthStore();
+    const [showProfileModal, setShowProfileModal] = useState(false);
 
     const handleLogout = async () => {
         await logout();
@@ -56,18 +58,34 @@ const AdminLayout = () => {
                 <header className="admin-topbar">
                     <div className="admin-topbar-content">
                         <h3>Xin chào, {user?.fullName || 'Admin'}</h3>
-                        <button className="btn-logout" onClick={handleLogout}>
-                            Đăng xuất
-                        </button>
+                        <div className="topbar-actions">
+                            <button
+                                className="btn-profile"
+                                onClick={() => setShowProfileModal(true)}
+
+                            >
+                                👤 Thông tin cá nhân
+                            </button>
+                            <button className="btn-logout" onClick={handleLogout}>
+                                Đăng xuất
+                            </button>
+                        </div>
                     </div>
                 </header>
 
                 <main className="admin-content">
                     <Outlet />
                 </main>
+
+                {/* Profile Modal Integration */}
+                <AdminProfileModal
+                    isOpen={showProfileModal}
+                    onClose={() => setShowProfileModal(false)}
+                />
             </div>
         </div>
     );
 };
+
 
 export default AdminLayout;

@@ -73,6 +73,49 @@
     align-items: center;
 }
 
+.topbar-actions {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.btn-profile {
+    padding: 0.6rem 1.2rem;
+    background: #1E4A7B;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    font-size: 14px;
+}
+
+.btn-profile:hover {
+    background: #163a5f;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(30, 74, 123, 0.3);
+}
+
+.btn-logout {
+    padding: 0.6rem 1.2rem;
+    background: #dc2626;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 14px;
+}
+
+.btn-logout:hover {
+    background: #b91c1c;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+}
+
 .admin-content {
     flex: 1;
     padding: var(--spacing-xl);

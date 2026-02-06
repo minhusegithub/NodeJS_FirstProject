@@ -27,6 +27,7 @@ import EditProfile from './pages/client/EditProfile';
 import AdminProducts from './pages/admin/Products';
 import AdminOrders from './pages/admin/Orders';
 import AdminStores from './pages/admin/Stores';
+import AdminProfile from './pages/admin/Profile';
 
 function App() {
     const checkAuth = useAuthStore((state) => state.checkAuth);
@@ -95,6 +96,7 @@ function App() {
                         <Route path="products" element={<AdminProducts />} />
                         <Route path="orders" element={<AdminOrders />} />
                         <Route path="stores" element={<AdminStores />} />
+                        <Route path="profile" element={<AdminProfile />} />
                     </Route>
                 </Routes>
             </BrowserRouter>
