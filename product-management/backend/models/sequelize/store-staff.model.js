@@ -25,7 +25,7 @@ const StoreStaff = sequelize.define('StoreStaff', {
     },
     role_id: {
         type: DataTypes.INTEGER,
-        allowNull: false,
+        allowNull: true, // Allow user to be in a store without a specific role initially
         references: {
             model: 'roles',
             key: 'id'

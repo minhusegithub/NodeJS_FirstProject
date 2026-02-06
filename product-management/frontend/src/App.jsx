@@ -28,6 +28,7 @@ import AdminProducts from './pages/admin/Products';
 import AdminOrders from './pages/admin/Orders';
 import AdminStores from './pages/admin/Stores';
 import AdminProfile from './pages/admin/Profile';
+import AdminAccount from './pages/admin/Account';
 
 function App() {
     const checkAuth = useAuthStore((state) => state.checkAuth);
@@ -97,6 +98,7 @@ function App() {
                         <Route path="orders" element={<AdminOrders />} />
                         <Route path="stores" element={<AdminStores />} />
                         <Route path="profile" element={<AdminProfile />} />
+                        <Route path="accounts" element={<AdminAccount />} />
                     </Route>
                 </Routes>
             </BrowserRouter>

@@ -50,6 +50,12 @@ const AdminLayout = () => {
                             🏢 Cửa hàng
                         </Link>
                     )}
+
+                    {userRoles.isStoreManager && (
+                        <Link to="/admin/accounts" className="admin-nav-item">
+                            👥 Tài khoản
+                        </Link>
+                    )}
                 </nav>
 
             </aside>
