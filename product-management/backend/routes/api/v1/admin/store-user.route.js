@@ -3,7 +3,9 @@ import * as controller from '../../../../controllers/api/admin/store-user.contro
 
 const router = express.Router();
 
+router.get('/roles', controller.getRoles);
 router.get('/', controller.index);
 router.post('/', controller.create);
+router.put('/:id', controller.update);
 
 export default router;

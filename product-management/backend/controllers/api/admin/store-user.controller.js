@@ -126,8 +126,8 @@ export const index = async (req, res) => {
         // 2. Query StoreStaff
         const staffList = await StoreStaff.findAll({
             where: {
-                ...whereClause,
-                is_active: true
+                ...whereClause
+
             },
             include: [
                 {
@@ -156,6 +156,7 @@ export const index = async (req, res) => {
             fullName: item.user.full_name,
             email: item.user.email,
             phone: item.user.phone,
+            address: item.user.address, // Added address field
             avatar: item.user.avatar,
             status: item.user.status,
             roleName: item.role_data?.name,
@@ -175,5 +176,108 @@ export const index = async (req, res) => {
             code: 500,
             message: 'Lỗi server: ' + error.message
         });
+    }
+};
+
+// [GET] /api/v1/admin/store-users/roles
+export const getRoles = async (req, res) => {
+    try {
+        // Fetch all roles except SystemAdmin
+        const roles = await Role.findAll({
+            where: {
+                name: { [Op.ne]: 'SystemAdmin' },
+                scope: { [Op.ne]: 'system' }
+            },
+            attributes: ['id', 'name']
+        });
+
+        res.json({
+            code: 200,
+            data: roles
+        });
+    } catch (error) {
+        console.error('Get Roles Error:', error);
+        res.status(500).json({ code: 500, message: error.message });
+    }
+};
+
+// [PUT] /api/v1/admin/store-users/:id
+export const update = async (req, res) => {
+    const t = await sequelize.transaction();
+    try {
+        const { id } = req.params; // store_staff id
+        const { fullName, email, password, phone, address, roleId, status } = req.body;
+
+        const staff = await StoreStaff.findByPk(id, {
+            include: [{ model: User, as: 'user' }]
+        });
+
+        if (!staff) {
+            await t.rollback();
+            return res.json({ code: 404, message: 'Nhân viên không tồn tại' });
+        }
+
+        // 1. Update User Record
+        const userData = {
+            full_name: fullName,
+            phone,
+            address,
+            // Sync user status with staff status logic if needed
+            status: status === 'active' ? 'active' : 'inactive'
+        };
+
+        if (password) {
+            userData.password = md5(password);
+        }
+
+        // Check email uniqueness if changed
+        if (email && email !== staff.user.email) {
+            const exist = await User.findOne({
+                where: {
+                    email,
+                    id: { [Op.ne]: staff.user_id }
+                }
+            });
+            if (exist) {
+                await t.rollback();
+                return res.json({ code: 400, message: 'Email đã tồn tại' });
+            }
+            userData.email = email;
+        }
+
+        await User.update(userData, {
+            where: { id: staff.user_id },
+            transaction: t
+        });
+
+        // 2. Update StoreStaff Record
+        const staffData = {
+            is_active: status === 'active'
+        };
+
+        // Handle Role Update
+        if (roleId) {
+            staffData.role_id = roleId;
+        } else if (roleId === null || roleId === '') {
+            // Allow unassigning role
+            staffData.role_id = null;
+        }
+
+        await StoreStaff.update(staffData, {
+            where: { id },
+            transaction: t
+        });
+
+        await t.commit();
+
+        res.json({
+            code: 200,
+            message: 'Cập nhật thành công!'
+        });
+
+    } catch (error) {
+        await t.rollback();
+        console.error('Update Staff Error:', error);
+        res.status(500).json({ code: 500, message: error.message });
     }
 };
