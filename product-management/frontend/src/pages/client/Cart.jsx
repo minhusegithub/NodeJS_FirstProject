@@ -114,7 +114,9 @@ const Cart = () => {
     const formatPrice = (price) => {
         return new Intl.NumberFormat('vi-VN', {
             style: 'currency',
-            currency: 'VND'
+            currency: 'VND',
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0
         }).format(price || 0);
     };
 
@@ -203,7 +205,8 @@ const Cart = () => {
                                         </thead>
                                         <tbody>
                                             {group.items.map((item) => {
-                                                const currentPrice = item.product.price * (100 - (item.product.discount_percentage || 0)) / 100;
+                                                // Round currentPrice to integer after applying discount
+                                                const currentPrice = Math.round(item.product.price * (100 - (item.product.discount_percentage || 0)) / 100);
                                                 const currentStt = globalStt++;
 
                                                 return (

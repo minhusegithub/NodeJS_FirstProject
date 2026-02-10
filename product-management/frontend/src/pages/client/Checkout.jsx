@@ -6,14 +6,14 @@ import { useAuthStore } from '../../stores/authStore';
 
 const Checkout = () => {
     const navigate = useNavigate();
-    const { cart, totalPrice, getCart } = useCartStore();
+    const { cart, selectedItems, getSelectedTotal, getCart } = useCartStore();
     const { checkout, loading } = useOrderStore();
     const { user } = useAuthStore();
 
     const [formData, setFormData] = useState({
         fullName: user?.fullName || '',
         phone: user?.phone || '',
-        address: '',
+        address: user?.address || '',
         paymentMethod: 'COD'
     });
 
@@ -21,11 +21,12 @@ const Checkout = () => {
         getCart();
     }, [getCart]);
 
+    // Redirect if no items selected
     useEffect(() => {
-        if (cart.length === 0 && !loading) {
+        if (selectedItems.length === 0 && !loading) {
             navigate('/cart');
         }
-    }, [cart, navigate, loading]);
+    }, [selectedItems, navigate, loading]);
 
     const handleChange = (e) => {
         setFormData({
@@ -50,7 +51,11 @@ const Checkout = () => {
                 },
                 formData.paymentMethod
             );
-            navigate(`/orders/${order._id}`);
+
+            // If VNPay, user will be redirected, order will be null
+            if (order && order.id) {
+                navigate('/');
+            }
         } catch (error) {
             console.error(error);
         }
@@ -59,11 +64,31 @@ const Checkout = () => {
     const formatPrice = (price) => {
         return new Intl.NumberFormat('vi-VN', {
             style: 'currency',
-            currency: 'VND'
-        }).format(price);
+            currency: 'VND',
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0
+        }).format(price || 0);
     };
 
-    if (cart.length === 0) {
+    // Filter only selected items
+    const selectedCartItems = cart.filter(item => selectedItems.includes(item.id));
+
+    // Group selected items by store
+    const groupedByStore = selectedCartItems.reduce((acc, item) => {
+        const storeId = item.store.id;
+        if (!acc[storeId]) {
+            acc[storeId] = {
+                store: item.store,
+                items: []
+            };
+        }
+        acc[storeId].items.push(item);
+        return acc;
+    }, {});
+
+    const selectedTotal = getSelectedTotal();
+
+    if (selectedItems.length === 0) {
         return null;
     }
 
@@ -73,6 +98,109 @@ const Checkout = () => {
                 <h1 className="page-title">Thanh Toán</h1>
 
                 <div className="checkout-content">
+
+
+                    <div className="checkout-summary-section">
+                        <div className="checkout-card">
+                            <div className="card-header-with-action">
+                                <h2>Đơn hàng của bạn</h2>
+                                <button
+                                    type="button"
+                                    className="btn-edit-cart"
+                                    onClick={() => navigate('/cart')}
+                                >
+                                    Chỉnh sửa
+                                </button>
+                            </div>
+
+                            {/* Group items by store */}
+                            {Object.values(groupedByStore).map((group) => {
+                                // Calculate store subtotal
+                                const storeSubtotal = group.items.reduce((total, item) => {
+                                    const currentPrice = Math.round(item.product.price * (100 - (item.product.discount_percentage || 0)) / 100);
+                                    return total + (currentPrice * item.quantity);
+                                }, 0);
+
+                                return (
+                                    <div key={group.store.id} style={{ marginBottom: '30px' }}>
+                                        {/* Store Header */}
+                                        <div style={{
+                                            background: '#f8f9fa',
+                                            padding: '12px 16px',
+                                            borderRadius: '8px',
+                                            marginBottom: '12px',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '8px',
+                                            borderLeft: '4px solid #3498db'
+                                        }}>
+                                            <i className="fa-solid fa-shop" style={{ color: '#3498db' }}></i>
+                                            <span style={{ fontWeight: '600', fontSize: '15px' }}>{group.store.name}</span>
+                                            <span style={{ color: '#6c757d', fontSize: '13px' }}>({group.items.length} sản phẩm)</span>
+                                        </div>
+
+                                        {/* Store Items */}
+                                        <div className="checkout-items">
+                                            {group.items.map((item) => {
+                                                const currentPrice = Math.round(item.product.price * (100 - (item.product.discount_percentage || 0)) / 100);
+                                                const itemTotal = currentPrice * item.quantity;
+
+                                                return (
+                                                    <div key={item.id} className="checkout-item">
+                                                        <img src={item.product.thumbnail} alt={item.product.title} />
+                                                        <div className="checkout-item-info">
+                                                            <h4>{item.product.title}</h4>
+                                                            <p>Số lượng: {item.quantity}</p>
+                                                            <p style={{ fontSize: '13px', color: '#6c757d' }}>
+                                                                {formatPrice(currentPrice)} x {item.quantity}
+                                                            </p>
+                                                        </div>
+                                                        <div className="checkout-item-price">
+                                                            {formatPrice(itemTotal)}
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+
+                                        {/* Store Subtotal & Shipping */}
+                                        <div style={{
+                                            padding: '12px 16px',
+                                            background: '#f8f9fa',
+                                            borderRadius: '8px',
+                                            marginTop: '12px'
+                                        }}>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '14px' }}>
+                                                <span style={{ color: '#6c757d' }}>Tạm tính ({group.store.name}):</span>
+                                                <span style={{ fontWeight: '600' }}>{formatPrice(storeSubtotal)}</span>
+                                            </div>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px' }}>
+                                                <span style={{ color: '#6c757d' }}>Phí vận chuyển:</span>
+                                                <span style={{ color: '#27ae60', fontWeight: '600' }}>Miễn phí</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+
+                            {/* Overall Summary */}
+                            <div className="checkout-summary" style={{ marginTop: '20px', paddingTop: '20px', borderTop: '2px solid #dee2e6' }}>
+                                <div className="summary-row">
+                                    <span>Tổng tạm tính:</span>
+                                    <span>{formatPrice(selectedTotal)}</span>
+                                </div>
+                                <div className="summary-row">
+                                    <span>Tổng phí vận chuyển:</span>
+                                    <span style={{ color: '#27ae60' }}>Miễn phí</span>
+                                </div>
+                                <div className="summary-total">
+                                    <span>Tổng cộng:</span>
+                                    <span>{formatPrice(selectedTotal)}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <div className="checkout-form-section">
                         <div className="checkout-card">
                             <h2>Thông tin giao hàng</h2>
@@ -150,51 +278,6 @@ const Checkout = () => {
                                     {loading ? 'Đang xử lý...' : 'Đặt hàng'}
                                 </button>
                             </form>
-                        </div>
-                    </div>
-
-                    <div className="checkout-summary-section">
-                        <div className="checkout-card">
-                            <div className="card-header-with-action">
-                                <h2>Đơn hàng của bạn</h2>
-                                <button
-                                    type="button"
-                                    className="btn-edit-cart"
-                                    onClick={() => navigate('/cart')}
-                                >
-                                    Chỉnh sửa
-                                </button>
-                            </div>
-
-                            <div className="checkout-items">
-                                {cart.map((item) => (
-                                    <div key={item.product_id} className="checkout-item">
-                                        <img src={item.thumbnail} alt={item.title} />
-                                        <div className="checkout-item-info">
-                                            <h4>{item.title}</h4>
-                                            <p>Số lượng: {item.quantity}</p>
-                                        </div>
-                                        <div className="checkout-item-price">
-                                            {formatPrice(item.totalPrice)}
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-
-                            <div className="checkout-summary">
-                                <div className="summary-row">
-                                    <span>Tạm tính:</span>
-                                    <span>{formatPrice(totalPrice)}</span>
-                                </div>
-                                <div className="summary-row">
-                                    <span>Phí vận chuyển:</span>
-                                    <span>Miễn phí</span>
-                                </div>
-                                <div className="summary-total">
-                                    <span>Tổng cộng:</span>
-                                    <span>{formatPrice(totalPrice)}</span>
-                                </div>
-                            </div>
                         </div>
                     </div>
                 </div>

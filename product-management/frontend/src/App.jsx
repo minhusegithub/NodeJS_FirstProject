@@ -21,6 +21,7 @@ import Orders from './pages/client/Orders';
 import OrderDetail from './pages/client/OrderDetail';
 import Profile from './pages/client/Profile';
 import EditProfile from './pages/client/EditProfile';
+import VNPayReturn from './pages/client/VNPayReturn';
 
 // Admin pages
 
@@ -72,6 +73,12 @@ function App() {
                         <ProtectedRoute>
                             <Header />
                             <Checkout />
+                        </ProtectedRoute>
+                    } />
+                    <Route path="/vnpay-return" element={
+                        <ProtectedRoute>
+                            <Header />
+                            <VNPayReturn />
                         </ProtectedRoute>
                     } />
                     <Route path="/orders" element={

@@ -28,10 +28,10 @@ const Product = sequelize.define('Product', {
         allowNull: true
     },
     price: {
-        type: DataTypes.DECIMAL(10, 2),
+        type: DataTypes.DECIMAL(15, 2),
         allowNull: false,
         defaultValue: 0,
-        comment: 'Base price (MSRP)'
+        comment: 'Base price in VND'
     },
     discount_percentage: {
         type: DataTypes.DECIMAL(5, 2),

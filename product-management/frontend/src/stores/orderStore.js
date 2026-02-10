@@ -16,6 +16,13 @@ export const useOrderStore = create((set, get) => ({
                 userInfo,
                 paymentMethod
             });
+
+            // If VNPay, redirect to payment URL
+            if (paymentMethod === 'VNPay' && data.data.paymentUrl) {
+                window.location.href = data.data.paymentUrl;
+                return null; // Don't return order as user will be redirected
+            }
+
             toast.success('Đặt hàng thành công!');
             set({ loading: false });
             return data.data.order;
