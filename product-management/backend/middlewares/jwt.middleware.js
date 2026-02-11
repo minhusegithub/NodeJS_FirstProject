@@ -39,6 +39,13 @@ export const authenticateUser = async (req, res, next) => {
             });
         }
 
+        // Map store_roles to roles array for compatibility
+        user.roles = user.store_roles?.map(sr => ({
+            roleName: sr.role_data?.name,
+            storeId: sr.store_id,
+            store: sr.store
+        })) || [];
+
         req.user = user;
         next();
     } catch (error) {

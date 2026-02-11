@@ -1,12 +1,14 @@
 import express from 'express';
 import * as orderController from '../../../../controllers/api/admin/order.controller.js';
+import { requireRole } from '../../../../middlewares/role.middleware.js';
 
 const router = express.Router();
 
-router.get('/statistics', orderController.statistics);
-router.get('/', orderController.index);
-router.get('/:id', orderController.detail);
-router.patch('/:id/status', orderController.updateStatus);
-router.delete('/:id', orderController.deleteOrder);
+// All routes require storeManager or OrderStaff role
+router.use(requireRole(['storeManager', 'OrderStaff']));
+
+router.get('/', orderController.getOrders);
+router.get('/:id', orderController.getOrderDetail);
+router.patch('/:id/status', orderController.updateOrderStatus);
 
 export default router;

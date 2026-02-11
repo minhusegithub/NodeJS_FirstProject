@@ -1,0 +1,286 @@
+/* Admin Orders Page Styles */
+.admin-orders {
+    min-height: 100vh;
+}
+
+.admin-orders .admin-page-title {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-weight: 800;
+    margin-bottom: 2rem;
+}
+
+.admin-orders .admin-table-container {
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+    border: 1px solid #e5e7eb;
+}
+
+.admin-orders .admin-table thead {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.admin-orders .admin-table th {
+    color: white;
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+    padding: 1.2rem 1rem;
+}
+
+.admin-orders .admin-table tbody tr {
+    transition: all 0.3s ease;
+}
+
+.admin-orders .admin-table tbody tr:hover {
+    background: #f8f9ff;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.1);
+    transform: translateX(4px);
+}
+
+.admin-orders .admin-table td {
+    padding: 1.2rem 1rem;
+    vertical-align: middle;
+}
+
+/* Order Items Mini Preview */
+.admin-orders .order-items-mini {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-width: 280px;
+}
+
+.admin-orders .item-mini {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px;
+    background: #f8f9ff;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+    transition: all 0.2s ease;
+}
+
+.admin-orders .item-mini:hover {
+    background: #eef2ff;
+    border-color: #667eea;
+    transform: translateX(4px);
+}
+
+.admin-orders .item-mini img {
+    width: 36px;
+    height: 36px;
+    object-fit: cover;
+    border-radius: 6px;
+    border: 2px solid #e5e7eb;
+}
+
+.admin-orders .item-mini span {
+    flex: 1;
+    font-size: 0.85rem;
+    color: #374151;
+    font-weight: 500;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.admin-orders .item-mini .qty {
+    font-weight: 700;
+    color: #667eea;
+    font-size: 0.8rem;
+    background: #eef2ff;
+    padding: 2px 8px;
+    border-radius: 4px;
+}
+
+.admin-orders .more-items {
+    font-size: 0.8rem;
+    color: #667eea;
+    font-weight: 700;
+    font-style: italic;
+    padding: 4px 8px;
+    background: #eef2ff;
+    border-radius: 6px;
+    text-align: center;
+}
+
+/* Price Highlight */
+.admin-orders .price-highlight {
+    color: #dc2626;
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
+/* Payment Badge */
+.admin-orders .payment-badge {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.admin-orders .payment-badge.payment-pending {
+    background: linear-gradient(135deg, #fef3c7, #fde68a);
+    color: #92400e;
+    border: 1px solid #fbbf24;
+}
+
+.admin-orders .payment-badge.payment-paid {
+    background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+    color: #065f46;
+    border: 1px solid #10b981;
+}
+
+.admin-orders .payment-badge.payment-failed {
+    background: linear-gradient(135deg, #fee2e2, #fecaca);
+    color: #991b1b;
+    border: 1px solid #ef4444;
+}
+
+/* Status Select Enhanced */
+.admin-orders .status-select {
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 0.85rem;
+    border: 2px solid transparent;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.admin-orders .status-select:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.admin-orders .status-select.status-pending {
+    background: linear-gradient(135deg, #fef3c7, #fde68a);
+    color: #92400e;
+}
+
+.admin-orders .status-select.status-confirmed {
+    background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+    color: #1e40af;
+}
+
+.admin-orders .status-select.status-shipping {
+    background: linear-gradient(135deg, #e0e7ff, #c7d2fe);
+    color: #4338ca;
+}
+
+.admin-orders .status-select.status-delivered {
+    background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+    color: #065f46;
+}
+
+.admin-orders .status-select.status-cancelled {
+    background: linear-gradient(135deg, #fee2e2, #fecaca);
+    color: #991b1b;
+}
+
+/* Action Buttons Enhanced */
+.admin-orders .action-buttons {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+}
+
+.admin-orders .btn-action {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.admin-orders .btn-view {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.admin-orders .btn-view:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+/* Text Utilities */
+.admin-orders .text-muted {
+    color: #9ca3af;
+    font-size: 0.8rem;
+}
+
+.admin-orders .text-center {
+    text-align: center;
+    padding: 2rem;
+    color: #6b7280;
+    font-style: italic;
+}
+
+/* Loading State */
+.admin-orders .loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem;
+}
+
+.admin-orders .loading-spinner {
+    width: 50px;
+    height: 50px;
+    border: 4px solid #e5e7eb;
+    border-top-color: #667eea;
+    border-radius: 50%;
+    animation: admin-orders-spin 1s linear infinite;
+}
+
+@keyframes admin-orders-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Pagination Enhanced */
+.admin-orders .pagination {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 2rem;
+}
+
+.admin-orders .page-btn {
+    padding: 10px 16px;
+    background: white;
+    color: #667eea;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.admin-orders .page-btn:hover {
+    border-color: #667eea;
+    background: #f8f9ff;
+    transform: translateY(-2px);
+}
+
+.admin-orders .page-btn.active {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    border-color: #667eea;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}

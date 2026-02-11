@@ -1,197 +1,241 @@
-import Order from '../../../models/order.model.js';
+import {
+    Order,
+    OrderItem,
+    Product,
+    Store,
+    User,
+    sequelize
+} from '../../../models/sequelize/index.js';
+import { Op } from 'sequelize';
 
 // [GET] /api/v1/admin/orders
-export const index = async (req, res) => {
+// Get orders for stores managed by current user
+export const getOrders = async (req, res) => {
     try {
-        const {
-            page = 1,
-            limit = 20,
-            status = '',
-            keyword = '',
-            sortKey = 'createdAt',
-            sortValue = 'desc'
-        } = req.query;
+        const { page = 1, limit = 20, status, keyword } = req.query;
+        const offset = (page - 1) * limit;
 
-        const find = { deleted: false };
+        const userId = req.user.id;
+        const userRoles = req.user.roles || [];
 
-        // Filter by status
-        if (status) {
-            find.status = status;
+        console.log('🔍 Admin Orders - User ID:', userId);
+        console.log('🔍 Admin Orders - User Roles:', userRoles.map(r => r.roleName));
+
+        // Get stores managed by this user
+        const managedStores = await Store.findAll({
+            where: {
+                manager_id: userId
+            },
+            attributes: ['id']
+        });
+
+        console.log('🔍 Admin Orders - Managed Stores:', managedStores.map(s => s.id));
+
+        const storeIds = managedStores.map(s => s.id);
+
+        if (storeIds.length === 0) {
+            return res.json({
+                code: 200,
+                message: "Success",
+                data: [],
+                pagination: {
+                    total: 0,
+                    page: parseInt(page),
+                    limit: parseInt(limit),
+                    totalPages: 0
+                }
+            });
         }
 
-        // Search by order ID or user info
+        // Build where clause
+        const where = {
+            store_id: { [Op.in]: storeIds }
+        };
+
+        if (status) {
+            where.status = status;
+        }
+
         if (keyword) {
-            const regex = new RegExp(keyword, 'i');
-            find.$or = [
-                { 'userInfo.fullName': regex },
-                { 'userInfo.phone': regex },
-                { 'userInfo.email': regex }
+            where[Op.or] = [
+                { code: { [Op.iLike]: `%${keyword}%` } },
+                sequelize.where(
+                    sequelize.cast(sequelize.col('user_info'), 'text'),
+                    { [Op.iLike]: `%${keyword}%` }
+                )
             ];
         }
 
-        // Sorting
-        const sort = {};
-        sort[sortKey] = sortValue === 'asc' ? 1 : -1;
-
-        // Pagination
-        const skip = (page - 1) * limit;
-        const total = await Order.countDocuments(find);
-        const totalPages = Math.ceil(total / limit);
-
-        const orders = await Order
-            .find(find)
-            .sort(sort)
-            .limit(parseInt(limit))
-            .skip(skip);
+        const { count, rows } = await Order.findAndCountAll({
+            where,
+            limit: parseInt(limit),
+            offset: parseInt(offset),
+            order: [['created_at', 'DESC']],
+            include: [
+                {
+                    model: Store,
+                    as: 'store',
+                    attributes: ['id', 'name', 'code']
+                },
+                {
+                    model: User,
+                    as: 'user',
+                    attributes: ['id', 'full_name', 'email', 'phone']
+                },
+                {
+                    model: OrderItem,
+                    as: 'items',
+                    attributes: ['id', 'title', 'quantity', 'price_new', 'total_price', 'thumbnail']
+                }
+            ]
+        });
 
         res.json({
-            success: true,
-            data: {
-                orders,
-                pagination: {
-                    currentPage: parseInt(page),
-                    totalPages,
-                    limit: parseInt(limit),
-                    total
-                }
+            code: 200,
+            message: "Success",
+            data: rows,
+            pagination: {
+                total: count,
+                page: parseInt(page),
+                limit: parseInt(limit),
+                totalPages: Math.ceil(count / limit)
             }
         });
     } catch (error) {
+        console.error('Get Admin Orders Error:', error);
         res.status(500).json({
-            success: false,
-            message: error.message
+            code: 500,
+            message: "Internal Server Error",
+            error: error.message
         });
     }
 };
 
 // [GET] /api/v1/admin/orders/:id
-export const detail = async (req, res) => {
+export const getOrderDetail = async (req, res) => {
     try {
         const { id } = req.params;
-        const order = await Order.findById(id);
+        const userId = req.user.id;
+
+        // Get stores managed by this user
+        const managedStores = await Store.findAll({
+            where: {
+                manager_id: userId
+            },
+            attributes: ['id']
+        });
+
+        const storeIds = managedStores.map(s => s.id);
+
+        const order = await Order.findOne({
+            where: {
+                [Op.or]: [
+                    { id: isNaN(id) ? null : id },
+                    { code: id }
+                ],
+                store_id: { [Op.in]: storeIds }
+            },
+            include: [
+                {
+                    model: OrderItem,
+                    as: 'items',
+                    include: [
+                        {
+                            model: Product,
+                            as: 'product',
+                            attributes: ['id', 'slug', 'thumbnail']
+                        }
+                    ]
+                },
+                {
+                    model: Store,
+                    as: 'store',
+                    attributes: ['id', 'name', 'code', 'address', 'contact']
+                },
+                {
+                    model: User,
+                    as: 'user',
+                    attributes: ['id', 'full_name', 'email', 'phone']
+                }
+            ]
+        });
 
         if (!order) {
             return res.status(404).json({
-                success: false,
-                message: 'Không tìm thấy đơn hàng!'
+                code: 404,
+                message: "Order not found or you don't have permission"
             });
         }
 
         res.json({
-            success: true,
-            data: { order }
+            code: 200,
+            message: "Success",
+            data: order
         });
+
     } catch (error) {
+        console.error('Get Admin Order Detail Error:', error);
         res.status(500).json({
-            success: false,
-            message: error.message
+            code: 500,
+            message: "Internal Server Error",
+            error: error.message
         });
     }
 };
 
 // [PATCH] /api/v1/admin/orders/:id/status
-export const updateStatus = async (req, res) => {
+export const updateOrderStatus = async (req, res) => {
     try {
         const { id } = req.params;
         const { status } = req.body;
+        const userId = req.user.id;
 
         const validStatuses = ['pending', 'confirmed', 'shipping', 'delivered', 'cancelled'];
         if (!validStatuses.includes(status)) {
             return res.status(400).json({
-                success: false,
-                message: 'Trạng thái không hợp lệ!'
+                code: 400,
+                message: 'Invalid status'
             });
         }
 
-        const order = await Order.findByIdAndUpdate(
-            id,
-            { status },
-            { new: true }
-        );
-
-        if (!order) {
-            return res.status(404).json({
-                success: false,
-                message: 'Không tìm thấy đơn hàng!'
-            });
-        }
-
-        res.json({
-            success: true,
-            message: 'Cập nhật trạng thái thành công!',
-            data: { order }
+        // Get stores managed by this user
+        const managedStores = await Store.findAll({
+            where: {
+                manager_id: userId
+            },
+            attributes: ['id']
         });
-    } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: error.message
-        });
-    }
-};
 
-// [DELETE] /api/v1/admin/orders/:id
-export const deleteOrder = async (req, res) => {
-    try {
-        const { id } = req.params;
+        const storeIds = managedStores.map(s => s.id);
 
-        const order = await Order.findByIdAndUpdate(
-            id,
-            { deleted: true },
-            { new: true }
-        );
-
-        if (!order) {
-            return res.status(404).json({
-                success: false,
-                message: 'Không tìm thấy đơn hàng!'
-            });
-        }
-
-        res.json({
-            success: true,
-            message: 'Xóa đơn hàng thành công!'
-        });
-    } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: error.message
-        });
-    }
-};
-
-// [GET] /api/v1/admin/orders/statistics
-export const statistics = async (req, res) => {
-    try {
-        const totalOrders = await Order.countDocuments({ deleted: false });
-        const pendingOrders = await Order.countDocuments({ status: 'pending', deleted: false });
-        const confirmedOrders = await Order.countDocuments({ status: 'confirmed', deleted: false });
-        const shippingOrders = await Order.countDocuments({ status: 'shipping', deleted: false });
-        const deliveredOrders = await Order.countDocuments({ status: 'delivered', deleted: false });
-        const cancelledOrders = await Order.countDocuments({ status: 'cancelled', deleted: false });
-
-        // Calculate total revenue (delivered orders only)
-        const revenueResult = await Order.aggregate([
-            { $match: { status: 'delivered', deleted: false } },
-            { $group: { _id: null, total: { $sum: '$totalPrice' } } }
-        ]);
-        const totalRevenue = revenueResult.length > 0 ? revenueResult[0].total : 0;
-
-        res.json({
-            success: true,
-            data: {
-                totalOrders,
-                pendingOrders,
-                confirmedOrders,
-                shippingOrders,
-                deliveredOrders,
-                cancelledOrders,
-                totalRevenue
+        const order = await Order.findOne({
+            where: {
+                id,
+                store_id: { [Op.in]: storeIds }
             }
         });
+
+        if (!order) {
+            return res.status(404).json({
+                code: 404,
+                message: "Order not found or you don't have permission"
+            });
+        }
+
+        await order.update({ status });
+
+        res.json({
+            code: 200,
+            message: "Order status updated successfully",
+            data: order
+        });
+
     } catch (error) {
+        console.error('Update Order Status Error:', error);
         res.status(500).json({
-            success: false,
-            message: error.message
+            code: 500,
+            message: "Internal Server Error",
+            error: error.message
         });
     }
 };
