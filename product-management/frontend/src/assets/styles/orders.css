@@ -239,6 +239,132 @@
     gap: 25px;
 }
 
+/* Orders Table */
+.orders-table-container {
+    background: #fff;
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 4px 20px rgba(30, 74, 123, 0.08);
+    overflow-x: auto;
+}
+
+.orders-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'Inter', 'Poppins', 'Roboto', sans-serif;
+}
+
+.orders-table thead {
+    background: linear-gradient(135deg, #1E4A7B, #16385c);
+    color: #fff;
+}
+
+.orders-table th {
+    padding: 16px 12px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 14px;
+    white-space: nowrap;
+}
+
+.orders-table tbody tr {
+    border-bottom: 1px solid #e8f2ff;
+    transition: all 0.3s ease;
+}
+
+.orders-table tbody tr:hover {
+    background: #f8fbff;
+    box-shadow: 0 2px 8px rgba(30, 74, 123, 0.08);
+}
+
+.orders-table td {
+    padding: 16px 12px;
+    vertical-align: middle;
+    font-size: 14px;
+}
+
+.orders-table td strong {
+    color: #1E4A7B;
+    font-weight: 600;
+}
+
+.order-items-preview {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-width: 300px;
+}
+
+.order-item-mini {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+}
+
+.order-item-mini img {
+    width: 40px;
+    height: 40px;
+    object-fit: cover;
+    border-radius: 6px;
+    border: 1px solid #e8f2ff;
+}
+
+.order-item-mini span {
+    color: #374151;
+}
+
+.item-qty {
+    color: #6b7280;
+    font-weight: 600;
+    margin-left: auto;
+}
+
+.more-items {
+    color: #1E4A7B;
+    font-weight: 600;
+    font-size: 12px;
+    font-style: italic;
+}
+
+.order-total-price {
+    color: #E5989B;
+    font-size: 16px;
+}
+
+.order-status-badge {
+    display: inline-block;
+    padding: 6px 14px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+.payment-status {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.payment-status.pending {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.payment-status.paid {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.payment-status.failed {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+
 /* Order Card */
 .order-card {
     background: #fff;

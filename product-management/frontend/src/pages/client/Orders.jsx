@@ -40,6 +40,15 @@ const Orders = () => {
         return classMap[status] || '';
     };
 
+    const getPaymentStatusText = (paymentStatus) => {
+        const statusMap = {
+            pending: 'Chưa thanh toán',
+            paid: 'Đã thanh toán',
+            failed: 'Thanh toán thất bại'
+        };
+        return statusMap[paymentStatus] || paymentStatus;
+    };
+
     if (loading) {
         return (
             <div className="loading-container">
@@ -49,7 +58,7 @@ const Orders = () => {
         );
     }
 
-    if (orders.length === 0) {
+    if (!orders || orders.length === 0) {
         return (
             <div className="orders-empty">
                 <div className="container">
@@ -68,47 +77,77 @@ const Orders = () => {
             <div className="container">
                 <h1 className="page-title">Đơn Hàng Của Tôi</h1>
 
-                <div className="orders-list">
-                    {orders.map((order) => (
-                        <div key={order._id} className="order-card">
-                            <div className="order-header">
-                                <div className="order-id">
-                                    <strong>Mã đơn:</strong> #{order._id.slice(-8).toUpperCase()}
-                                </div>
-                                <div className={`order-status ${getStatusClass(order.status)}`}>
-                                    {getStatusText(order.status)}
-                                </div>
-                            </div>
-
-                            <div className="order-date">
-                                <span>📅 {moment(order.createdAt).format('DD/MM/YYYY HH:mm')}</span>
-                            </div>
-
-                            <div className="order-products">
-                                {order.products.map((item, index) => (
-                                    <div key={index} className="order-product-item">
-                                        <img src={item.thumbnail} alt={item.title} />
-                                        <div className="order-product-info">
-                                            <h4>{item.title}</h4>
-                                            <p>Số lượng: {item.quantity}</p>
+                <div className="orders-table-container">
+                    <table className="orders-table">
+                        <thead>
+                            <tr>
+                                <th>Mã đơn</th>
+                                <th>Ngày đặt</th>
+                                <th>Sản phẩm</th>
+                                <th>Cửa hàng</th>
+                                <th>Tổng tiền</th>
+                                <th>Trạng thái</th>
+                                <th>Thanh toán</th>
+                                <th>Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {orders.map((order) => (
+                                <tr key={order.id}>
+                                    <td>
+                                        <strong>{order.code}</strong>
+                                    </td>
+                                    <td>
+                                        {moment(order.created_at).format('DD/MM/YYYY HH:mm')}
+                                    </td>
+                                    <td>
+                                        <div className="order-items-preview">
+                                            {order.items && order.items.slice(0, 2).map((item, index) => (
+                                                <div key={index} className="order-item-mini">
+                                                    {item.thumbnail && (
+                                                        <img src={item.thumbnail} alt={item.title} />
+                                                    )}
+                                                    <span>{item.title}</span>
+                                                    <span className="item-qty">x{item.quantity}</span>
+                                                </div>
+                                            ))}
+                                            {order.items && order.items.length > 2 && (
+                                                <span className="more-items">+{order.items.length - 2} sản phẩm</span>
+                                            )}
                                         </div>
-                                    </div>
-                                ))}
-                            </div>
-
-                            <div className="order-footer">
-                                <div className="order-total">
-                                    <strong>Tổng tiền:</strong> {formatPrice(order.totalPrice)}
-                                </div>
-                                <button
-                                    className="btn-view-detail"
-                                    onClick={() => navigate(`/orders/${order._id}`)}
-                                >
-                                    Xem chi tiết
-                                </button>
-                            </div>
-                        </div>
-                    ))}
+                                    </td>
+                                    <td>
+                                        {order.store?.name || 'N/A'}
+                                    </td>
+                                    <td>
+                                        <strong className="order-total-price">
+                                            {formatPrice(order.total_price)}
+                                        </strong>
+                                    </td>
+                                    <td>
+                                        <span className={`order-status-badge ${getStatusClass(order.status)}`}>
+                                            {getStatusText(order.status)}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span className={`payment-status ${order.payment_status}`}>
+                                            {getPaymentStatusText(order.payment_status)}
+                                        </span>
+                                        <br />
+                                        <small>{order.payment_method === 'VNPay' ? 'VNPay' : 'COD'}</small>
+                                    </td>
+                                    <td>
+                                        <button
+                                            className="btn-view-detail"
+                                            onClick={() => navigate(`/orders/${order.id}`)}
+                                        >
+                                            Xem chi tiết
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
                 </div>
 
                 {pagination && pagination.totalPages > 1 && (
@@ -116,7 +155,7 @@ const Orders = () => {
                         {Array.from({ length: pagination.totalPages }, (_, i) => i + 1).map((page) => (
                             <button
                                 key={page}
-                                className={`page-btn ${page === pagination.currentPage ? 'active' : ''}`}
+                                className={`page-btn ${page === pagination.page ? 'active' : ''}`}
                                 onClick={() => getOrders({ page })}
                             >
                                 {page}

@@ -40,11 +40,11 @@ export const getProducts = async (req, res) => {
         // Price range filter
         if (price_range) {
             if (price_range === 'under_100') {
-                where.price = { [Op.lt]: 100 };
+                where.price = { [Op.lt]: 100000 };
             } else if (price_range === '100_to_500') {
-                where.price = { [Op.between]: [100, 500] };
+                where.price = { [Op.between]: [100000, 500000] };
             } else if (price_range === 'over_500') {
-                where.price = { [Op.gt]: 500 };
+                where.price = { [Op.gt]: 500000 };
             }
         }
 
@@ -77,7 +77,7 @@ export const getProducts = async (req, res) => {
                         {
                             model: Store,
                             as: 'store',
-                            attributes: ['id', 'code', 'name']
+                            attributes: ['id', 'code', 'name', 'address', 'contact']
                         }
                     ]
                 }
@@ -303,7 +303,7 @@ export const updateProduct = async (req, res) => {
                         {
                             model: Store,
                             as: 'store',
-                            attributes: ['id', 'code', 'name']
+                            attributes: ['id', 'code', 'name', 'address', 'contact']
                         }
                     ]
                 }

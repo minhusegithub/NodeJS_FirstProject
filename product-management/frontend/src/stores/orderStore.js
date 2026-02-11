@@ -39,8 +39,8 @@ export const useOrderStore = create((set, get) => ({
         try {
             const { data } = await api.get('/orders', { params });
             set({
-                orders: data.data.orders,
-                pagination: data.data.pagination,
+                orders: data.data || [],
+                pagination: data.pagination,
                 loading: false
             });
         } catch (error) {
@@ -55,7 +55,7 @@ export const useOrderStore = create((set, get) => ({
         try {
             const { data } = await api.get(`/orders/${orderId}`);
             set({
-                currentOrder: data.data.order,
+                currentOrder: data.data,
                 loading: false
             });
         } catch (error) {

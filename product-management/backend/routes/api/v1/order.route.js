@@ -11,8 +11,7 @@ router.post('/checkout', authenticateUser, checkoutController.checkout);
 // VNPay return URL (no auth required as it's a callback)
 router.get('/vnpay-return', checkoutController.vnpayReturn);
 
-// New Order API for Multi-store
-router.post('/', authenticateUser, orderController.createOrder); // POST /api/v1/orders
+// Order Management API
 router.get('/', authenticateUser, orderController.getOrders); // GET /api/v1/orders
 router.get('/:id', authenticateUser, orderController.getOrderDetail); // GET /api/v1/orders/:id
 
