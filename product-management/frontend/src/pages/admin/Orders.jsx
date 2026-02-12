@@ -99,7 +99,7 @@ const AdminOrders = () => {
                                         <th>Trạng thái</th>
                                         <th>Thanh toán</th>
                                         <th>Ngày đặt</th>
-                                        <th>Thao tác</th>
+
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -157,17 +157,7 @@ const AdminOrders = () => {
                                                     <small>{order.payment_method === 'VNPay' ? 'VNPay' : 'COD'}</small>
                                                 </td>
                                                 <td>{moment(order.created_at).format('DD/MM/YYYY HH:mm')}</td>
-                                                <td>
-                                                    <div className="action-buttons">
-                                                        <button
-                                                            className="btn-action btn-view"
-                                                            onClick={() => navigate(`/admin/orders/${order.id}`)}
-                                                            title="Xem chi tiết"
-                                                        >
-                                                            👁️ Xem
-                                                        </button>
-                                                    </div>
-                                                </td>
+
                                             </tr>
                                         ))
                                     ) : (

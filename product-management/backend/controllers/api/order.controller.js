@@ -7,7 +7,6 @@ import {
     User,
     sequelize
 } from '../../models/sequelize/index.js';
-import { generateRandomString } from '../../helpers/generate.js';
 
 // [GET] /api/v1/orders
 // Get orders for current authenticated user

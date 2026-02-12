@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useOrderStore } from '../../stores/orderStore';
 import moment from 'moment';
@@ -6,6 +6,7 @@ import moment from 'moment';
 const Orders = () => {
     const navigate = useNavigate();
     const { orders, pagination, loading, getOrders } = useOrderStore();
+    const [selectedStatus, setSelectedStatus] = useState('all');
 
     useEffect(() => {
         getOrders();
@@ -49,6 +50,11 @@ const Orders = () => {
         return statusMap[paymentStatus] || paymentStatus;
     };
 
+    // Lọc đơn hàng theo trạng thái
+    const filteredOrders = selectedStatus === 'all'
+        ? orders
+        : orders.filter(order => order.status === selectedStatus);
+
     if (loading) {
         return (
             <div className="loading-container">
@@ -77,6 +83,46 @@ const Orders = () => {
             <div className="container">
                 <h1 className="page-title">Đơn Hàng Của Tôi</h1>
 
+                {/* Nút lọc trạng thái */}
+                <div className="order-status-filters">
+                    <button
+                        className={`filter-btn ${selectedStatus === 'all' ? 'active' : ''}`}
+                        onClick={() => setSelectedStatus('all')}
+                    >
+                        Tất cả
+                    </button>
+                    <button
+                        className={`filter-btn ${selectedStatus === 'pending' ? 'active' : ''}`}
+                        onClick={() => setSelectedStatus('pending')}
+                    >
+                        Chờ xác nhận
+                    </button>
+                    <button
+                        className={`filter-btn ${selectedStatus === 'confirmed' ? 'active' : ''}`}
+                        onClick={() => setSelectedStatus('confirmed')}
+                    >
+                        Đã xác nhận
+                    </button>
+                    <button
+                        className={`filter-btn ${selectedStatus === 'shipping' ? 'active' : ''}`}
+                        onClick={() => setSelectedStatus('shipping')}
+                    >
+                        Đang giao
+                    </button>
+                    <button
+                        className={`filter-btn ${selectedStatus === 'delivered' ? 'active' : ''}`}
+                        onClick={() => setSelectedStatus('delivered')}
+                    >
+                        Đã giao
+                    </button>
+                    <button
+                        className={`filter-btn ${selectedStatus === 'cancelled' ? 'active' : ''}`}
+                        onClick={() => setSelectedStatus('cancelled')}
+                    >
+                        Đã hủy
+                    </button>
+                </div>
+
                 <div className="orders-table-container">
                     <table className="orders-table">
                         <thead>
@@ -88,11 +134,11 @@ const Orders = () => {
                                 <th>Tổng tiền</th>
                                 <th>Trạng thái</th>
                                 <th>Thanh toán</th>
-                                <th>Thao tác</th>
+
                             </tr>
                         </thead>
                         <tbody>
-                            {orders.map((order) => (
+                            {filteredOrders.map((order) => (
                                 <tr key={order.id}>
                                     <td>
                                         <strong>{order.code}</strong>
@@ -136,14 +182,7 @@ const Orders = () => {
                                         <br />
                                         <small>{order.payment_method === 'VNPay' ? 'VNPay' : 'COD'}</small>
                                     </td>
-                                    <td>
-                                        <button
-                                            className="btn-view-detail"
-                                            onClick={() => navigate(`/orders/${order.id}`)}
-                                        >
-                                            Xem chi tiết
-                                        </button>
-                                    </td>
+
                                 </tr>
                             ))}
                         </tbody>

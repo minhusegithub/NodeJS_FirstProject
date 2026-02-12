@@ -15,13 +15,14 @@ const AdminLayout = () => {
 
     // Check user roles
     const userRoles = useMemo(() => {
-        if (!user?.roles) return { isSystemAdmin: false, isStoreManager: false, isOrderStaff: false };
+        if (!user?.roles) return { isSystemAdmin: false, isStoreManager: false, isOrderStaff: false, isInventoryStaff: false };
 
         const isSystemAdmin = user.roles.some(r => r.roleName === 'SystemAdmin');
         const isStoreManager = user.roles.some(r => r.roleName === 'storeManager');
         const isOrderStaff = user.roles.some(r => r.roleName === 'OrderStaff');
+        const isInventoryStaff = user.roles.some(r => r.roleName === 'InventoryStaff');
 
-        return { isSystemAdmin, isStoreManager, isOrderStaff };
+        return { isSystemAdmin, isStoreManager, isOrderStaff, isInventoryStaff };
     }, [user]);
 
     return (
@@ -32,9 +33,12 @@ const AdminLayout = () => {
                 </div>
 
                 <nav className="admin-nav">
-                    <Link to="/admin/products" className="admin-nav-item">
-                        📦 Sản phẩm
-                    </Link>
+                    {/* Products menu - only for storeManager and InventoryStaff */}
+                    {(userRoles.isSystemAdmin || userRoles.isStoreManager || userRoles.isInventoryStaff) && (
+                        <Link to="/admin/products" className="admin-nav-item">
+                            📦 Sản phẩm
+                        </Link>
+                    )}
 
                     {/* Orders menu - only for storeManager and OrderStaff */}
                     {(userRoles.isStoreManager || userRoles.isOrderStaff) && (
