@@ -12,7 +12,7 @@ const router = express.Router();
 // Public routes
 router.use('/auth', authRoutes);
 router.use('/products', productRoutes);
-router.use('/stores', storeRoutes); // Add stores route
+router.use('/stores', storeRoutes);
 
 // Protected routes
 router.use('/cart', cartRoutes);

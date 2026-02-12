@@ -1,13 +1,26 @@
+// Load environment variables
+import './env.js';
+
 import { Sequelize } from 'sequelize';
+
+// Validate required environment variables
+const requiredEnvVars = ['PG_HOST', 'PG_DATABASE', 'PG_USER', 'PG_PASSWORD'];
+const missingEnvVars = requiredEnvVars.filter(varName => !process.env[varName]);
+
+if (missingEnvVars.length > 0) {
+    console.error('❌ Missing required environment variables:', missingEnvVars.join(', '));
+    console.error('Please check your .env file and ensure all required variables are set.');
+    throw new Error(`Missing environment variables: ${missingEnvVars.join(', ')}`);
+}
 
 // PostgreSQL Database configuration
 const sequelize = new Sequelize({
     dialect: 'postgres',
-    host: process.env.PG_HOST || 'localhost',
-    port: process.env.PG_PORT || 5432,
-    database: process.env.PG_DATABASE || 'product_management',
-    username: process.env.PG_USER || 'postgres',
-    password: 'minhmysql1@',
+    host: process.env.PG_HOST,
+    port: parseInt(process.env.PG_PORT) || 5432,
+    database: process.env.PG_DATABASE,
+    username: process.env.PG_USER,
+    password: process.env.PG_PASSWORD,
 
     // Connection pool configuration
     pool: {
@@ -37,6 +50,7 @@ export const testConnection = async () => {
     try {
         await sequelize.authenticate();
         console.log('✅ PostgreSQL connection established successfully.');
+        console.log(`📊 Connected to database: ${process.env.PG_DATABASE} at ${process.env.PG_HOST}:${process.env.PG_PORT || 5432}`);
         return true;
     } catch (error) {
         console.error('❌ Unable to connect to PostgreSQL:', error.message);

@@ -1,6 +1,6 @@
 import express from 'express';
 import * as controller from '../../../controllers/api/store.controller.js';
-// import { requireAuth } from '../../../middlewares/api/auth.middleware.js'; // TODO: Implement API Auth Middleware
+
 
 import { authenticateUser } from '../../../middlewares/jwt.middleware.js';
 import { authorize } from '../../../middlewares/rbac.middleware.js';

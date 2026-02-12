@@ -1,3 +1,6 @@
+// Load environment variables FIRST (before any other imports that need them)
+import './config/env.js';
+
 // Import dependencies
 import express from 'express';
 import { fileURLToPath } from 'url';
@@ -5,13 +8,8 @@ import { dirname } from 'path';
 import cookieParser from 'cookie-parser';
 import http from 'http';
 import { Server } from 'socket.io';
-import dotenv from 'dotenv';
-
-// Configure dotenv immediately
-dotenv.config();
 
 // Import configurations
-import * as database from './config/database.js';
 import corsMiddleware from './middlewares/cors.middleware.js';
 import { errorHandler, notFound } from './middlewares/error.middleware.js';
 
@@ -22,8 +20,7 @@ import apiV1Routes from './routes/api/v1/index.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-// Connect to database
-// database.connect(); // MongoDB (Optional now)
+
 
 // Connect PostgreSQL
 import { sequelize } from './models/sequelize/index.js';
@@ -61,14 +58,7 @@ app.use('/uploads', express.static(`${__dirname}/public/uploads`));
 // API Routes
 app.use('/api/v1', apiV1Routes);
 
-// Health check endpoint
-app.get('/health', (req, res) => {
-  res.json({
-    success: true,
-    message: 'Server is running',
-    timestamp: new Date().toISOString()
-  });
-});
+
 
 // 404 handler
 app.use(notFound);
@@ -80,7 +70,7 @@ app.use(errorHandler);
 server.listen(port, () => {
   console.log(`🚀 Server is running on port ${port}`);
   console.log(`📡 API available at http://localhost:${port}/api/v1`);
-  console.log(`🔗 Health check at http://localhost:${port}/health`);
+
 });
 
 export default app;

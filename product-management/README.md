@@ -125,8 +125,7 @@ npm run dev
 ```
 product-management/
 ├── backend/
-│   ├── config/
-│   │   ├── database.js          # MongoDB connection
+│   ├── config/  
 │   │   ├── jwt.js               # JWT utilities
 │   │   └── system.js            # System config
 │   ├── controllers/
