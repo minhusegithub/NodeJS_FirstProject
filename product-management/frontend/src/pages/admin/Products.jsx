@@ -1,8 +1,13 @@
 import { useState, useEffect } from 'react';
 import api from '../../services/axios';
 import { Link } from 'react-router-dom';
+import { useAuthStore } from '../../stores/authStore';
 
 const AdminProducts = () => {
+    const { user } = useAuthStore();
+    const isSystemAdmin = user?.roles?.some(
+        r => r.roleName === 'SystemAdmin'
+    );
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [filters, setFilters] = useState({
@@ -91,7 +96,7 @@ const AdminProducts = () => {
                             <th>Tên sản phẩm</th>
                             <th>Danh mục</th>
                             <th>Giá</th>
-                            <th>Tổng tồn kho</th>
+                            <th>{isSystemAdmin ? 'Tồn kho (Kho chính)' : 'Tồn kho (Tại cửa hàng)'}</th>
                             <th>Trạng thái</th>
                         </tr>
                     </thead>
@@ -122,9 +127,15 @@ const AdminProducts = () => {
                                         {formatCurrency(product.price)}
                                     </td>
                                     <td>
-                                        <span className={calculateTotalStock(product.inventory) > 0 ? 'stock-ok' : 'stock-low'}>
-                                            {calculateTotalStock(product.inventory)}
-                                        </span>
+                                        {isSystemAdmin ? (
+                                            <span className={(product.stock || 0) > 0 ? 'stock-ok' : 'stock-low'}>
+                                                {product.stock || 0}
+                                            </span>
+                                        ) : (
+                                            <span className={calculateTotalStock(product.inventory) > 0 ? 'stock-ok' : 'stock-low'}>
+                                                {calculateTotalStock(product.inventory)}
+                                            </span>
+                                        )}
                                     </td>
                                     <td>
                                         <span className={`status-badge ${product.status}`}>

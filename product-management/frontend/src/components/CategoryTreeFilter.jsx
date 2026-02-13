@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import api from '../services/axios';
 
 const CategoryTreeFilter = ({ onSelect, selectedCategory }) => {
     const [categories, setCategories] = useState([]);
@@ -10,8 +11,8 @@ const CategoryTreeFilter = ({ onSelect, selectedCategory }) => {
 
     const fetchCategories = async () => {
         try {
-            const response = await fetch('http://localhost:3000/api/v1/products/categories/tree');
-            const data = await response.json();
+            const response = await api.get('/products/categories/tree');
+            const data = response.data;
             if (data.code === 200) {
                 setCategories(data.data);
                 // Auto-expand all categories to show tree structure

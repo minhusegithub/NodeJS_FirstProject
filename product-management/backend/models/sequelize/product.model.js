@@ -35,23 +35,24 @@ const Product = sequelize.define('Product', {
     },
     discount_percentage: {
         type: DataTypes.DECIMAL(5, 2),
-        defaultValue: 0
+        defaultValue: 0,
+        comment: 'Discount percentage (0-100)'
+    },
+    stock: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0,
+        allowNull: false,
+        validate: {
+            min: 0
+        },
+        comment: 'Stock quantity in the main warehouse'
     },
     brand: {
         type: DataTypes.STRING(100),
         allowNull: true,
         comment: 'Product brand/manufacturer'
     },
-    weight: {
-        type: DataTypes.DECIMAL(10, 2),
-        allowNull: true,
-        comment: 'Weight in grams'
-    },
-    dimensions: {
-        type: DataTypes.JSONB,
-        allowNull: true,
-        comment: 'Product dimensions: {length, width, height} in cm'
-    },
+
     thumbnail: {
         type: DataTypes.STRING(500),
         allowNull: true
@@ -67,10 +68,7 @@ const Product = sequelize.define('Product', {
         type: DataTypes.BOOLEAN,
         defaultValue: false
     },
-    position: {
-        type: DataTypes.INTEGER,
-        defaultValue: 0
-    },
+
     is_variant_parent: {
         type: DataTypes.BOOLEAN,
         defaultValue: false,
