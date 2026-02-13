@@ -30,6 +30,7 @@ import AdminOrders from './pages/admin/Orders';
 import AdminStores from './pages/admin/Stores';
 import AdminProfile from './pages/admin/Profile';
 import AdminAccount from './pages/admin/Account';
+import AdminProductCategories from './pages/admin/ProductCategories';
 
 function App() {
     const checkAuth = useAuthStore((state) => state.checkAuth);
@@ -102,6 +103,7 @@ function App() {
                     }>
 
                         <Route path="products" element={<AdminProducts />} />
+                        <Route path="product-categories" element={<AdminProductCategories />} />
                         <Route path="orders" element={<AdminOrders />} />
                         <Route path="stores" element={<AdminStores />} />
                         <Route path="profile" element={<AdminProfile />} />

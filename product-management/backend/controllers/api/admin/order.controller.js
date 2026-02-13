@@ -18,8 +18,7 @@ export const getOrders = async (req, res) => {
         const userId = req.user.id;
         const userRoles = req.user.roles || [];
 
-        console.log('🔍 Admin Orders - User ID:', userId);
-        console.log('🔍 Admin Orders - User Roles:', userRoles.map(r => r.roleName));
+
 
         // Get stores managed by this user
         const managedStores = await Store.findAll({
@@ -29,7 +28,7 @@ export const getOrders = async (req, res) => {
             attributes: ['id']
         });
 
-        console.log('🔍 Admin Orders - Managed Stores:', managedStores.map(s => s.id));
+
 
         const storeIds = managedStores.map(s => s.id);
 

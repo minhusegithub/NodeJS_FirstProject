@@ -31,7 +31,7 @@ const sequelize = new Sequelize({
     },
 
     // Logging
-    logging: process.env.NODE_ENV === 'development' ? console.log : false,
+    logging: false, // Set to console.log to see SQL queries
 
     // Timezone
     timezone: '+07:00',

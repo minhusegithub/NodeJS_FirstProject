@@ -32,10 +32,6 @@ const ProductCategory = sequelize.define('ProductCategory', {
             isIn: [['active', 'inactive']]
         }
     },
-    position: {
-        type: DataTypes.INTEGER,
-        defaultValue: 0
-    },
     slug: {
         type: DataTypes.STRING(255),
         unique: true

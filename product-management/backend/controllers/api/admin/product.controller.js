@@ -15,7 +15,7 @@ export const index = async (req, res) => {
         let result = { count: 0, rows: [] };
         let productsData = [];
 
-        console.log(`[Admin Product] Request by User: ${req.user.id}, Is System Admin: ${!!systemAdminRole}`);
+
 
         if (systemAdminRole) {
             // --- CASE 1: SYSTEM ADMIN ---
@@ -57,7 +57,7 @@ export const index = async (req, res) => {
         } else {
             // --- CASE 2: STORE MANAGER ---
             const storeIds = req.user.store_roles?.map(r => r.store_id).filter(Boolean) || [];
-            console.log(`[Admin Product] Store IDs: ${storeIds}`);
+
 
             if (storeIds.length === 0) {
                 return res.json({
