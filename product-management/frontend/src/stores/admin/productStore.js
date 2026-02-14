@@ -31,9 +31,11 @@ export const useAdminProductStore = create((set, get) => ({
                 currentProduct: data.data.product,
                 loading: false
             });
+            return data.data.product;
         } catch (error) {
             set({ loading: false });
             toast.error('Không tìm thấy sản phẩm');
+            throw error;
         }
     },
 
@@ -51,7 +53,7 @@ export const useAdminProductStore = create((set, get) => ({
 
     updateProduct: async (id, productData) => {
         try {
-            const { data } = await api.patch(`/admin/products/${id}`, productData);
+            const { data } = await api.put(`/admin/products/${id}`, productData);
             toast.success('Cập nhật sản phẩm thành công!');
             await get().getProducts();
             return data.data.product;
@@ -61,38 +63,11 @@ export const useAdminProductStore = create((set, get) => ({
         }
     },
 
-    deleteProduct: async (id) => {
-        try {
-            await api.delete(`/admin/products/${id}`);
-            toast.success('Xóa sản phẩm thành công!');
-            await get().getProducts();
-        } catch (error) {
-            toast.error(error.response?.data?.message || 'Lỗi khi xóa sản phẩm');
-            throw error;
-        }
-    },
 
-    changeStatus: async (id, status) => {
-        try {
-            await api.patch(`/admin/products/change-status/${id}`, { status });
-            toast.success('Cập nhật trạng thái thành công!');
-            await get().getProducts();
-        } catch (error) {
-            toast.error('Lỗi khi cập nhật trạng thái');
-            throw error;
-        }
-    },
 
-    changeMulti: async (ids, type, value) => {
-        try {
-            await api.patch('/admin/products/change-multi', { ids, type, value });
-            toast.success('Cập nhật thành công!');
-            await get().getProducts();
-        } catch (error) {
-            toast.error('Lỗi khi cập nhật');
-            throw error;
-        }
-    },
+
+
+
 
     clearCurrentProduct: () => {
         set({ currentProduct: null });

@@ -49,16 +49,15 @@ export const useProductStore = create((set) => ({
     getProductBySlug: async (slug) => {
         set({ loading: true, error: null });
         try {
-            console.log('📡 API Call: GET /products/' + slug);
+
             const { data } = await api.get(`/products/${slug}`);
-            console.log('✅ API Response:', data);
+
             // PostgreSQL API returns { code, message, data }
             set({
                 currentProduct: data.data, // Product object directly
                 loading: false
             });
         } catch (error) {
-            console.error('❌ API Error:', error.response || error);
             set({
                 error: error.response?.data?.message || 'Không tìm thấy sản phẩm',
                 loading: false

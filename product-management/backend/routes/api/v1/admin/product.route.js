@@ -11,4 +11,7 @@ const upload = multer({ storage: multer.memoryStorage() });
 router.get('/', controller.index);
 router.post('/', requireRole(['SystemAdmin']), upload.single('thumbnail'), controller.create);
 
+router.get('/:id', requireRole(['SystemAdmin', 'storeManager', 'InventoryStaff']), controller.show);
+router.put('/:id', requireRole(['SystemAdmin', 'storeManager', 'InventoryStaff']), upload.single('thumbnail'), controller.update);
+
 export default router;

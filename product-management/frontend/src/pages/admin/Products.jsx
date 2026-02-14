@@ -1,25 +1,29 @@
 import { useState, useEffect } from 'react';
 import api from '../../services/axios';
-import { Link } from 'react-router-dom';
 import { useAuthStore } from '../../stores/authStore';
+import { useAdminProductStore } from '../../stores/admin/productStore';
 
 const AdminProducts = () => {
     const { user } = useAuthStore();
+    const {
+        products,
+        loading,
+        pagination,
+        getProducts,
+        createProduct,
+        updateProduct,
+        getProduct
+    } = useAdminProductStore();
+
     const isSystemAdmin = user?.roles?.some(
         r => r.roleName === 'SystemAdmin'
     );
-    const [products, setProducts] = useState([]);
-    const [loading, setLoading] = useState(true);
+
     const [filters, setFilters] = useState({
         page: 1,
         limit: 10,
         keyword: '',
         status: ''
-    });
-    const [pagination, setPagination] = useState({
-        total: 0,
-        totalPages: 0,
-        currentPage: 1
     });
 
     const [showCreateModal, setShowCreateModal] = useState(false);
@@ -37,20 +41,18 @@ const AdminProducts = () => {
     });
     const [previewImage, setPreviewImage] = useState(null);
 
+    const [showEditModal, setShowEditModal] = useState(false);
+    const [editingProduct, setEditingProduct] = useState(null);
+
     useEffect(() => {
-        fetchProducts();
+        getProducts(filters);
         fetchCategories();
-    }, [filters.page, filters.status]);
+    }, [filters.page, filters.status, getProducts]);
 
     const fetchCategories = async () => {
         try {
-            // Using the public tree endpoint or we should have an admin list endpoint. 
-            // Reusing the public one for now as it contains ID and Title.
             const response = await api.get('/products/categories/tree');
             if (response.data.code === 200) {
-                // Flatten the tree or just use top level? The Select normally needs a flat list or handled recursively.
-                // For simplicity, let's just use a flat list function here or fetch from a flat endpoint if available.
-                // The current API response is a tree. Let's flatten it for the select box.
                 const flatCats = [];
                 const flatten = (cats, prefix = '') => {
                     cats.forEach(c => {
@@ -66,28 +68,10 @@ const AdminProducts = () => {
         }
     };
 
-    const fetchProducts = async () => {
-        try {
-            setLoading(true);
-            const response = await api.get('/admin/products', {
-                params: filters
-            });
-
-            if (response.data.success) {
-                setProducts(response.data.data.products);
-                setPagination(response.data.data.pagination);
-            }
-        } catch (error) {
-            console.error('Lỗi tải sản phẩm:', error);
-        } finally {
-            setLoading(false);
-        }
-    };
-
     const handleSearch = (e) => {
         e.preventDefault();
         setFilters(prev => ({ ...prev, page: 1 }));
-        fetchProducts();
+        getProducts({ ...filters, page: 1 });
     };
 
     const handleCreateInputChange = (e) => {
@@ -115,23 +99,15 @@ const AdminProducts = () => {
                 }
             });
 
-            const response = await api.post('/admin/products', formData, {
-                headers: { 'Content-Type': 'multipart/form-data' }
-            });
+            await createProduct(formData);
 
-            if (response.data.success) {
-                alert('Tạo sản phẩm thành công!');
-                setShowCreateModal(false);
-                fetchProducts();
-                // Reset form
-                setNewProduct({
-                    title: '', sku: '', category_id: '', price: 0, discount_percentage: 0, stock: 0, description: '', status: 'active', thumbnail: null
-                });
-                setPreviewImage(null);
-            }
+            setShowCreateModal(false);
+            setNewProduct({
+                title: '', sku: '', category_id: '', price: 0, discount_percentage: 0, stock: 0, description: '', status: 'active', thumbnail: null
+            });
+            setPreviewImage(null);
         } catch (error) {
-            console.error(error);
-            alert(error.response?.data?.message || 'Lỗi khi tạo sản phẩm');
+            // Error handled by store toast
         }
     };
 
@@ -142,6 +118,70 @@ const AdminProducts = () => {
     const calculateTotalStock = (inventory) => {
         if (!inventory) return 0;
         return inventory.reduce((sum, item) => sum + (item.quantity || 0), 0);
+    };
+
+    const handleEditClick = async (product) => {
+        try {
+            const productData = await getProduct(product.id);
+            if (productData) {
+                // If store manager, populate stock from inventory[0]
+                let stockValue = productData.stock || 0;
+                if (!isSystemAdmin && productData.inventory && productData.inventory.length > 0) {
+                    stockValue = productData.inventory[0].stock;
+                }
+
+                setEditingProduct({
+                    ...productData,
+                    stock: stockValue, // Unified stock field for form
+                    previewThumbnail: productData.thumbnail
+                });
+                setPreviewImage(productData.thumbnail);
+                setShowEditModal(true);
+            }
+        } catch (error) {
+            console.error("Error fetching product details:", error);
+            // toast handled by store
+        }
+    };
+
+    const handleEditInputChange = (e) => {
+        const { name, value } = e.target;
+        setEditingProduct(prev => ({ ...prev, [name]: value }));
+    };
+
+    const handleEditImageChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            setEditingProduct(prev => ({ ...prev, thumbnailFile: file }));
+            setPreviewImage(URL.createObjectURL(file));
+        }
+    };
+
+    const handleUpdateSubmit = async (e) => {
+        e.preventDefault();
+        try {
+            const formData = new FormData();
+            formData.append('title', editingProduct.title || '');
+            formData.append('sku', editingProduct.sku || '');
+            formData.append('category_id', editingProduct.category_id || editingProduct.product_category_id || '');
+            formData.append('price', editingProduct.price || 0);
+            formData.append('discount_percentage', editingProduct.discount_percentage || 0);
+            formData.append('stock', editingProduct.stock || 0);
+            formData.append('description', editingProduct.description || '');
+            formData.append('status', editingProduct.status || 'active');
+
+            if (editingProduct.thumbnailFile) {
+                formData.append('thumbnail', editingProduct.thumbnailFile);
+            }
+
+            await updateProduct(editingProduct.id, formData);
+
+            setShowEditModal(false);
+            setEditingProduct(null);
+            setPreviewImage(null);
+        } catch (error) {
+            // Error handled by store toast
+        }
     };
 
     return (
@@ -204,7 +244,7 @@ const AdminProducts = () => {
                             </tr>
                         ) : products.length > 0 ? (
                             products.map(product => (
-                                <tr key={product.id}>
+                                <tr key={product.id} onClick={() => handleEditClick(product)} style={{ cursor: 'pointer' }}>
                                     <td>
                                         <img
                                             src={product.thumbnail || 'https://via.placeholder.com/50'}
@@ -251,7 +291,7 @@ const AdminProducts = () => {
             </div>
 
             {/* Pagination Controls */}
-            {pagination.totalPages > 1 && (
+            {pagination && pagination.totalPages > 1 && (
                 <div className="pagination" style={{ display: 'flex', gap: '10px', justifyContent: 'center', marginTop: '20px' }}>
                     <button
                         disabled={pagination.currentPage === 1}
@@ -409,9 +449,169 @@ const AdminProducts = () => {
                                 </button>
                                 <button
                                     type="submit"
-                                    className="btn-create"
+                                    className="btn-primary"
                                 >
                                     Tạo sản phẩm
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Edit Product Modal */}
+            {showEditModal && editingProduct && (
+                <div className="modal-overlay">
+                    <div className="modal-content">
+                        <div className="modal-header">
+                            <h2>Cập nhật sản phẩm</h2>
+                            <button className="btn-close" onClick={() => setShowEditModal(false)}>&times;</button>
+                        </div>
+                        <form onSubmit={handleUpdateSubmit} className="modal-form">
+                            <div className="form-row">
+                                <div className="form-group form-col">
+                                    <label>Tên sản phẩm <span className="text-danger">*</span></label>
+                                    <input
+                                        type="text" name="title" required
+                                        value={editingProduct.title} onChange={handleEditInputChange}
+                                        className="form-control"
+                                        disabled={!isSystemAdmin}
+                                    />
+                                </div>
+                                <div className="form-group form-col">
+                                    <label>SKU</label>
+                                    <input
+                                        type="text" name="sku"
+                                        value={editingProduct.sku} onChange={handleEditInputChange}
+                                        className="form-control"
+                                        disabled={!isSystemAdmin}
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="form-group">
+                                <label>Danh mục</label>
+                                <select
+                                    name="category_id"
+                                    value={editingProduct.category_id || editingProduct.product_category_id} onChange={handleEditInputChange}
+                                    className="form-control"
+                                    disabled={!isSystemAdmin}
+                                    style={{ padding: '5px' }}
+                                >
+                                    <option value="">-- Chọn danh mục --</option>
+                                    {categories.map(cat => (
+                                        <option key={cat.id} value={cat.id}>{cat.title}</option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div className="form-row">
+                                <div className="form-group form-col">
+                                    <label>Giá bán (VND) <span className="text-danger">*</span></label>
+                                    <input
+                                        type="number" name="price" required min="0"
+                                        value={editingProduct.price} onChange={handleEditInputChange}
+                                        className="form-control"
+                                        disabled={!isSystemAdmin}
+                                    />
+                                </div>
+                                <div className="form-group form-col">
+                                    <label>Giảm giá (%)</label>
+                                    <input
+                                        type="number" name="discount_percentage" min="0" max="100"
+                                        value={editingProduct.discount_percentage} onChange={handleEditInputChange}
+                                        className="form-control"
+                                        disabled={!isSystemAdmin}
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="form-group">
+                                <label>{isSystemAdmin ? 'Tồn kho (Kho chính)' : 'Tồn kho (Tại cửa hàng)'}</label>
+                                <input
+                                    type="number" name="stock" min="0"
+                                    value={editingProduct.stock} onChange={handleEditInputChange}
+                                    className="form-control"
+                                />
+                            </div>
+
+                            <div className="form-group">
+                                <label>Ảnh sản phẩm</label>
+                                {isSystemAdmin ? (
+                                    <>
+                                        <div className="image-upload-wrapper">
+                                            <input
+                                                type="file" accept="image/*"
+                                                onChange={handleEditImageChange}
+                                                id="edit-product-image-upload"
+                                                className="hidden-input"
+                                            />
+                                            <label htmlFor="edit-product-image-upload" className="upload-label">
+                                                {previewImage ? 'Thay đổi ảnh' : 'Chọn ảnh mới'}
+                                            </label>
+                                        </div>
+                                        {previewImage && (
+                                            <div className="image-preview-container">
+                                                <img src={previewImage} alt="Preview" className="image-preview" />
+                                                <button
+                                                    type="button"
+                                                    className="btn-remove-image"
+                                                    onClick={() => {
+                                                        setEditingProduct(prev => ({ ...prev, thumbnailFile: null }));
+                                                        setPreviewImage(null);
+                                                    }}
+                                                >
+                                                    Xóa ảnh
+                                                </button>
+                                            </div>
+                                        )}
+                                    </>
+                                ) : (
+                                    editingProduct.thumbnail && (
+                                        <div className="image-preview-container">
+                                            <img src={editingProduct.thumbnail} alt="Product" className="image-preview" />
+                                        </div>
+                                    )
+                                )}
+                            </div>
+
+                            <div className="form-group">
+                                <label>Mô tả</label>
+                                <textarea
+                                    name="description" rows="4"
+                                    value={editingProduct.description} onChange={handleEditInputChange}
+                                    className="form-control"
+                                    disabled={!isSystemAdmin}
+                                />
+                            </div>
+
+                            <div className="form-group">
+                                <label>Trạng thái</label>
+                                <select
+                                    name="status"
+                                    value={editingProduct.status} onChange={handleEditInputChange}
+                                    className="form-control"
+                                    disabled={!isSystemAdmin}
+                                    style={{ padding: '5px' }}
+                                >
+                                    <option value="active">Đang bán</option>
+                                    <option value="inactive">Ngừng bán</option>
+                                </select>
+                            </div>
+
+                            <div className="modal-actions">
+                                <button
+                                    type="button"
+                                    onClick={() => setShowEditModal(false)}
+                                    className="btn-secondary"
+                                >
+                                    Hủy
+                                </button>
+                                <button
+                                    type="submit"
+                                    className="btn-primary"
+                                >
+                                    Cập nhật
                                 </button>
                             </div>
                         </form>

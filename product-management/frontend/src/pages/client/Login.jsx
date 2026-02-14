@@ -36,7 +36,7 @@ const Login = () => {
             // Check roles for redirection
             const user = useAuthStore.getState().user;
             if (user?.roles && user.roles.length > 0) {
-                navigate('/admin/products');
+                navigate('/admin');
             } else {
                 navigate('/');
             }

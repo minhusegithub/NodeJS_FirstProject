@@ -8,6 +8,21 @@ import {
 } from '../../../models/sequelize/index.js';
 import { Op } from 'sequelize';
 
+// Helper to get allowed store IDs for the current user
+const getAllowedStoreIds = (user) => {
+    const roles = user.roles || [];
+    // If SystemAdmin, allow all stores (return null)
+    if (roles.some(r => r.roleName === 'SystemAdmin')) {
+        return null;
+    }
+
+    // Get store IDs from roles (derived from StoreStaff)
+    // This answers "who has what role at which store"
+    const storeIds = roles.map(r => r.storeId).filter(id => id);
+
+    return [...new Set(storeIds)];
+};
+
 // [GET] /api/v1/admin/orders
 // Get orders for stores managed by current user
 export const getOrders = async (req, res) => {
@@ -15,24 +30,10 @@ export const getOrders = async (req, res) => {
         const { page = 1, limit = 20, status, keyword } = req.query;
         const offset = (page - 1) * limit;
 
-        const userId = req.user.id;
-        const userRoles = req.user.roles || [];
+        const allowedStoreIds = await getAllowedStoreIds(req.user);
 
-
-
-        // Get stores managed by this user
-        const managedStores = await Store.findAll({
-            where: {
-                manager_id: userId
-            },
-            attributes: ['id']
-        });
-
-
-
-        const storeIds = managedStores.map(s => s.id);
-
-        if (storeIds.length === 0) {
+        // If not admin and no stores assigned, return empty
+        if (allowedStoreIds !== null && allowedStoreIds.length === 0) {
             return res.json({
                 code: 200,
                 message: "Success",
@@ -47,9 +48,12 @@ export const getOrders = async (req, res) => {
         }
 
         // Build where clause
-        const where = {
-            store_id: { [Op.in]: storeIds }
-        };
+        const where = {};
+
+        // If not system admin, filter by allowed stores
+        if (allowedStoreIds !== null) {
+            where.store_id = { [Op.in]: allowedStoreIds };
+        }
 
         if (status) {
             where.status = status;
@@ -86,7 +90,8 @@ export const getOrders = async (req, res) => {
                     as: 'items',
                     attributes: ['id', 'title', 'quantity', 'price_new', 'total_price', 'thumbnail']
                 }
-            ]
+            ],
+            distinct: true // Important for correct count with includes
         });
 
         res.json({
@@ -114,26 +119,23 @@ export const getOrders = async (req, res) => {
 export const getOrderDetail = async (req, res) => {
     try {
         const { id } = req.params;
-        const userId = req.user.id;
 
-        // Get stores managed by this user
-        const managedStores = await Store.findAll({
-            where: {
-                manager_id: userId
-            },
-            attributes: ['id']
-        });
+        const allowedStoreIds = await getAllowedStoreIds(req.user);
 
-        const storeIds = managedStores.map(s => s.id);
+        const where = {
+            [Op.or]: [
+                { id: isNaN(id) ? null : id },
+                { code: id }
+            ]
+        };
+
+        // Enforce store permission if not admin
+        if (allowedStoreIds !== null) {
+            where.store_id = { [Op.in]: allowedStoreIds };
+        }
 
         const order = await Order.findOne({
-            where: {
-                [Op.or]: [
-                    { id: isNaN(id) ? null : id },
-                    { code: id }
-                ],
-                store_id: { [Op.in]: storeIds }
-            },
+            where,
             include: [
                 {
                     model: OrderItem,
@@ -187,7 +189,6 @@ export const updateOrderStatus = async (req, res) => {
     try {
         const { id } = req.params;
         const { status } = req.body;
-        const userId = req.user.id;
 
         const validStatuses = ['pending', 'confirmed', 'shipping', 'delivered', 'cancelled'];
         if (!validStatuses.includes(status)) {
@@ -197,22 +198,15 @@ export const updateOrderStatus = async (req, res) => {
             });
         }
 
-        // Get stores managed by this user
-        const managedStores = await Store.findAll({
-            where: {
-                manager_id: userId
-            },
-            attributes: ['id']
-        });
+        const allowedStoreIds = await getAllowedStoreIds(req.user);
 
-        const storeIds = managedStores.map(s => s.id);
+        const where = { id };
+        // Enforce store permission if not admin
+        if (allowedStoreIds !== null) {
+            where.store_id = { [Op.in]: allowedStoreIds };
+        }
 
-        const order = await Order.findOne({
-            where: {
-                id,
-                store_id: { [Op.in]: storeIds }
-            }
-        });
+        const order = await Order.findOne({ where });
 
         if (!order) {
             return res.status(404).json({

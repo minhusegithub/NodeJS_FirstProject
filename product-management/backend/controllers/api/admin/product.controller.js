@@ -142,7 +142,141 @@ export const index = async (req, res) => {
     }
 };
 
-// [POST] /api/v1/admin/products/create
+// [GET] /api/v1/admin/products/:id
+export const show = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const systemAdminRole = req.user.store_roles?.find(
+            r => r.role_data?.name === 'SystemAdmin' || r.role_data?.scope === 'system'
+        );
+
+        let product;
+
+        if (systemAdminRole) {
+            product = await Product.findByPk(id, {
+                include: [
+                    {
+                        model: ProductCategory,
+                        as: 'category',
+                        attributes: ['id', 'title'],
+                        required: false
+                    }
+                ]
+            });
+        } else {
+            // Store Manager - get product with their specific store inventory
+            const storeIds = req.user.store_roles?.map(r => r.store_id).filter(Boolean) || [];
+
+            product = await Product.findByPk(id, {
+                include: [
+                    {
+                        model: ProductCategory,
+                        as: 'category',
+                        attributes: ['id', 'title'],
+                        required: false
+                    },
+                    {
+                        model: ProductStoreInventory,
+                        as: 'inventory',
+                        required: false,
+                        where: { store_id: { [Op.in]: storeIds } },
+                        include: [{ model: Store, as: 'store', attributes: ['id', 'name'] }]
+                    }
+                ]
+            });
+        }
+
+        if (!product) {
+            return res.render('client/errors/404', { pageTitle: '404 Not Found' });
+        }
+
+        res.json({ success: true, data: { product } });
+    } catch (error) {
+        console.error('Get Product Detail Error:', error);
+        res.status(500).json({ success: false, message: 'Lỗi server: ' + error.message });
+    }
+};
+
+// [PUT] /api/v1/admin/products/:id
+export const update = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { title, description, price, discount_percentage, stock, status, category_id, sku, brand } = req.body;
+
+        const systemAdminRole = req.user.store_roles?.find(
+            r => r.role_data?.name === 'SystemAdmin' || r.role_data?.scope === 'system'
+        );
+
+        const product = await Product.findByPk(id);
+        if (!product) {
+            return res.status(404).json({ success: false, message: 'Không tìm thấy sản phẩm' });
+        }
+
+        if (systemAdminRole) {
+            // System Admin: Update all fields
+            let thumbnail = product.thumbnail;
+            if (req.file) {
+                try {
+                    const uploadToCloudinary = (await import('../../../helpers/uploadToCloudinary.js')).default;
+                    thumbnail = await uploadToCloudinary(req.file.buffer);
+                } catch (uploadError) {
+                    return res.status(500).json({ success: false, message: "Lỗi upload ảnh" });
+                }
+            }
+
+            await product.update({
+                title,
+                description,
+                price: parseFloat(price) || 0,
+                discount_percentage: parseFloat(discount_percentage) || 0,
+                stock: parseInt(stock) || 0,
+                thumbnail,
+                status,
+                product_category_id: category_id || null,
+                sku: sku || null,
+                brand
+            });
+
+        } else {
+            // Store Manager: Update ONLY inventory for their store
+            const storeIds = req.user.store_roles?.map(r => r.store_id).filter(Boolean) || [];
+
+            // Find or Create inventory record
+            if (storeIds.length > 0) {
+                let inventory = await ProductStoreInventory.findOne({
+                    where: {
+                        product_id: id,
+                        store_id: { [Op.in]: storeIds }
+                    }
+                });
+
+                if (inventory) {
+                    await inventory.update({ stock: parseInt(stock) || 0 });
+                } else {
+                    await ProductStoreInventory.create({
+                        product_id: id,
+                        store_id: storeIds[0], // Default to first store
+                        stock: parseInt(stock) || 0
+                    });
+                }
+            } else {
+                return res.status(403).json({ success: false, message: 'Bạn không quản lý cửa hàng nào để cập nhật kho' });
+            }
+        }
+
+        res.json({ success: true, message: 'Cập nhật sản phẩm thành công' });
+
+    } catch (error) {
+        console.error('Update Product Error:', error);
+        if (error.name === 'SequelizeValidationError' || error.name === 'SequelizeUniqueConstraintError') {
+            const messages = error.errors.map(e => e.message).join(', ');
+            return res.status(400).json({ success: false, message: messages });
+        }
+        res.status(500).json({ success: false, message: 'Lỗi server: ' + error.message });
+    }
+};
+
+
 // [POST] /api/v1/admin/products/create
 export const create = async (req, res) => {
     try {
