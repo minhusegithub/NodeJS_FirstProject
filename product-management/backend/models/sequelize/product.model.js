@@ -94,6 +94,17 @@ const Product = sequelize.define('Product', {
             if (product.title && !product.slug) {
                 product.slug = slugify(product.title, { lower: true, strict: true });
             }
+        },
+        beforeCreate: async (product) => {
+            if (product.slug) {
+                const count = await sequelize.models.Product.count({
+                    where: { slug: product.slug },
+                    paranoid: false
+                });
+                if (count > 0) {
+                    product.slug = `${product.slug}-${Date.now()}`;
+                }
+            }
         }
     },
     indexes: [

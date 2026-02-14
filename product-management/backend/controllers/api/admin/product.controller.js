@@ -141,3 +141,60 @@ export const index = async (req, res) => {
         });
     }
 };
+
+// [POST] /api/v1/admin/products/create
+// [POST] /api/v1/admin/products/create
+export const create = async (req, res) => {
+    try {
+        const { title, description, price, discount_percentage, stock, status, category_id, sku, brand } = req.body;
+
+        let thumbnail = "";
+
+        if (req.file) {
+            // Upload buffer to Cloudinary (requires multer memoryStorage)
+            try {
+                const uploadToCloudinary = (await import('../../../helpers/uploadToCloudinary.js')).default;
+                thumbnail = await uploadToCloudinary(req.file.buffer);
+            } catch (uploadError) {
+                console.error("Cloudinary Upload Error:", uploadError);
+                return res.status(500).json({ success: false, message: "Lỗi upload ảnh lên Cloudinary" });
+            }
+        }
+
+        const newProduct = await Product.create({
+            title,
+            description,
+            price: parseFloat(price) || 0,
+            discount_percentage: parseFloat(discount_percentage) || 0,
+            stock: parseInt(stock) || 0,
+            thumbnail,
+            status: status || 'active',
+            product_category_id: category_id || null,
+            sku: sku || null, // Convert empty string to null to avoid unique constraint violation
+            brand
+        });
+
+        res.status(201).json({
+            success: true,
+            message: "Tạo sản phẩm thành công",
+            data: { product: newProduct }
+        });
+
+    } catch (error) {
+        console.error("Create Product Error:", error);
+
+        // Handle Sequelize Validation Errors specifically
+        if (error.name === 'SequelizeValidationError' || error.name === 'SequelizeUniqueConstraintError') {
+            const messages = error.errors.map(e => e.message).join(', ');
+            return res.status(400).json({
+                success: false,
+                message: messages
+            });
+        }
+
+        res.status(500).json({
+            success: false,
+            message: "Lỗi server: " + error.message
+        });
+    }
+};

@@ -1,14 +1,17 @@
-const cloudinary = require("cloudinary").v2;
-const streamifier = require("streamifier");
+import { v2 as cloudinary } from 'cloudinary';
+import streamifier from 'streamifier';
+import dotenv from 'dotenv';
 
-// Cloudinary
-cloudinary.config({ 
-    cloud_name: process.env.CLOUD_NAME, 
-    api_key: process.env.CLOUD_KEY, 
-    api_secret: process.env.CLOUD_SECRET // Click 'View API Keys' above to copy your API secret
+dotenv.config();
+
+// Cloudinary Configuration
+cloudinary.config({
+    cloud_name: process.env.CLOUD_NAME,
+    api_key: process.env.CLOUD_KEY,
+    api_secret: process.env.CLOUD_SECRET
 });
 
-let streamUpload = (buffer) => {
+const streamUpload = (buffer) => {
     return new Promise((resolve, reject) => {
         let stream = cloudinary.uploader.upload_stream(
             (error, result) => {
@@ -17,14 +20,16 @@ let streamUpload = (buffer) => {
                 } else {
                     reject(error);
                 }
-            });
-        
+            }
+        );
 
         streamifier.createReadStream(buffer).pipe(stream);
     });
 };
 
-module.exports = async (buffer) => {
+const uploadToCloudinary = async (buffer) => {
     let result = await streamUpload(buffer);
     return result.url;
 }
+
+export default uploadToCloudinary;
