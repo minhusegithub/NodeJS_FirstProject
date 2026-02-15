@@ -224,13 +224,14 @@ export const update = async (req, res) => {
                 }
             }
 
+            // Update product
             await product.update({
                 title,
                 description,
                 price: parseFloat(price) || 0,
                 discount_percentage: parseFloat(discount_percentage) || 0,
                 stock: parseInt(stock) || 0,
-                thumbnail,
+                thumbnail, // Ensure this is saved
                 status,
                 product_category_id: category_id || null,
                 sku: sku || null,
@@ -264,7 +265,12 @@ export const update = async (req, res) => {
             }
         }
 
-        res.json({ success: true, message: 'Cập nhật sản phẩm thành công' });
+        // Return updated product data to fix frontend double toast error
+        res.json({
+            success: true,
+            message: 'Cập nhật sản phẩm thành công',
+            data: { product }
+        });
 
     } catch (error) {
         console.error('Update Product Error:', error);
