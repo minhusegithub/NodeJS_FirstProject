@@ -40,6 +40,12 @@ const AdminLayout = () => {
                         </Link>
                     )}
 
+                    {(userRoles.isStoreManager || userRoles.isInventoryStaff) && (
+                        <Link to="/admin/products/import" className="admin-nav-item">
+                            📥 Nhập hàng mới
+                        </Link>
+                    )}
+
                     {/* ProductCategories menu - only for storeManager and InventoryStaff */}
                     {(userRoles.isSystemAdmin) && (
                         <Link to="/admin/product-categories" className="admin-nav-item">

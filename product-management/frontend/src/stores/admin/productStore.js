@@ -69,6 +69,31 @@ export const useAdminProductStore = create((set, get) => ({
 
 
 
+    importProduct: async (data, fetchProducts = true) => {
+        try {
+            const response = await api.post('/admin/products/import', data);
+            toast.success(response.data.message);
+            if (fetchProducts) await get().getProducts();
+            return response.data;
+        } catch (error) {
+            toast.error(error.response?.data?.message || 'Lỗi khi nhập hàng');
+            throw error;
+        }
+    },
+
+    getImportableProducts: async (params = {}) => {
+        set({ loading: true });
+        try {
+            const { data } = await api.get('/admin/products/available-for-import', { params });
+            set({ loading: false });
+            return data.data;
+        } catch (error) {
+            set({ loading: false });
+            toast.error('Lỗi khi tải danh sách nhập hàng');
+            throw error;
+        }
+    },
+
     clearCurrentProduct: () => {
         set({ currentProduct: null });
     }

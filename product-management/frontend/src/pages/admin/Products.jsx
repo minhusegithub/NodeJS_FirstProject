@@ -12,7 +12,8 @@ const AdminProducts = () => {
         getProducts,
         createProduct,
         updateProduct,
-        getProduct
+        getProduct,
+        importProduct
     } = useAdminProductStore();
 
     const isSystemAdmin = user?.roles?.some(
@@ -125,14 +126,16 @@ const AdminProducts = () => {
             const productData = await getProduct(product.id);
             if (productData) {
                 // If store manager, populate stock from inventory[0]
-                let stockValue = productData.stock || 0;
-                if (!isSystemAdmin && productData.inventory && productData.inventory.length > 0) {
-                    stockValue = productData.inventory[0].stock;
+                let currentStoreStock = 0;
+                if (productData.inventory && productData.inventory.length > 0) {
+                    currentStoreStock = productData.inventory[0].stock;
                 }
 
                 setEditingProduct({
                     ...productData,
-                    stock: stockValue, // Unified stock field for form
+                    currentStoreStock: currentStoreStock,
+                    mainStock: productData.stock, // Main warehouse stock
+                    stock: isSystemAdmin ? productData.stock : 0, // For Admin: stock value. For Staff: import quantity (init 0)
                     previewThumbnail: productData.thumbnail
                 });
                 setPreviewImage(productData.thumbnail);
@@ -160,21 +163,43 @@ const AdminProducts = () => {
     const handleUpdateSubmit = async (e) => {
         e.preventDefault();
         try {
-            const formData = new FormData();
-            formData.append('title', editingProduct.title || '');
-            formData.append('sku', editingProduct.sku || '');
-            formData.append('category_id', editingProduct.category_id || editingProduct.product_category_id || '');
-            formData.append('price', editingProduct.price || 0);
-            formData.append('discount_percentage', editingProduct.discount_percentage || 0);
-            formData.append('stock', editingProduct.stock || 0);
-            formData.append('description', editingProduct.description || '');
-            formData.append('status', editingProduct.status || 'active');
+            if (!isSystemAdmin) {
+                // Handle Import Stock for Store Staff
+                const importQty = parseInt(editingProduct.stock);
 
-            if (editingProduct.thumbnailFile) {
-                formData.append('thumbnail', editingProduct.thumbnailFile);
+                if (!importQty || importQty <= 0) {
+                    alert("Số lượng nhập phải lớn hơn 0");
+                    return;
+                }
+
+                if (importQty > editingProduct.mainStock) {
+                    alert(`Kho chính không đủ hàng (Còn: ${editingProduct.mainStock})`);
+                    return;
+                }
+
+                await importProduct({
+                    product_id: editingProduct.id,
+                    quantity: importQty
+                });
+
+            } else {
+                // Handle Update for System Admin
+                const formData = new FormData();
+                formData.append('title', editingProduct.title || '');
+                formData.append('sku', editingProduct.sku || '');
+                formData.append('category_id', editingProduct.category_id || editingProduct.product_category_id || '');
+                formData.append('price', editingProduct.price || 0);
+                formData.append('discount_percentage', editingProduct.discount_percentage || 0);
+                formData.append('stock', editingProduct.stock || 0);
+                formData.append('description', editingProduct.description || '');
+                formData.append('status', editingProduct.status || 'active');
+
+                if (editingProduct.thumbnailFile) {
+                    formData.append('thumbnail', editingProduct.thumbnailFile);
+                }
+
+                await updateProduct(editingProduct.id, formData);
             }
-
-            await updateProduct(editingProduct.id, formData);
 
             setShowEditModal(false);
             setEditingProduct(null);
@@ -526,14 +551,40 @@ const AdminProducts = () => {
                                 </div>
                             </div>
 
-                            <div className="form-group">
-                                <label>{isSystemAdmin ? 'Tồn kho (Kho chính)' : 'Tồn kho (Tại cửa hàng)'}</label>
-                                <input
-                                    type="number" name="stock" min="0"
-                                    value={editingProduct.stock} onChange={handleEditInputChange}
-                                    className="form-control"
-                                />
-                            </div>
+                            {isSystemAdmin ? (
+                                <div className="form-group">
+                                    <label>Tồn kho (Kho chính)</label>
+                                    <input
+                                        type="number" name="stock" min="0"
+                                        value={editingProduct.stock} onChange={handleEditInputChange}
+                                        className="form-control"
+                                    />
+                                </div>
+                            ) : (
+                                <>
+                                    <div className="form-group">
+                                        <label>Tồn kho hiện tại (Tại cửa hàng)</label>
+                                        <input
+                                            type="text"
+                                            value={editingProduct.currentStoreStock || 0}
+                                            className="form-control"
+                                            disabled
+                                            style={{ backgroundColor: '#f0f0f0' }}
+                                        />
+                                    </div>
+
+                                    <div className="form-group">
+                                        <label>Số lượng muốn nhập thêm ( tối đa: <i>{editingProduct.mainStock}</i> )  <span className="text-danger">*</span></label>
+                                        <input
+                                            type="number" name="stock" min="1" max={editingProduct.mainStock}
+                                            value={editingProduct.stock} onChange={handleEditInputChange}
+                                            className="form-control"
+                                            placeholder="Nhập số lượng..."
+                                            autoFocus
+                                        />
+                                    </div>
+                                </>
+                            )}
 
                             <div className="form-group">
                                 <label>Ảnh sản phẩm</label>

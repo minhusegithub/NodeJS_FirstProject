@@ -1,4 +1,4 @@
-import { Product, ProductCategory, ProductStoreInventory, Store } from '../../../models/sequelize/index.js';
+import { Product, ProductCategory, ProductStoreInventory, Store, sequelize } from '../../../models/sequelize/index.js';
 import { Op } from 'sequelize';
 
 // [GET] /api/v1/admin/products
@@ -335,6 +335,153 @@ export const create = async (req, res) => {
         res.status(500).json({
             success: false,
             message: "Lỗi server: " + error.message
+        });
+    }
+};
+
+// [GET] /api/v1/admin/products/available-for-import
+export const getProductsAvailableForImport = async (req, res) => {
+    try {
+        const { page = 1, limit = 10, keyword = '' } = req.query;
+        const offset = (page - 1) * limit;
+
+        // Get user's store
+        const storeIds = req.user.store_roles?.map(r => r.store_id).filter(Boolean) || [];
+
+        if (storeIds.length === 0) {
+            return res.json({
+                success: true,
+                data: { products: [], pagination: { total: 0, currentPage: 1, totalPages: 0, limit: parseInt(limit) } }
+            });
+        }
+
+        const storeId = storeIds[0];
+
+        const where = {
+            deleted_at: null,
+            status: 'active'
+        };
+
+        if (keyword) {
+            where.title = { [Op.iLike]: `%${keyword}%` };
+        }
+
+        // Use literal subquery to find products NOT in store inventory
+        const result = await Product.findAndCountAll({
+            where: {
+                ...where,
+                id: {
+                    [Op.notIn]: sequelize.literal(`(SELECT product_id FROM product_store_inventory WHERE store_id = ${storeId})`)
+                }
+            },
+            limit: parseInt(limit),
+            offset: parseInt(offset),
+            order: [['created_at', 'DESC']],
+            include: [
+                {
+                    model: ProductCategory,
+                    as: 'category',
+                    attributes: ['id', 'title'],
+                    required: false
+                }
+            ]
+        });
+
+        res.json({
+            success: true,
+            data: {
+                products: result.rows,
+                pagination: {
+                    total: result.count,
+                    currentPage: parseInt(page),
+                    totalPages: Math.ceil(result.count / limit),
+                    limit: parseInt(limit)
+                }
+            }
+        });
+
+    } catch (error) {
+        console.error('Get Available Import Products Error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Lỗi server: ' + error.message
+        });
+    }
+};
+
+// [POST] /api/v1/admin/products/import
+export const importProduct = async (req, res) => {
+    let t;
+    try {
+        t = await sequelize.transaction();
+        const { product_id, quantity } = req.body;
+        const importQty = parseInt(quantity);
+
+        if (isNaN(importQty) || importQty <= 0) {
+            await t.rollback();
+            return res.status(400).json({ success: false, message: "Số lượng nhập phải lớn hơn 0" });
+        }
+
+        const storeIds = req.user.store_roles?.map(r => r.store_id).filter(Boolean) || [];
+        if (storeIds.length === 0) {
+            await t.rollback();
+            return res.status(403).json({ success: false, message: "Bạn không có quyền quản lý cửa hàng nào" });
+        }
+        const storeId = storeIds[0];
+
+        // 1. Get Product and Lock it
+        const product = await Product.findByPk(product_id, { transaction: t, lock: true });
+        if (!product) {
+            await t.rollback();
+            return res.status(404).json({ success: false, message: "Sản phẩm không tồn tại" });
+        }
+
+        // 2. Check stock
+        if (product.stock < importQty) {
+            await t.rollback();
+            return res.status(400).json({
+                success: false,
+                message: `Kho chính không đủ hàng. Chỉ còn ${product.stock} sản phẩm.`
+            });
+        }
+
+        // 3. Deduct from Main Warehouse
+        await product.decrement('stock', { by: importQty, transaction: t });
+
+        // 4. Add to Store Warehouse
+        // Check if inventory exists
+        let inventory = await ProductStoreInventory.findOne({
+            where: { product_id, store_id: storeId },
+            transaction: t
+        });
+
+        if (inventory) {
+            await inventory.increment('stock', { by: importQty, transaction: t });
+        } else {
+            await ProductStoreInventory.create({
+                product_id,
+                store_id: storeId,
+                stock: importQty
+            }, { transaction: t });
+        }
+
+        await t.commit();
+
+        // Reload product to get updated stock
+        await product.reload();
+
+        res.json({
+            success: true,
+            message: `Đã nhập ${importQty} sản phẩm về cửa hàng thành công`,
+            data: { product }
+        });
+
+    } catch (error) {
+        if (t) await t.rollback();
+        console.error('Import Product Error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Lỗi server: ' + error.message
         });
     }
 };
