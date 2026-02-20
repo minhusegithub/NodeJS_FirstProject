@@ -62,62 +62,66 @@ export const getOrders = async (req, res) => {
     }
 };
 
-// [GET] /api/v1/orders/:id
-export const getOrderDetail = async (req, res) => {
+
+
+// [PATCH] /api/v1/orders/:id/cancel
+export const cancelOrder = async (req, res) => {
+    const t = await sequelize.transaction();
     try {
         const { id } = req.params;
+        const userId = req.user.id;
 
+        // Find order and ensure it belongs to this user
         const order = await Order.findOne({
-            where: {
-                [sequelize.Sequelize.Op.or]: [
-                    { id: isNaN(id) ? null : id },
-                    { code: id }
-                ]
-            },
+            where: { id, user_id: userId },
             include: [
                 {
                     model: OrderItem,
-                    as: 'items',
-                    include: [
-                        {
-                            model: Product,
-                            as: 'product',
-                            attributes: ['id', 'slug', 'thumbnail']
-                        }
-                    ]
-                },
-                {
-                    model: Store,
-                    as: 'store',
-                    attributes: ['id', 'name', 'address', 'contact']
-                },
-                {
-                    model: User,
-                    as: 'user',
-                    attributes: ['id', 'full_name', 'email', 'phone']
+                    as: 'items'
                 }
-            ]
+            ],
+            transaction: t
         });
 
         if (!order) {
-            return res.status(404).json({
-                code: 404,
-                message: "Order not found"
+            await t.rollback();
+            return res.status(404).json({ code: 404, message: 'Không tìm thấy đơn hàng' });
+        }
+
+        // Only allow cancellation for pending or confirmed orders
+        if (!['pending', 'confirmed'].includes(order.status)) {
+            await t.rollback();
+            return res.status(400).json({
+                code: 400,
+                message: 'Chỉ có thể hủy đơn hàng ở trạng thái "Chờ xác nhận" hoặc "Đã xác nhận"'
             });
         }
 
+        // Restore stock for each item
+        for (const item of order.items) {
+            const inventory = await ProductStoreInventory.findOne({
+                where: { product_id: item.product_id, store_id: order.store_id },
+                transaction: t
+            });
+            if (inventory) {
+                await inventory.increment('stock', { by: item.quantity, transaction: t });
+            }
+        }
+
+        // Update order status
+        await order.update({ status: 'cancelled' }, { transaction: t });
+
+        await t.commit();
+
         res.json({
             code: 200,
-            message: "Success",
-            data: order
+            message: 'Đã hủy đơn hàng thành công',
+            data: { order }
         });
-
     } catch (error) {
-        console.error('Get Order Detail Error:', error);
-        res.status(500).json({
-            code: 500,
-            message: "Internal Server Error",
-            error: error.message
-        });
+        await t.rollback();
+        console.error('Cancel Order Error:', error);
+        res.status(500).json({ code: 500, message: 'Lỗi server: ' + error.message });
     }
 };
+

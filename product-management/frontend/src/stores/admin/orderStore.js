@@ -28,19 +28,6 @@ export const useAdminOrderStore = create((set, get) => ({
         }
     },
 
-    getOrder: async (id) => {
-        set({ loading: true });
-        try {
-            const { data } = await api.get(`/admin/orders/${id}`);
-            set({
-                currentOrder: data.data,
-                loading: false
-            });
-        } catch (error) {
-            set({ loading: false });
-            toast.error('Không tìm thấy đơn hàng');
-        }
-    },
 
     updateStatus: async (id, status) => {
         try {

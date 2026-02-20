@@ -16,6 +16,8 @@ const EditProfile = () => {
         password: '',
         avatar: ''
     });
+    const [avatarFile, setAvatarFile] = useState(null);
+    const [previewAvatar, setPreviewAvatar] = useState(null);
 
     useEffect(() => {
         if (user) {
@@ -27,6 +29,7 @@ const EditProfile = () => {
                 password: '',
                 avatar: user.avatar || ''
             });
+            setPreviewAvatar(user.avatar);
         } else {
             navigate('/login');
         }
@@ -39,12 +42,24 @@ const EditProfile = () => {
         });
     };
 
+    const handleFileChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            setAvatarFile(file);
+            setPreviewAvatar(URL.createObjectURL(file));
+        }
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
 
         try {
-            await updateProfile(formData);
+            const payload = new FormData();
+            Object.keys(formData).forEach(key => payload.append(key, formData[key]));
+            if (avatarFile) payload.append('avatar', avatarFile);
+
+            await updateProfile(payload);
             toast.success('Cập nhật thông tin thành công!');
             navigate('/profile');
         } catch (error) {
@@ -56,7 +71,7 @@ const EditProfile = () => {
 
     if (!user) return null;
 
-    const avatarUrl = formData.avatar || "https://img.freepik.com/free-vector/businessman-character-avatar-isolated_24877-60111.jpg";
+    const displayAvatar = previewAvatar || formData.avatar || "https://img.freepik.com/free-vector/businessman-character-avatar-isolated_24877-60111.jpg";
 
     return (
         <div className="user-edit-page">
@@ -78,16 +93,22 @@ const EditProfile = () => {
                                             <div className="avatar-upload">
                                                 <img
                                                     className="avatar-edit-image"
-                                                    src={avatarUrl}
+                                                    src={displayAvatar}
                                                     alt="Avatar Preview"
+                                                    style={{ width: '150px', height: '150px', objectFit: 'cover', borderRadius: '50%' }}
                                                 />
                                                 <div className="mt-2">
-                                                    <label className="btn btn-upload" htmlFor="avatar-input" onClick={() => toast.info('Tính năng upload ảnh đang phát triển')}>
+                                                    <label className="btn btn-upload" htmlFor="avatar-input" style={{ cursor: 'pointer' }}>
                                                         <i className="fa-solid fa-camera me-2"></i>
                                                         Chọn ảnh
                                                     </label>
-                                                    {/* Hidden file input not active yet */}
-                                                    <input id="avatar-input" type="file" className="d-none" />
+                                                    <input
+                                                        id="avatar-input"
+                                                        type="file"
+                                                        className="d-none"
+                                                        accept="image/*"
+                                                        onChange={handleFileChange}
+                                                    />
                                                 </div>
                                             </div>
                                         </div>

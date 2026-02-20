@@ -1,4 +1,5 @@
 import md5 from 'md5';
+import uploadToCloudinary from '../../helpers/uploadToCloudinary.js';
 import { User, StoreStaff, Role, Store, sequelize } from '../../models/sequelize/index.js';
 import { Op } from 'sequelize';
 
@@ -113,7 +114,13 @@ export const updateInfo = async (req, res) => {
         if (email !== undefined) updateData.email = email;
         if (phone !== undefined) updateData.phone = phone;
         if (address !== undefined) updateData.address = address;
-        if (avatar !== undefined) updateData.avatar = avatar;
+
+        if (req.file) {
+            updateData.avatar = await uploadToCloudinary(req.file.buffer);
+        } else if (avatar !== undefined) {
+            updateData.avatar = avatar;
+        }
+
         if (password) updateData.password = md5(password);
 
         await User.update(updateData, {

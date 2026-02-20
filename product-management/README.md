@@ -182,8 +182,7 @@ product-management/
     │   │   │   ├── ProductDetail.jsx
     │   │   │   ├── Cart.jsx
     │   │   │   ├── Checkout.jsx
-    │   │   │   ├── Orders.jsx
-    │   │   │   └── OrderDetail.jsx
+    │   │   │   ├── Orders.jsxs
     │   │   └── admin/
     │   │       ├── Dashboard.jsx
     │   │       ├── Products.jsx

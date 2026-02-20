@@ -13,9 +13,6 @@ router.get('/vnpay-return', checkoutController.vnpayReturn);
 
 // Order Management API
 router.get('/', authenticateUser, orderController.getOrders); // GET /api/v1/orders
-router.get('/:id', authenticateUser, orderController.getOrderDetail); // GET /api/v1/orders/:id
-
-// TODO: Cancel logic can be moved to update status API if needed
-// router.patch('/:id/cancel', authenticateUser, orderController.cancelOrder);
+router.patch('/:id/cancel', authenticateUser, orderController.cancelOrder); // PATCH /api/v1/orders/:id/cancel
 
 export default router;

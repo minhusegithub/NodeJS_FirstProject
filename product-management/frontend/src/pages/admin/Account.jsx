@@ -26,6 +26,8 @@ const AdminAccount = () => {
     };
 
     const [formData, setFormData] = useState(initialForm);
+    const [previewAvatar, setPreviewAvatar] = useState(null);
+    const [avatarFile, setAvatarFile] = useState(null);
 
     useEffect(() => {
         fetchStoreUsers();
@@ -69,6 +71,8 @@ const AdminAccount = () => {
     const handleAddNew = () => {
         setEditMode(false);
         setFormData(initialForm);
+        setPreviewAvatar(null);
+        setAvatarFile(null);
         setShowModal(true);
     };
 
@@ -107,7 +111,19 @@ const AdminAccount = () => {
             status: user.status || 'active'
         });
 
+
+
+        setPreviewAvatar(user.avatar);
+        setAvatarFile(null);
         setShowModal(true);
+    };
+
+    const handleFileChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            setAvatarFile(file);
+            setPreviewAvatar(URL.createObjectURL(file));
+        }
     };
 
     // NOTE: I should update controller index to return address to ensure edit works well.
@@ -128,11 +144,21 @@ const AdminAccount = () => {
 
         try {
             setSubmitting(true);
+            const payload = new FormData();
+            Object.keys(formData).forEach(key => {
+                if (formData[key] !== null && formData[key] !== undefined) {
+                    payload.append(key, formData[key]);
+                }
+            });
+            if (avatarFile) {
+                payload.append('avatar', avatarFile);
+            }
+
             let res;
             if (editMode) {
-                res = await api.put(`/admin/store-users/${selectedStaffId}`, formData);
+                res = await api.put(`/admin/store-users/${selectedStaffId}`, payload);
             } else {
-                res = await api.post('/admin/store-users', formData);
+                res = await api.post('/admin/store-users', payload);
             }
 
             if (res.data?.code === 200) {
@@ -268,6 +294,22 @@ const AdminAccount = () => {
                         </div>
 
                         <form onSubmit={handleSubmit}>
+                            <div className="form-group" style={{ marginBottom: '15px', textAlign: 'center' }}>
+                                <div style={{ marginBottom: '10px' }}>
+                                    {previewAvatar ? (
+                                        <img src={previewAvatar} alt="Preview" style={{ width: '80px', height: '80px', borderRadius: '50%', objectFit: 'cover', border: '2px solid #ddd' }} />
+                                    ) : (
+                                        <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: '#eee', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto', fontSize: '24px', color: '#888' }}>
+                                            📷
+                                        </div>
+                                    )}
+                                </div>
+                                <label style={{ cursor: 'pointer', color: '#3498db', fontWeight: 'bold' }}>
+                                    {editMode ? 'Thay đổi ảnh đại diện' : 'Tải lên ảnh đại diện'}
+                                    <input type="file" accept="image/*" onChange={handleFileChange} style={{ display: 'none' }} />
+                                </label>
+                            </div>
+
                             <div className="form-group" style={{ marginBottom: '15px' }}>
                                 <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500' }}>Họ và tên <span style={{ color: 'red' }}>*</span></label>
                                 <input

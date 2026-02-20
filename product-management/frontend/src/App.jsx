@@ -18,7 +18,6 @@ import ProductDetail from './pages/client/ProductDetail';
 import Cart from './pages/client/Cart';
 import Checkout from './pages/client/Checkout';
 import Orders from './pages/client/Orders';
-import OrderDetail from './pages/client/OrderDetail';
 import Profile from './pages/client/Profile';
 import EditProfile from './pages/client/EditProfile';
 import VNPayReturn from './pages/client/VNPayReturn';
@@ -89,13 +88,6 @@ function App() {
                             <Orders />
                         </ProtectedRoute>
                     } />
-                    <Route path="/orders/:id" element={
-                        <ProtectedRoute>
-                            <Header />
-                            <OrderDetail />
-                        </ProtectedRoute>
-                    } />
-
                     {/* Admin Routes */}
                     <Route path="/admin" element={
                         <ProtectedRoute>

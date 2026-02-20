@@ -8,7 +8,7 @@ const router = express.Router();
 router.use(requireRole(['storeManager', 'OrderStaff']));
 
 router.get('/', orderController.getOrders);
-router.get('/:id', orderController.getOrderDetail);
+
 router.patch('/:id/status', orderController.updateOrderStatus);
 
 export default router;

@@ -49,20 +49,6 @@ export const useOrderStore = create((set, get) => ({
         }
     },
 
-    // Get order detail
-    getOrderDetail: async (orderId) => {
-        set({ loading: true });
-        try {
-            const { data } = await api.get(`/orders/${orderId}`);
-            set({
-                currentOrder: data.data,
-                loading: false
-            });
-        } catch (error) {
-            set({ loading: false });
-            toast.error('Không tìm thấy đơn hàng');
-        }
-    },
 
     // Cancel order
     cancelOrder: async (orderId) => {

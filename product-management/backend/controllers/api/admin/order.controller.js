@@ -2,6 +2,7 @@ import {
     Order,
     OrderItem,
     Product,
+    ProductStoreInventory,
     Store,
     User,
     sequelize
@@ -115,83 +116,18 @@ export const getOrders = async (req, res) => {
     }
 };
 
-// [GET] /api/v1/admin/orders/:id
-export const getOrderDetail = async (req, res) => {
-    try {
-        const { id } = req.params;
 
-        const allowedStoreIds = await getAllowedStoreIds(req.user);
-
-        const where = {
-            [Op.or]: [
-                { id: isNaN(id) ? null : id },
-                { code: id }
-            ]
-        };
-
-        // Enforce store permission if not admin
-        if (allowedStoreIds !== null) {
-            where.store_id = { [Op.in]: allowedStoreIds };
-        }
-
-        const order = await Order.findOne({
-            where,
-            include: [
-                {
-                    model: OrderItem,
-                    as: 'items',
-                    include: [
-                        {
-                            model: Product,
-                            as: 'product',
-                            attributes: ['id', 'slug', 'thumbnail']
-                        }
-                    ]
-                },
-                {
-                    model: Store,
-                    as: 'store',
-                    attributes: ['id', 'name', 'code', 'address', 'contact']
-                },
-                {
-                    model: User,
-                    as: 'user',
-                    attributes: ['id', 'full_name', 'email', 'phone']
-                }
-            ]
-        });
-
-        if (!order) {
-            return res.status(404).json({
-                code: 404,
-                message: "Order not found or you don't have permission"
-            });
-        }
-
-        res.json({
-            code: 200,
-            message: "Success",
-            data: order
-        });
-
-    } catch (error) {
-        console.error('Get Admin Order Detail Error:', error);
-        res.status(500).json({
-            code: 500,
-            message: "Internal Server Error",
-            error: error.message
-        });
-    }
-};
 
 // [PATCH] /api/v1/admin/orders/:id/status
 export const updateOrderStatus = async (req, res) => {
+    const t = await sequelize.transaction();
     try {
         const { id } = req.params;
         const { status } = req.body;
 
         const validStatuses = ['pending', 'confirmed', 'shipping', 'delivered', 'cancelled'];
         if (!validStatuses.includes(status)) {
+            await t.rollback();
             return res.status(400).json({
                 code: 400,
                 message: 'Invalid status'
@@ -201,21 +137,45 @@ export const updateOrderStatus = async (req, res) => {
         const allowedStoreIds = await getAllowedStoreIds(req.user);
 
         const where = { id };
-        // Enforce store permission if not admin
         if (allowedStoreIds !== null) {
             where.store_id = { [Op.in]: allowedStoreIds };
         }
 
-        const order = await Order.findOne({ where });
+        const order = await Order.findOne({
+            where,
+            include: [{ model: OrderItem, as: 'items' }],
+            transaction: t
+        });
 
         if (!order) {
+            await t.rollback();
             return res.status(404).json({
                 code: 404,
                 message: "Order not found or you don't have permission"
             });
         }
 
-        await order.update({ status });
+        // Prevent re-cancelling or restoring already-cancelled orders
+        if (order.status === 'cancelled' && status === 'cancelled') {
+            await t.rollback();
+            return res.status(400).json({ code: 400, message: 'Đơn hàng đã được hủy trước đó' });
+        }
+
+        // If cancelling: restore stock for each item
+        if (status === 'cancelled' && order.status !== 'cancelled') {
+            for (const item of order.items) {
+                const inventory = await ProductStoreInventory.findOne({
+                    where: { product_id: item.product_id, store_id: order.store_id },
+                    transaction: t
+                });
+                if (inventory) {
+                    await inventory.increment('stock', { by: item.quantity, transaction: t });
+                }
+            }
+        }
+
+        await order.update({ status }, { transaction: t });
+        await t.commit();
 
         res.json({
             code: 200,
@@ -224,6 +184,7 @@ export const updateOrderStatus = async (req, res) => {
         });
 
     } catch (error) {
+        await t.rollback();
         console.error('Update Order Status Error:', error);
         res.status(500).json({
             code: 500,

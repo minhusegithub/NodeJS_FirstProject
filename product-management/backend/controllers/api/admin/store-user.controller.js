@@ -1,4 +1,5 @@
 import md5 from 'md5';
+import uploadToCloudinary from '../../../helpers/uploadToCloudinary.js';
 import { User, StoreStaff, Role, Store, sequelize } from '../../../models/sequelize/index.js';
 import { Op } from 'sequelize';
 
@@ -50,6 +51,11 @@ export const create = async (req, res) => {
         }
 
         // 4. Create User
+        let avatarUrl = '';
+        if (req.file) {
+            avatarUrl = await uploadToCloudinary(req.file.buffer);
+        }
+
         const newUser = await User.create({
             full_name: fullName,
             email,
@@ -57,7 +63,7 @@ export const create = async (req, res) => {
             phone,
             address,
             status: 'active',
-            avatar: ''
+            avatar: avatarUrl || ''
         }, { transaction: t });
 
         // 5. Assign Role (Default: NULL - Unassigned)
@@ -225,6 +231,10 @@ export const update = async (req, res) => {
             // Sync user status with staff status logic if needed
             status: status === 'active' ? 'active' : 'inactive'
         };
+
+        if (req.file) {
+            userData.avatar = await uploadToCloudinary(req.file.buffer);
+        }
 
         if (password) {
             userData.password = md5(password);

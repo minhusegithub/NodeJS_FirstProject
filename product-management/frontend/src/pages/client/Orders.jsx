@@ -5,7 +5,8 @@ import moment from 'moment';
 
 const Orders = () => {
     const navigate = useNavigate();
-    const { orders, pagination, loading, getOrders } = useOrderStore();
+    const { orders, pagination, loading, getOrders, cancelOrder } = useOrderStore();
+    const [cancellingId, setCancellingId] = useState(null);
     const [selectedStatus, setSelectedStatus] = useState('all');
 
     useEffect(() => {
@@ -54,6 +55,18 @@ const Orders = () => {
     const filteredOrders = selectedStatus === 'all'
         ? orders
         : orders.filter(order => order.status === selectedStatus);
+
+    const canCancel = (status) => ['pending', 'confirmed'].includes(status);
+
+    const handleCancelOrder = async (orderId) => {
+        if (!window.confirm('Bạn có chắc muốn hủy đơn hàng này không?')) return;
+        setCancellingId(orderId);
+        try {
+            await cancelOrder(orderId);
+        } finally {
+            setCancellingId(null);
+        }
+    };
 
     if (loading) {
         return (
@@ -134,6 +147,7 @@ const Orders = () => {
                                 <th>Tổng tiền</th>
                                 <th>Trạng thái</th>
                                 <th>Thanh toán</th>
+                                <th>Thao tác</th>
 
                             </tr>
                         </thead>
@@ -181,6 +195,33 @@ const Orders = () => {
                                         </span>
                                         <br />
                                         <small>{order.payment_method === 'VNPay' ? 'VNPay' : 'COD'}</small>
+                                    </td>
+                                    <td>
+                                        {canCancel(order.status) ? (
+                                            <button
+                                                onClick={() => handleCancelOrder(order.id)}
+                                                disabled={cancellingId === order.id}
+                                                style={{
+                                                    background: 'none',
+                                                    border: '1px solid #e74c3c',
+                                                    color: '#e74c3c',
+                                                    padding: '5px 12px',
+                                                    borderRadius: '6px',
+                                                    cursor: cancellingId === order.id ? 'not-allowed' : 'pointer',
+                                                    fontSize: '13px',
+                                                    fontWeight: '500',
+                                                    opacity: cancellingId === order.id ? 0.6 : 1,
+                                                    transition: 'all 0.2s',
+                                                    whiteSpace: 'nowrap'
+                                                }}
+                                                onMouseEnter={e => { if (cancellingId !== order.id) { e.target.style.background = '#e74c3c'; e.target.style.color = '#fff'; } }}
+                                                onMouseLeave={e => { e.target.style.background = 'none'; e.target.style.color = '#e74c3c'; }}
+                                            >
+                                                {cancellingId === order.id ? 'Đang hủy...' : 'Hủy đơn'}
+                                            </button>
+                                        ) : (
+                                            <span style={{ color: '#aaa', fontSize: '12px' }}>————</span>
+                                        )}
                                     </td>
 
                                 </tr>
