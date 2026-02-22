@@ -3,7 +3,6 @@ import axios from 'axios';
 const api = axios.create({
     baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3000/api/v1',
     timeout: 10000,
-    timeout: 10000,
     withCredentials: true // Important for HttpOnly cookies
 });
 
@@ -39,6 +38,27 @@ api.interceptors.response.use(
                 // Update access token in localStorage
                 localStorage.setItem('accessToken', data.data.accessToken);
                 originalRequest.headers.Authorization = `Bearer ${data.data.accessToken}`;
+
+                // Sync user profile after successful token refresh
+                try {
+                    const profileResponse = await axios.get(
+                        `${api.defaults.baseURL}/auth/profile`,
+                        {
+                            headers: { Authorization: `Bearer ${data.data.accessToken}` },
+                            withCredentials: true
+                        }
+                    );
+
+                    // Update user in authStore if available
+                    if (profileResponse.data?.data?.user) {
+                        // Dynamically import to avoid circular dependency
+                        import('../stores/authStore').then(({ useAuthStore }) => {
+                            useAuthStore.getState().updateUser(profileResponse.data.data.user);
+                        });
+                    }
+                } catch (profileError) {
+                    console.warn('Failed to sync user profile after token refresh:', profileError);
+                }
 
                 return api(originalRequest);
             } catch (refreshError) {

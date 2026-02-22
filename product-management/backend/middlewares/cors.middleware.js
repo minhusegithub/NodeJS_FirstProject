@@ -11,7 +11,7 @@ const corsOptions = {
             'http://localhost:5173'
         ];
 
-        if (true) { // Allow ALL temporarily for debugging
+        if (allowedOrigins.includes(origin)) {
             callback(null, true);
         } else {
             callback(new Error('Not allowed by CORS'));

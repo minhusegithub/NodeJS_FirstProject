@@ -12,6 +12,7 @@ import Role from './role.model.js';
 import StockMovement from './stock-movement.model.js';
 import Cart from './cart.model.js';
 import CartItem from './cart-item.model.js';
+import BlacklistedToken from './blacklisted-token.model.js';
 
 // Define model associations
 const setupAssociations = () => {
@@ -232,7 +233,8 @@ export {
     Role,
     StockMovement,
     Cart,
-    CartItem
+    CartItem,
+    BlacklistedToken
 };
 
 export default {
@@ -249,5 +251,6 @@ export default {
     Role,
     StockMovement,
     Cart,
-    CartItem
+    CartItem,
+    BlacklistedToken
 };

@@ -69,18 +69,54 @@ export const authenticateAdmin = async (req, res, next) => {
         }
 
         const decoded = jwtHelper.verifyAccessToken(token);
-        const account = await Account.findById(decoded.accountId).select('-password');
 
-        if (!account || account.deleted) {
+        // Use User model instead of Account (which doesn't exist)
+        const user = await User.findByPk(decoded.userId, {
+            attributes: { exclude: ['password'] },
+            include: [
+                {
+                    model: StoreStaff,
+                    as: 'store_roles',
+                    where: { is_active: true },
+                    required: false,
+                    include: [
+                        { model: Store, as: 'store' },
+                        { model: Role, as: 'role_data' }
+                    ]
+                }
+            ]
+        });
+
+        if (!user || user.status !== 'active') {
             return res.status(401).json({
                 success: false,
-                message: 'Invalid token'
+                message: 'Invalid token or User inactive'
             });
         }
 
-        req.account = account;
+        // Check if user has admin role
+        const hasAdminRole = user.store_roles?.some(sr => 
+            sr.role_data?.name === 'admin' || sr.role_data?.name === 'super_admin'
+        );
+
+        if (!hasAdminRole) {
+            return res.status(403).json({
+                success: false,
+                message: 'Admin access required'
+            });
+        }
+
+        // Map store_roles to roles array for compatibility
+        user.roles = user.store_roles?.map(sr => ({
+            roleName: sr.role_data?.name,
+            storeId: sr.store_id,
+            store: sr.store
+        })) || [];
+
+        req.user = user;
         next();
     } catch (error) {
+        console.error('Admin Auth Middleware Error:', error);
         return res.status(401).json({
             success: false,
             message: 'Invalid or expired token'

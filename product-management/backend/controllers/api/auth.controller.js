@@ -160,7 +160,52 @@ export const refreshToken = async (req, res) => {
         }
 
         const decoded = jwtHelper.verifyRefreshToken(refreshToken);
-        const newAccessToken = jwtHelper.generateAccessToken({ userId: decoded.userId });
+
+        // Check if token is blacklisted
+        if (decoded.jti && await jwtHelper.isTokenBlacklisted(decoded.jti)) {
+            return res.status(401).json({
+                success: false,
+                message: 'Token has been revoked'
+            });
+        }
+
+        // Fetch user with roles to include in new access token
+        const user = await User.findByPk(decoded.userId, {
+            paranoid: true,
+            include: [
+                {
+                    model: StoreStaff,
+                    as: 'store_roles',
+                    where: { is_active: true },
+                    required: false,
+                    include: [
+                        { model: Store, as: 'store', attributes: ['id', 'name', 'code'] },
+                        { model: Role, as: 'role_data' }
+                    ]
+                }
+            ]
+        });
+
+        if (!user || user.status === 'inactive') {
+            return res.status(401).json({
+                success: false,
+                message: 'User not found or inactive'
+            });
+        }
+
+        // Prepare Roles Data (same as login)
+        const roles = user.store_roles ? user.store_roles.map(r => ({
+            storeId: r.store_id,
+            storeName: r.store?.name,
+            roleId: r.role_id,
+            roleName: r.role_data?.name,
+            permissions: r.role_data?.permissions || []
+        })) : [];
+
+        const newAccessToken = jwtHelper.generateAccessToken({
+            userId: decoded.userId,
+            roles: roles // Include roles in new token
+        });
 
         res.json({
             success: true,
@@ -177,10 +222,17 @@ export const refreshToken = async (req, res) => {
 // [POST] /api/v1/auth/logout
 export const logout = async (req, res) => {
     try {
+        const refreshToken = req.cookies.refreshToken;
+        
         if (req.user) {
             // req.user is populated by middleware (Sequelize instance)
             req.user.status_online = 'offline';
             await req.user.save();
+
+            // Blacklist the refresh token
+            if (refreshToken) {
+                await jwtHelper.blacklistToken(refreshToken, req.user.id, 'refresh', 'logout');
+            }
         }
 
         res.clearCookie('refreshToken');
