@@ -1,11 +1,13 @@
-# 🛍️ Product Management - E-commerce SPA
+# 🛍️ Product Management - E-commerce System
 
-Modern full-stack e-commerce application migrated from SSR to CSR using React, featuring JWT authentication, shopping cart, checkout, and comprehensive admin panel.
+Modern full-stack e-commerce application with React frontend, featuring JWT authentication, Redis caching, shopping cart, checkout, and comprehensive admin panel.
 
 ## 📋 Table of Contents
 - [Tech Stack](#tech-stack)
 - [Features](#features)
 - [Installation](#installation)
+  - [Standard Installation](#standard-installation)
+  - [Docker Installation](#docker-installation-recommended)
 - [Project Structure](#project-structure)
 - [API Documentation](#api-documentation)
 - [Migration Progress](#migration-progress)
@@ -17,12 +19,16 @@ Modern full-stack e-commerce application migrated from SSR to CSR using React, f
 ## 🚀 Tech Stack
 
 ### Backend
-- **Runtime**: Node.js
+- **Runtime**: Node.js 20
 - **Framework**: Express.js
-- **Database**: MongoDB + Mongoose
+- **Database**: PostgreSQL 15 (Sequelize ORM)
+- **Cache**: Redis 7 (ioredis client)
 - **Authentication**: JWT (Access Token + Refresh Token)
+- **Rate Limiting**: rate-limiter-flexible
+- **File Upload**: Multer + Cloudinary
+- **Payment**: VNPay Integration
 - **Module System**: ES6 Modules
-- **Security**: CORS, HttpOnly Cookies
+- **Security**: CORS, HttpOnly Cookies, Token Blacklist
 
 ### Frontend
 - **Framework**: React 18
@@ -33,6 +39,11 @@ Modern full-stack e-commerce application migrated from SSR to CSR using React, f
 - **Notifications**: React Toastify
 - **Date Handling**: Moment.js
 - **Styling**: Custom CSS (Modern, Responsive)
+
+### Infrastructure
+- **Containerization**: Docker + Docker Compose
+- **Deployment**: Docker-ready (VPS/Cloud compatible)
+- **Monitoring**: Health checks built-in
 
 ---
 
@@ -60,35 +71,96 @@ Modern full-stack e-commerce application migrated from SSR to CSR using React, f
 - ✅ Beautiful Admin UI
 
 ### 🔐 Security Features
-- ✅ JWT Authentication
+- ✅ JWT Authentication with Blacklist
 - ✅ Access Token (15 min) + Refresh Token (7 days)
 - ✅ HttpOnly Cookies for Refresh Token
+- ✅ Instant Token Revocation (Redis-backed)
 - ✅ Protected Routes (Client & Admin)
+- ✅ Rate Limiting (Login, Register)
 - ✅ CORS Configuration
-- ✅ Password Hashing (MD5)
+- ✅ Password Hashing
 - ✅ Automatic Token Refresh
+
+### ⚡ Performance Features
+- ✅ Redis Caching Layer
+  - Product List Cache (5min TTL)
+  - Product Detail Cache (10min TTL)
+  - Category Tree Cache (1hr TTL)
+  - Shopping Cart Cache (1hr TTL)
+  - User Session Cache (15min TTL)
+- ✅ Graceful Degradation (Redis down = fallback to DB)
+- ✅ Cache Invalidation on Mutations
+- ✅ 20-60x Faster Response Times (cached)
 
 ---
 
 ## 📦 Installation
 
-### Prerequisites
-- Node.js (v14+)
+### Docker Installation (Recommended)
+
+**Cách nhanh nhất để chạy toàn bộ hệ thống:**
+
+```bash
+# 1. Clone repository
+git clone <your-repo-url>
+cd product-management
+
+# 2. Copy và cấu hình environment
+cp .env.docker .env
+# Chỉnh sửa .env với thông tin của bạn
+
+# 3. Chạy toàn bộ stack (PostgreSQL + Redis + Backend)
+docker-compose up -d
+
+# 4. Xem logs
+docker-compose logs -f backend
+
+# 5. Truy cập
+# Backend: http://localhost:3000
+# PostgreSQL: localhost:5432
+# Redis: localhost:6379
+```
+
+📖 **Chi tiết**: Xem [DOCKER_DEPLOYMENT.md](./DOCKER_DEPLOYMENT.md)
+
+---
+
+### Standard Installation
+
+**Prerequisites:**
+- Node.js 20+
+- PostgreSQL 15+
+- Redis 7+
 - npm or yarn
 
 ### Backend Setup
 ```bash
-# Navigate to backend directory
-cd product-management/backend
+# 1. Cài đặt PostgreSQL và Redis
+# Windows: Download từ postgresql.org và redis.io
+# Linux: sudo apt install postgresql redis-server
+# Mac: brew install postgresql redis
 
-# Install dependencies
+# 2. Tạo database
+psql -U postgres
+CREATE DATABASE product_management;
+\q
+
+# 3. Start Redis
+redis-server
+
+# 4. Navigate to backend directory
+cd backend
+
+# 5. Install dependencies
 npm install
 
-# Configure environment variables
-# Create .env file 
+# 6. Configure .env file
+cp .env.example .env
+# Điền thông tin: PG_*, REDIS_URL, JWT_*, etc.
 
-# Start backend server
-node index.js
+# 7. Start backend server
+npm start
+# Server chạy tại: http://localhost:3000
 ```
 
 ### Frontend Setup

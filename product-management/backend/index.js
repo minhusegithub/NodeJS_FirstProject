@@ -25,7 +25,19 @@ const __dirname = dirname(__filename);
 // Connect PostgreSQL
 import { sequelize } from './models/sequelize/index.js';
 sequelize.authenticate()
-  .then(() => console.log('✅ PostgreSQL connected successfully'))
+  .then(async () => {
+    console.log('✅ PostgreSQL connected successfully');
+    
+    // Auto-sync database in development (creates tables if not exists)
+    if (process.env.NODE_ENV === 'development') {
+      try {
+        await sequelize.sync({ alter: false });
+        console.log('✅ Database tables synchronized');
+      } catch (syncError) {
+        console.error('⚠️ Database sync warning:', syncError.message);
+      }
+    }
+  })
   .catch(err => console.error('❌ PostgreSQL connection failed:', err));
 
 // Connect Redis (graceful — server vẫn chạy nếu Redis không có)
