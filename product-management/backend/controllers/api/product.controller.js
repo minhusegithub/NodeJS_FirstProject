@@ -1,18 +1,40 @@
 import { Product, ProductCategory, ProductStoreInventory, Store } from '../../models/sequelize/index.js';
 import { Op } from 'sequelize';
+import { isRedisReady, redisGet, redisSet, redisDel } from '../../config/redis.js';
+import { hashQueryKey } from '../../helpers/cacheKey.js';
 
 // [GET] /api/products
 export const getProducts = async (req, res) => {
     try {
         const { page = 1, limit = 12, keyword, category_id, status, featured, price_range } = req.query;
-        const offset = (page - 1) * limit;
+        
+        // 1. Tạo cache key từ query params
+        const cacheKey = hashQueryKey('products:list', { 
+            page, limit, keyword, category_id, status, featured, price_range 
+        });
 
+        // 2. Thử lấy từ cache
+        if (isRedisReady()) {
+            const cached = await redisGet(cacheKey);
+            if (cached) {
+                
+                const parsed = JSON.parse(cached);
+                return res.json({
+                    code: 200,
+                    message: "Success (cached)",
+                    data: parsed.data,
+                    pagination: parsed.pagination
+                });
+            }
+        }
+
+        // 3. Cache miss → query DB
+        const offset = (page - 1) * limit;
         const where = {};
 
         if (keyword) {
             where[Op.or] = [
                 { title: { [Op.iLike]: `%${keyword}%` } },
-
                 { brand: { [Op.iLike]: `%${keyword}%` } }
             ];
         }
@@ -85,16 +107,22 @@ export const getProducts = async (req, res) => {
             distinct: true
         });
 
+        const pagination = {
+            total: count,
+            page: parseInt(page),
+            limit: parseInt(limit),
+            totalPages: Math.ceil(count / limit)
+        };
+
+        // 4. Lưu vào cache (TTL 5 phút)
+        const cacheData = { data: rows, pagination };
+        await redisSet(cacheKey, JSON.stringify(cacheData), 300);
+
         res.json({
             code: 200,
             message: "Success",
             data: rows,
-            pagination: {
-                total: count,
-                page: parseInt(page),
-                limit: parseInt(limit),
-                totalPages: Math.ceil(count / limit)
-            }
+            pagination
         });
     } catch (error) {
         console.error('Get Products Error:', error);
@@ -110,7 +138,21 @@ export const getProducts = async (req, res) => {
 export const getProductDetail = async (req, res) => {
     try {
         const { id } = req.params; // Can be slug or id
+        const cacheKey = `product:detail:${id}`;
 
+        // 1. Thử cache trước
+        if (isRedisReady()) {
+            const cached = await redisGet(cacheKey);
+            if (cached) {
+                return res.json({
+                    code: 200,
+                    message: "Success (cached)",
+                    data: JSON.parse(cached)
+                });
+            }
+        }
+
+        // 2. Cache miss → query DB
         // Try to find by slug first, then by id
         let product = await Product.findOne({
             where: { slug: id },
@@ -165,6 +207,9 @@ export const getProductDetail = async (req, res) => {
             });
         }
 
+        // 3. Lưu vào cache (TTL 10 phút)
+        await redisSet(cacheKey, JSON.stringify(product), 600);
+
         res.json({
             code: 200,
             message: "Success",
@@ -185,7 +230,21 @@ export const getProductDetail = async (req, res) => {
 // [GET] /api/products/categories/tree
 export const getCategoryTree = async (req, res) => {
     try {
-        // Get all active categories
+        const cacheKey = 'categories:tree';
+
+        // 1. Thử cache trước
+        if (isRedisReady()) {
+            const cached = await redisGet(cacheKey);
+            if (cached) {
+                return res.json({
+                    code: 200,
+                    message: "Success (cached)",
+                    data: JSON.parse(cached)
+                });
+            }
+        }
+
+        // 2. Cache miss → query DB
         const categories = await ProductCategory.findAll({
             where: { status: 'active' },
             order: [['title', 'ASC']],
@@ -206,6 +265,9 @@ export const getCategoryTree = async (req, res) => {
         };
 
         const tree = buildTree(null);
+
+        // 3. Lưu vào cache (TTL 1 giờ)
+        await redisSet(cacheKey, JSON.stringify(tree), 3600);
 
         res.json({
             code: 200,

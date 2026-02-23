@@ -2,6 +2,7 @@ import md5 from 'md5';
 import uploadToCloudinary from '../../../helpers/uploadToCloudinary.js';
 import { User, StoreStaff, Role, Store, sequelize } from '../../../models/sequelize/index.js';
 import { Op } from 'sequelize';
+import { redisDel } from '../../../config/redis.js';
 
 // [POST] /api/v1/admin/store-users
 export const create = async (req, res) => {
@@ -279,6 +280,9 @@ export const update = async (req, res) => {
         });
 
         await t.commit();
+
+        // Xóa session cache của user bị cập nhật (role/status thay đổi có hiệu lực ngay)
+        await redisDel(`user:session:${staff.user_id}`);
 
         res.json({
             code: 200,

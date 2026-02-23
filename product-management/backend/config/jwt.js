@@ -2,6 +2,7 @@ import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import { BlacklistedToken } from '../models/sequelize/index.js';
 import { Op } from 'sequelize';
+import { isRedisReady, redisGet, redisSet } from './redis.js';
 
 export const generateAccessToken = (payload) => {
     return jwt.sign(
@@ -48,25 +49,43 @@ export const setRefreshTokenCookie = (res, token) => {
 };
 
 // Check if token is blacklisted
+// Ưu tiên Redis (O(1)), fallback về DB nếu Redis down
 export const isTokenBlacklisted = async (jti) => {
-    const blacklisted = await BlacklistedToken.findOne({
-        where: { jti }
-    });
+    // 1. Thử Redis trước
+    if (isRedisReady()) {
+        const cached = await redisGet(`blacklist:${jti}`);
+        if (cached !== null) return true; // Tìm thấy trong Redis → đã blacklist
+        // Không tìm thấy trong Redis → chưa blacklist (Redis là source of truth khi online)
+        return false;
+    }
+
+    // 2. Fallback: Redis down → tra cứu DB
+    const blacklisted = await BlacklistedToken.findOne({ where: { jti } });
     return !!blacklisted;
 };
 
 // Add token to blacklist
+// Ghi vào Redis (với TTL tự hết hạn) VÀ DB (audit log / fallback)
 export const blacklistToken = async (token, userId, tokenType = 'refresh', reason = 'logout') => {
     try {
-        const decoded = tokenType === 'refresh' 
-            ? verifyRefreshToken(token) 
+        const decoded = tokenType === 'refresh'
+            ? verifyRefreshToken(token)
             : verifyAccessToken(token);
 
+        const expiresAt = new Date(decoded.exp * 1000);
+        const ttlSeconds = Math.max(0, Math.floor((expiresAt - Date.now()) / 1000));
+
+        // Ghi vào Redis với TTL tự hết hạn (không cần cron cleanup)
+        if (ttlSeconds > 0) {
+            await redisSet(`blacklist:${decoded.jti}`, '1', ttlSeconds);
+        }
+
+        // Ghi vào DB song song làm fallback + audit log
         await BlacklistedToken.create({
             jti: decoded.jti,
             user_id: userId,
             token_type: tokenType,
-            expires_at: new Date(decoded.exp * 1000),
+            expires_at: expiresAt,
             reason: reason
         });
 

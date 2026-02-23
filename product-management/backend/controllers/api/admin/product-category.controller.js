@@ -1,5 +1,6 @@
 import { ProductCategory } from '../../../models/sequelize/index.js';
 import { Op } from 'sequelize';
+import { redisDel } from '../../../config/redis.js';
 
 // [GET] /api/v1/admin/product-categories
 export const getCategories = async (req, res) => {
@@ -58,6 +59,9 @@ export const createCategory = async (req, res) => {
             status: status || 'active',
 
         });
+
+        // Invalidate category tree cache
+        await redisDel('categories:tree');
 
         res.status(201).json({
             code: 201,
@@ -165,6 +169,9 @@ export const updateCategory = async (req, res) => {
         // Update category
         await category.update(updateData);
 
+        // Invalidate category tree cache
+        await redisDel('categories:tree');
+
         res.json({
             code: 200,
             message: 'Cập nhật danh mục thành công',
@@ -233,6 +240,9 @@ export const deleteCategory = async (req, res) => {
             },
             force: true // Hard delete (permanent)
         });
+
+        // Invalidate category tree cache
+        await redisDel('categories:tree');
 
         res.json({
             code: 200,

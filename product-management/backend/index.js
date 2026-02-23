@@ -28,6 +28,10 @@ sequelize.authenticate()
   .then(() => console.log('✅ PostgreSQL connected successfully'))
   .catch(err => console.error('❌ PostgreSQL connection failed:', err));
 
+// Connect Redis (graceful — server vẫn chạy nếu Redis không có)
+import getRedisClient from './config/redis.js';
+getRedisClient(); // Khởi tạo client + bắt đầu kết nối
+
 // Initialize Express app
 const app = express();
 const port = process.env.PORT || 3000;

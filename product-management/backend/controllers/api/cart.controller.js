@@ -1,10 +1,25 @@
 import { Cart, CartItem, ProductStoreInventory, Product, Store } from '../../models/sequelize/index.js';
+import { isRedisReady, redisGet, redisSet, redisDel } from '../../config/redis.js';
 
 // [GET] /api/v1/cart
 export const getCart = async (req, res) => {
     try {
         const userId = req.user.id;
+        const cacheKey = `cart:${userId}`;
 
+        // 1. Thử cache trước
+        if (isRedisReady()) {
+            const cached = await redisGet(cacheKey);
+            if (cached) {
+                return res.json({
+                    code: 200,
+                    message: 'Success (cached)',
+                    data: JSON.parse(cached)
+                });
+            }
+        }
+
+        // 2. Cache miss → query DB
         let cart = await Cart.findOne({
             where: { user_id: userId },
             include: [
@@ -36,13 +51,13 @@ export const getCart = async (req, res) => {
         if (!cart) {
             // Create empty cart
             cart = await Cart.create({ user_id: userId });
+            const emptyCart = { items: [], total_price: 0 };
+            // Lưu empty cart vào cache
+            await redisSet(cacheKey, JSON.stringify(emptyCart), 3600);
             return res.json({
                 code: 200,
                 message: 'Success',
-                data: {
-                    items: [],
-                    total_price: 0
-                }
+                data: emptyCart
             });
         }
 
@@ -76,13 +91,18 @@ export const getCart = async (req, res) => {
             };
         });
 
+        const cartData = {
+            items,
+            total_price: totalPrice
+        };
+
+        // 3. Lưu vào cache (TTL 1 giờ)
+        await redisSet(cacheKey, JSON.stringify(cartData), 3600);
+
         res.json({
             code: 200,
             message: 'Success',
-            data: {
-                items,
-                total_price: totalPrice
-            }
+            data: cartData
         });
     } catch (error) {
         console.error('Get cart error:', error);
@@ -173,6 +193,9 @@ export const addToCart = async (req, res) => {
             });
         }
 
+        // Invalidate cart cache
+        await redisDel(`cart:${req.user.id}`);
+
         res.json({
             code: 200,
             message: 'Đã thêm vào giỏ hàng!',
@@ -234,6 +257,9 @@ export const updateCartItem = async (req, res) => {
         cartItem.quantity = quantity;
         await cartItem.save();
 
+        // Invalidate cart cache
+        await redisDel(`cart:${userId}`);
+
         res.json({
             code: 200,
             message: 'Đã cập nhật giỏ hàng!',
@@ -274,6 +300,9 @@ export const removeCartItem = async (req, res) => {
 
         await cartItem.destroy();
 
+        // Invalidate cart cache
+        await redisDel(`cart:${req.user.id}`);
+
         res.json({
             code: 200,
             message: 'Đã xóa sản phẩm khỏi giỏ hàng!'
@@ -294,6 +323,8 @@ export const clearCart = async (req, res) => {
 
         const cart = await Cart.findOne({ where: { user_id: userId } });
         if (!cart) {
+            // Invalidate cache even if cart doesn't exist
+            await redisDel(`cart:${userId}`);
             return res.json({
                 code: 200,
                 message: 'Giỏ hàng đã trống!'
@@ -301,6 +332,9 @@ export const clearCart = async (req, res) => {
         }
 
         await CartItem.destroy({ where: { cart_id: cart.id } });
+
+        // Invalidate cart cache
+        await redisDel(`cart:${userId}`);
 
         res.json({
             code: 200,

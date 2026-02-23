@@ -223,8 +223,12 @@ export const refreshToken = async (req, res) => {
 export const logout = async (req, res) => {
     try {
         const refreshToken = req.cookies.refreshToken;
-        
+
         if (req.user) {
+            // Invalidate user session cache
+            const { redisDel } = await import('../config/redis.js');
+            await redisDel(`user:session:${req.user.id}`);
+
             // req.user is populated by middleware (Sequelize instance)
             req.user.status_online = 'offline';
             await req.user.save();

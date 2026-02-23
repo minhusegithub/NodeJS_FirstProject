@@ -1,5 +1,6 @@
 import { Product, ProductCategory, ProductStoreInventory, Store, sequelize } from '../../../models/sequelize/index.js';
 import { Op } from 'sequelize';
+import { redisDel } from '../../../config/redis.js';
 
 // [GET] /api/v1/admin/products
 export const index = async (req, res) => {
@@ -264,6 +265,12 @@ export const update = async (req, res) => {
                 return res.status(403).json({ success: false, message: 'Bạn không quản lý cửa hàng nào để cập nhật kho' });
             }
         }
+
+        // Invalidate cache
+        if (product.slug) {
+            await redisDel(`product:detail:${product.slug}`);
+        }
+        await redisDel(`product:detail:${id}`);
 
         // Return updated product data to fix frontend double toast error
         res.json({

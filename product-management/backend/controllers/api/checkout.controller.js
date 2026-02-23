@@ -10,6 +10,7 @@ import {
 } from '../../models/sequelize/index.js';
 import { generateRandomString } from '../../helpers/generate.js';
 import { createPaymentUrl, verifyReturnUrl } from '../../helpers/vnpay.js';
+import { redisDel } from '../../config/redis.js';
 
 // [POST] /api/v1/orders/checkout
 export const checkout = async (req, res) => {
@@ -140,6 +141,9 @@ export const checkout = async (req, res) => {
             createdOrders.push(newOrder);
             grandTotal += orderData.totalPrice;
         }
+
+        // Invalidate cart cache before committing
+        await redisDel(`cart:${userId}`);
 
         // Commit transaction before handling payment
         await transaction.commit();
