@@ -1,5 +1,42 @@
+import jwt from 'jsonwebtoken';
 import * as jwtHelper from '../config/jwt.js';
 import { User, StoreStaff, Store, Role } from '../models/sequelize/index.js'; // Use Sequelize model
+
+// Middleware dùng riêng cho logout: cho phép token hết hạn vẫn đi qua
+export const authenticateForLogout = async (req, res, next) => {
+    try {
+        const token = req.headers.authorization?.split(' ')[1];
+
+        if (!token) {
+            return next(); // Không có token → vẫn cho logout (chỉ xóa cookie)
+        }
+
+        let userId;
+        try {
+            const decoded = jwtHelper.verifyAccessToken(token);
+            userId = decoded.userId;
+        } catch (err) {
+            if (err.name === 'TokenExpiredError') {
+                // Token hết hạn: decode không verify để lấy userId
+                const decoded = jwt.decode(token);
+                userId = decoded?.userId;
+            }
+            // Với các lỗi khác (token giả, sai format): bỏ qua, vẫn cho logout
+        }
+
+        if (userId) {
+            const user = await User.findByPk(userId, {
+                attributes: { exclude: ['password'] }
+            });
+            if (user) req.user = user;
+        }
+    } catch (error) {
+        // Bất kỳ lỗi DB nào cũng không chặn logout
+        console.error('authenticateForLogout error (non-blocking):', error.message);
+    }
+
+    return next(); // Luôn cho đi qua
+};
 
 export const authenticateUser = async (req, res, next) => {
     try {

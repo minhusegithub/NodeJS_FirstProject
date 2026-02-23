@@ -74,7 +74,6 @@ Modern full-stack e-commerce application migrated from SSR to CSR using React, f
 
 ### Prerequisites
 - Node.js (v14+)
-- MongoDB (running locally or cloud)
 - npm or yarn
 
 ### Backend Setup
@@ -86,12 +85,7 @@ cd product-management/backend
 npm install
 
 # Configure environment variables
-# Create .env file with:
-MONGO_URL=mongodb://localhost:27017/product-management
-PORT=3000
-JWT_ACCESS_SECRET=your-access-secret-key
-JWT_REFRESH_SECRET=your-refresh-secret-key
-CLIENT_URL=http://localhost:5173
+# Create .env file 
 
 # Start backend server
 node index.js
@@ -116,7 +110,7 @@ npm run dev
 ### Access Application
 - **Frontend**: http://localhost:5173
 - **Backend API**: http://localhost:3000/api/v1
-- **Admin Panel**: http://localhost:5173/admin/dashboard
+- **Admin Panel**: http://localhost:5173/admin
 
 ---
 
@@ -256,63 +250,8 @@ GET    /api/v1/admin/orders/statistics      # Order statistics
 
 ---
 
-## 🔄 Migration Progress
 
-### ✅ Completed Phases
 
-#### Phase 1: Planning & Analysis
-- Project structure analysis
-- Migration strategy
-- Technology decisions
-
-#### Phase 2: Backend API Transformation
-- ES6 module conversion
-- JWT authentication implementation
-- RESTful API architecture
-- CORS configuration
-- Error handling middleware
-
-#### Phase 3: Frontend Setup (React)
-- Vite + React setup
-- Zustand state management
-- React Router configuration
-- Axios with interceptors
-- Authentication flow
-
-#### Phase 4: Feature Migration - Products & Cart
-- Product listing & detail
-- Shopping cart functionality
-- Cart management
-- Add to cart flow
-
-#### Phase 5: Checkout & Orders
-- Checkout process
-- Order placement
-- Order tracking
-- Order history
-- Cancel orders
-
-#### Phase 6: Admin Panel
-- Admin dashboard
-- Product management
-- Order management
-- Statistics & analytics
-- Revenue tracking
-
-### ⏳ Optional Phases
-
-#### Phase 7: Real-time Features (Optional)
-- Socket.io integration
-- Real-time chat
-- Live notifications
-
-#### Phase 8: Testing & Deployment
-- Unit tests
-- Integration tests
-- Performance optimization
-- Deployment configuration
-
----
 
 ## 🎨 Design Features
 
@@ -363,62 +302,16 @@ See [TESTING_GUIDE.md](./TESTING_GUIDE.md) for detailed testing instructions.
 
 ---
 
-## 🔑 Environment Variables
 
-### Backend (.env)
-```env
-MONGO_URL=mongodb://localhost:27017/product-management
-PORT=3000
-JWT_ACCESS_SECRET=your-secret-key-here
-JWT_REFRESH_SECRET=your-refresh-secret-here
-CLIENT_URL=http://localhost:5173
-```
-
-### Frontend (.env)
-```env
-VITE_API_URL=http://localhost:3000/api/v1
-```
-
----
 
 ## 📝 Documentation Files
 
 - `README.md` - This file
-- `TESTING_GUIDE.md` - Comprehensive testing guide
-- `PHASE2_SUMMARY.md` - Backend transformation
-- `PHASE3_SUMMARY.md` - Frontend setup
-- `PHASE4_SUMMARY.md` - Products & Cart
-- `PHASE5_SUMMARY.md` - Checkout & Orders
-- `PHASE6_SUMMARY.md` - Admin Panel
+
 
 ---
 
-## 🎯 Future Enhancements
 
-- [ ] Product categories management
-- [x] User profile editing
-- [ ] Password reset flow
-- [ ] Product reviews & ratings
-- [ ] Wishlist functionality
-- [ ] Advanced search & filters
-- [ ] Payment gateway integration (VNPay)
-- [ ] Email notifications
-- [ ] Real-time chat support
-- [ ] Analytics dashboard
-- [ ] Export reports (PDF, Excel)
-
----
-
-## 🤝 Contributing
-
-This is a migration project from SSR to CSR architecture. The codebase demonstrates:
-- Modern React patterns
-- JWT authentication best practices
-- RESTful API design
-- State management with Zustand
-- Responsive design principles
-
----
 
 ## 📄 License
 
@@ -439,12 +332,6 @@ Migrated from SSR to CSR (SPA) architecture
 - React Team for React 18
 - Vite Team for blazing fast build tool
 - Zustand for simple state management
-- MongoDB for flexible database
 - Express.js for robust backend framework
 
----
 
-**Built with ❤️ using React + Node.js + MongoDB**
-
-For detailed phase summaries, see individual PHASE*.md files.
-For testing instructions, see TESTING_GUIDE.md.
