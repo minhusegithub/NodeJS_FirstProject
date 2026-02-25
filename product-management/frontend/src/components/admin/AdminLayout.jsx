@@ -1,4 +1,4 @@
-import { Link, Outlet, useNavigate } from 'react-router-dom';
+import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../stores/authStore';
 import { useMemo, useState } from 'react';
 import AdminProfileModal from './AdminProfileModal';
@@ -29,54 +29,80 @@ const AdminLayout = () => {
         <div className="admin-layout">
             <aside className="admin-sidebar">
                 <div className="admin-logo">
-                    <h2>🛍️ Admin Panel</h2>
+                    <h2>
+                        <span className="logo-mark" aria-hidden="true">
+                            <i className="fa-solid fa-gauge-high"></i>
+                        </span>
+                        <span className="logo-text">Admin Panel</span>
+                    </h2>
                 </div>
 
                 <nav className="admin-nav">
                     {/* Products menu - only for storeManager and InventoryStaff */}
                     {(userRoles.isSystemAdmin || userRoles.isStoreManager || userRoles.isInventoryStaff) && (
-                        <Link to="/admin/products" className="admin-nav-item">
-                            📦 Sản phẩm
-                        </Link>
+                        <NavLink to="/admin/products" end className={({ isActive }) => `admin-nav-item${isActive ? ' active' : ''}`}>
+                            <span className="nav-icon" aria-hidden="true">
+                                <i className="fa-solid fa-box"></i>
+                            </span>
+                            <span className="nav-label">Sản phẩm</span>
+                        </NavLink>
                     )}
 
                     {(userRoles.isStoreManager || userRoles.isInventoryStaff) && (
-                        <Link to="/admin/products/import" className="admin-nav-item">
-                            📥 Nhập hàng mới
-                        </Link>
+                        <NavLink to="/admin/products/import" end className={({ isActive }) => `admin-nav-item${isActive ? ' active' : ''}`}>
+                            <span className="nav-icon" aria-hidden="true">
+                                <i className="fa-solid fa-truck-ramp-box"></i>
+                            </span>
+                            <span className="nav-label">Nhập hàng mới</span>
+                        </NavLink>
                     )}
 
                     {/* ProductCategories menu - only for storeManager and InventoryStaff */}
                     {(userRoles.isSystemAdmin) && (
-                        <Link to="/admin/product-categories" className="admin-nav-item">
-                            📦 Danh mục sản phẩm
-                        </Link>
+                        <NavLink to="/admin/product-categories" end className={({ isActive }) => `admin-nav-item${isActive ? ' active' : ''}`}>
+                            <span className="nav-icon" aria-hidden="true">
+                                <i className="fa-solid fa-layer-group"></i>
+                            </span>
+                            <span className="nav-label">Danh mục sản phẩm</span>
+                        </NavLink>
                     )}
 
                     {/* Orders menu - only for storeManager and OrderStaff */}
                     {(userRoles.isStoreManager || userRoles.isOrderStaff) && (
-                        <Link to="/admin/orders" className="admin-nav-item">
-                            🛒 Đơn hàng
-                        </Link>
+                        <NavLink to="/admin/orders" end className={({ isActive }) => `admin-nav-item${isActive ? ' active' : ''}`}>
+                            <span className="nav-icon" aria-hidden="true">
+                                <i className="fa-solid fa-bag-shopping"></i>
+                            </span>
+                            <span className="nav-label">Đơn hàng</span>
+                        </NavLink>
                     )}
 
                     {/* Store menu - different label based on role */}
                     {userRoles.isSystemAdmin && (
-                        <Link to="/admin/stores" className="admin-nav-item">
-                            🏢 Chuỗi cửa hàng
-                        </Link>
+                        <NavLink to="/admin/stores" end className={({ isActive }) => `admin-nav-item${isActive ? ' active' : ''}`}>
+                            <span className="nav-icon" aria-hidden="true">
+                                <i className="fa-solid fa-building"></i>
+                            </span>
+                            <span className="nav-label">Chuỗi cửa hàng</span>
+                        </NavLink>
                     )}
 
                     {userRoles.isStoreManager && !userRoles.isSystemAdmin && (
-                        <Link to="/admin/stores" className="admin-nav-item">
-                            🏢 Cửa hàng
-                        </Link>
+                        <NavLink to="/admin/stores" end className={({ isActive }) => `admin-nav-item${isActive ? ' active' : ''}`}>
+                            <span className="nav-icon" aria-hidden="true">
+                                <i className="fa-solid fa-store"></i>
+                            </span>
+                            <span className="nav-label">Cửa hàng</span>
+                        </NavLink>
                     )}
 
                     {userRoles.isStoreManager && (
-                        <Link to="/admin/accounts" className="admin-nav-item">
-                            👥 Tài khoản
-                        </Link>
+                        <NavLink to="/admin/accounts" end className={({ isActive }) => `admin-nav-item${isActive ? ' active' : ''}`}>
+                            <span className="nav-icon" aria-hidden="true">
+                                <i className="fa-solid fa-users"></i>
+                            </span>
+                            <span className="nav-label">Tài khoản</span>
+                        </NavLink>
                     )}
                 </nav>
 
@@ -92,7 +118,8 @@ const AdminLayout = () => {
                                 onClick={() => setShowProfileModal(true)}
 
                             >
-                                👤 Thông tin cá nhân
+                                <i className="fa-regular fa-user" aria-hidden="true"></i>
+                                <span>Thông tin cá nhân</span>
                             </button>
                             <button className="btn-logout" onClick={handleLogout}>
                                 Đăng xuất

@@ -1,4 +1,11 @@
 import { Store, User, StoreStaff } from '../../models/sequelize/index.js';
+import { isRedisReady, redisDel } from '../../config/redis.js';
+
+const invalidateUserCache = async (userId) => {
+    if (userId && isRedisReady()) {
+        await redisDel(`user:session:${userId}`);
+    }
+};
 
 // [GET] /api/stores
 export const getStores = async (req, res) => {
@@ -209,6 +216,11 @@ export const updateStore = async (req, res) => {
             });
         }
 
+        // Track if current user will lose manager role
+        const currentUserId = req.user?.id;
+        
+        let roleChanged = false;
+        
         // Prevent updating code to existing one
         if (code && code !== store.code) {
             const existing = await Store.findOne({ where: { code } });
@@ -235,36 +247,79 @@ export const updateStore = async (req, res) => {
 
                 // Update StoreStaff if manager changed
                 if (managerId !== store.manager_id) {
+                    // Check if current user is losing manager role
+                    // This applies to:
+                    // - storeManager changing themselves to another manager
+                    // - SystemAdmin who is also manager of this store, changing to another manager
+                    // But NOT for SystemAdmin changing manager of other stores
+                    
+                    if (currentUserId && parseInt(store.manager_id) === parseInt(currentUserId)) {
+                        roleChanged = true;
+                    }
+
                     const { Role } = await import('../../models/sequelize/index.js');
                     const storeManagerRole = await Role.findOne({ where: { name: 'storeManager' } });
 
                     if (storeManagerRole) {
-                        // Remove old manager's storeManager role for this store
+                        // Update old manager's role_id to null instead of destroying
                         if (store.manager_id) {
-                            await StoreStaff.destroy({
-                                where: {
-                                    user_id: store.manager_id,
-                                    store_id: id,
-                                    role_id: storeManagerRole.id
+                            await StoreStaff.update(
+                                { role_id: null },
+                                {
+                                    where: {
+                                        user_id: store.manager_id,
+                                        store_id: id,
+                                        role_id: storeManagerRole.id
+                                    }
                                 }
-                            });
+                            );
+                            // Invalidate old manager's Redis cache so their next request reloads roles from DB
+                            await invalidateUserCache(store.manager_id);
                         }
 
-                        // Add new manager's storeManager role
-                        await StoreStaff.findOrCreate({
+                        // Check if new manager already exists in StoreStaff
+                        const existingStaff = await StoreStaff.findOne({
                             where: {
-                                user_id: managerId,
-                                store_id: id,
-                                role_id: storeManagerRole.id
-                            },
-                            defaults: {
-                                is_active: true
+                                user_id: managerId
+                                
                             }
                         });
+
+                        if (existingStaff) {
+                            
+                            // Check if existingStaff at store_id :id or not, if yes then update role_id to storeManager,
+                            //  if no (it mean that user is staff at other store) then response error because one user can only be manager of one store
+                            if (existingStaff.store_id.toString() !== id.toString()) {
+                                console.log(existingStaff.store_id, id);
+                                return res.status(400).json({
+                                    code: 400,
+                                    message: `User with email "${manager_email}" is already a staff member of another store`
+                                });
+                            }
+                            await existingStaff.update({
+                                role_id: storeManagerRole.id                              
+                            });
+                        } else {
+                            // Create new staff record
+                            await StoreStaff.create({
+                                user_id: managerId,
+                                store_id: id,
+                                role_id: storeManagerRole.id,
+                                is_active: true
+                            });
+                        }
+                        // Invalidate new manager's Redis cache so their next request picks up the new role
+                        await invalidateUserCache(managerId);
                     }
                 }
             } else {
                 // manager_email is null/empty - remove manager
+                // Check if current user is losing manager role
+                if (currentUserId && parseInt(store.manager_id) === parseInt(currentUserId)) {
+                    roleChanged = true;
+                }
+                // Invalidate old manager's cache
+                await invalidateUserCache(store.manager_id);
                 managerId = null;
             }
         }
@@ -293,7 +348,9 @@ export const updateStore = async (req, res) => {
         res.json({
             code: 200,
             message: "Store updated successfully",
-            data: updatedStore
+            data: updatedStore,
+            roleChanged, // Flag to tell frontend that current user's role changed
+            requiresReauth: roleChanged // Frontend should refresh user info
         });
     } catch (error) {
         console.error('Update Store Error:', error);
