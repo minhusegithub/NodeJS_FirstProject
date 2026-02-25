@@ -11,10 +11,23 @@ export const useAuthStore = create((set) => ({
         if (token) {
             try {
                 const { data } = await api.get('/auth/profile');
-                set({ user: data.data.user, loading: false });
+                set({ user: data?.data?.user || null, loading: false });
             } catch (error) {
-                localStorage.removeItem('accessToken');
-                set({ user: null, loading: false });
+                // Interceptor đã tự refresh token + redirect /login nếu refresh fail.
+                // Chỉ clear state nếu thực sự không thể recover.
+                // Không removeItem('accessToken') ở đây vì interceptor có thể đã lưu token mới.
+                if (!localStorage.getItem('accessToken')) {
+                    set({ user: null, loading: false });
+                } else {
+                    // Token mới đã được interceptor lưu, thử lại 1 lần
+                    try {
+                        const { data } = await api.get('/auth/profile');
+                        set({ user: data?.data?.user || null, loading: false });
+                    } catch {
+                        localStorage.removeItem('accessToken');
+                        set({ user: null, loading: false });
+                    }
+                }
             }
         } else {
             set({ loading: false });
@@ -60,5 +73,10 @@ export const useAuthStore = create((set) => ({
 
     updateUser: (userData) => {
         set({ user: userData });
+    },
+
+    clearUser: () => {
+        localStorage.removeItem('accessToken');
+        set({ user: null });
     }
 }));

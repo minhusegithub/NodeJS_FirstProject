@@ -11,9 +11,9 @@ export const useAdminOrderStore = create((set, get) => ({
     getOrders: async (params = {}) => {
         set({ loading: true });
         try {
-            console.log('📡 Fetching admin orders with params:', params);
+            
             const { data } = await api.get('/admin/orders', { params });
-            console.log('✅ Admin orders response:', data);
+            
             set({
                 orders: data.data || [],
                 pagination: data.pagination,

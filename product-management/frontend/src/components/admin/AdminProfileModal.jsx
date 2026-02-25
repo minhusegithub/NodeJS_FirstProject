@@ -15,15 +15,24 @@ const AdminProfileModal = ({ isOpen, onClose }) => {
     const fetchProfile = async () => {
         try {
             setLoading(true);
+            setError(null);
             const response = await api.get('/user/profile');
-            if (response.data.code === 200) {
+            
+            // Backend /user/profile trả: { code: 200, message: 'Success', data: {...profileData} }
+            if (response.data?.code === 200 && response.data?.data) {
                 setProfile(response.data.data);
             } else {
-                setError(response.data.message || 'Lỗi server (Code != 200)');
+                setError(response.data?.message || 'Lỗi server: Định dạng response sai');
             }
         } catch (err) {
             console.error('Profile Load Error:', err);
-            const msg = err.response?.data?.message || err.message || 'Không thể tải thông tin.';
+            
+            // Safe access error response
+            const errorCode = err.response?.data?.code;
+            const errorMessage = err.response?.data?.message;
+            const fallbackMessage = err.message || 'Không thể tải thông tin.';
+            
+            const msg = errorMessage || fallbackMessage;
             setError(`Lỗi: ${msg}`);
         } finally {
             setLoading(false);

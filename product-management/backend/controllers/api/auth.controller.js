@@ -2,6 +2,33 @@ import md5 from 'md5';
 import { User, Store, StoreStaff, Role, sequelize } from '../../models/sequelize/index.js'; // Sequelize models
 import * as jwtHelper from '../../config/jwt.js';
 import * as generateHelper from '../../helpers/generate.js';
+import { redisDel } from '../../config/redis.js';
+
+// Helper: fetch user with roles (reused in login & refresh)
+const fetchUserWithRoles = (userId) => User.findByPk(userId, {
+    paranoid: true,
+    include: [
+        {
+            model: StoreStaff,
+            as: 'store_roles',
+            where: { is_active: true },
+            required: false,
+            include: [
+                { model: Store, as: 'store', attributes: ['id', 'name', 'code'] },
+                { model: Role, as: 'role_data' }
+            ]
+        }
+    ]
+});
+
+// Helper: map store_roles → roles array
+const mapRoles = (storeRoles = []) => storeRoles.map(r => ({
+    storeId: r.store_id,
+    storeName: r.store?.name,
+    roleId: r.role_id,
+    roleName: r.role_data?.name,
+    permissions: r.role_data?.permissions || []
+}));
 
 // [POST] /api/v1/auth/register
 export const register = async (req, res) => {
@@ -101,13 +128,7 @@ export const login = async (req, res) => {
         }
 
         // Prepare Roles Data
-        const roles = user.store_roles ? user.store_roles.map(r => ({
-            storeId: r.store_id,
-            storeName: r.store?.name,
-            roleId: r.role_id,
-            roleName: r.role_data?.name,
-            permissions: r.role_data?.permissions || []
-        })) : [];
+        const roles = mapRoles(user.store_roles);
 
         const accessToken = jwtHelper.generateAccessToken({
             userId: user.id,
@@ -149,74 +170,89 @@ export const login = async (req, res) => {
 
 // [POST] /api/v1/auth/refresh-token
 export const refreshToken = async (req, res) => {
-    try {
-        const refreshToken = req.cookies.refreshToken;
+    const incomingRT = req.cookies.refreshToken;
 
-        if (!refreshToken) {
-            return res.status(401).json({
-                success: false,
-                message: 'Refresh token required'
-            });
-        }
-
-        const decoded = jwtHelper.verifyRefreshToken(refreshToken);
-
-        // Check if token is blacklisted
-        if (decoded.jti && await jwtHelper.isTokenBlacklisted(decoded.jti)) {
-            return res.status(401).json({
-                success: false,
-                message: 'Token has been revoked'
-            });
-        }
-
-        // Fetch user with roles to include in new access token
-        const user = await User.findByPk(decoded.userId, {
-            paranoid: true,
-            include: [
-                {
-                    model: StoreStaff,
-                    as: 'store_roles',
-                    where: { is_active: true },
-                    required: false,
-                    include: [
-                        { model: Store, as: 'store', attributes: ['id', 'name', 'code'] },
-                        { model: Role, as: 'role_data' }
-                    ]
-                }
-            ]
-        });
-
-        if (!user || user.status === 'inactive') {
-            return res.status(401).json({
-                success: false,
-                message: 'User not found or inactive'
-            });
-        }
-
-        // Prepare Roles Data (same as login)
-        const roles = user.store_roles ? user.store_roles.map(r => ({
-            storeId: r.store_id,
-            storeName: r.store?.name,
-            roleId: r.role_id,
-            roleName: r.role_data?.name,
-            permissions: r.role_data?.permissions || []
-        })) : [];
-
-        const newAccessToken = jwtHelper.generateAccessToken({
-            userId: decoded.userId,
-            roles: roles // Include roles in new token
-        });
-
-        res.json({
-            success: true,
-            data: { accessToken: newAccessToken }
-        });
-    } catch (error) {
-        res.status(401).json({
+    if (!incomingRT) {
+        return res.status(401).json({
             success: false,
-            message: 'Invalid refresh token'
+            code: 'NO_REFRESH_TOKEN',
+            message: 'Refresh token required'
         });
     }
+
+    // Verify refresh token signature & expiration
+    let decoded;
+    try {
+        decoded = jwtHelper.verifyRefreshToken(incomingRT);
+    } catch (err) {
+        // Token giả hoặc đã hết hạn → xóa cookie, force logout
+        res.clearCookie('refreshToken');
+        return res.status(401).json({
+            success: false,
+            code: 'INVALID_REFRESH_TOKEN',
+            message: 'Invalid or expired refresh token'
+        });
+    }
+
+    // =====================================================================
+    // REUSE DETECTION: RT đã bị blacklist mà vẫn được dùng lại → THEFT
+    // =====================================================================
+    const alreadyBlacklisted = decoded.jti && await jwtHelper.isTokenBlacklisted(decoded.jti);
+    if (alreadyBlacklisted) {
+        // Invalidate user session cache để force re-auth mọi thiết bị
+        await redisDel(`user:session:${decoded.userId}`);
+        res.clearCookie('refreshToken');
+        return res.status(401).json({
+            success: false,
+            code: 'REUSE_DETECTED',
+            message: 'Security violation detected. Please login again.'
+        });
+    }
+
+    // Fetch user with fresh roles
+    const user = await fetchUserWithRoles(decoded.userId);
+
+    if (!user || user.status === 'inactive') {
+        res.clearCookie('refreshToken');
+        return res.status(401).json({
+            success: false,
+            code: 'USER_INACTIVE',
+            message: 'User not found or inactive'
+        });
+    }
+
+    const roles = mapRoles(user.store_roles);
+
+    // =====================================================================
+    // ROTATE: Blacklist RT cũ → generate AT mới + RT mới
+    // =====================================================================
+    await jwtHelper.blacklistToken(incomingRT, decoded.userId, 'refresh', 'rotation');
+
+    const newAccessToken = jwtHelper.generateAccessToken({ userId: decoded.userId, roles });
+    const newRefreshToken = jwtHelper.generateRefreshToken({ userId: decoded.userId });
+
+    // Set RT mới vào HttpOnly cookie
+    jwtHelper.setRefreshTokenCookie(res, newRefreshToken);
+
+    // Invalidate cache cũ để middleware load lại data mới nhất
+    await redisDel(`user:session:${decoded.userId}`);
+
+    return res.json({
+        success: true,
+        data: {
+            accessToken: newAccessToken,
+            // Trả kèm user data → frontend không cần gọi thêm /auth/profile
+            user: {
+                id: user.id,
+                email: user.email,
+                fullName: user.full_name,
+                phone: user.phone,
+                avatar: user.avatar,
+                address: user.address,
+                roles
+            }
+        }
+    });
 };
 
 // [POST] /api/v1/auth/logout
@@ -226,10 +262,8 @@ export const logout = async (req, res) => {
 
         if (req.user) {
             // Invalidate user session cache
-            const { redisDel } = await import('../config/redis.js');
             await redisDel(`user:session:${req.user.id}`);
 
-            // req.user is populated by middleware (Sequelize instance)
             req.user.status_online = 'offline';
             await req.user.save();
 

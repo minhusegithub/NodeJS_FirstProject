@@ -37,8 +37,8 @@ const AdminAccount = () => {
     const fetchRoles = async () => {
         try {
             const res = await api.get('/admin/store-users/roles');
-            if (res.data?.code === 200) {
-                setRoles(res.data.data);
+            if (res?.data?.code === 200) {
+                setRoles(res.data.data || []);
             }
         } catch (err) {
             console.error('Fetch roles error:', err);
@@ -49,14 +49,14 @@ const AdminAccount = () => {
         try {
             setLoading(true);
             const response = await api.get('/admin/store-users');
-            if (response.data.code === 200) {
-                setUsers(response.data.data);
+            if (response?.data?.code === 200) {
+                setUsers(response.data.data || []);
             } else {
-                setError(response.data.message || 'Lỗi tải danh sách nhân viên');
+                setError(response?.data?.message || 'Lỗi tải danh sách nhân viên');
             }
         } catch (err) {
             console.error('Fetch store users error:', err);
-            setError(err.message || 'Lỗi kết nối server');
+            setError(err?.response?.data?.message || err.message || 'Lỗi kết nối server');
         } finally {
             setLoading(false);
         }

@@ -101,6 +101,7 @@ export const authenticateUser = async (req, res, next) => {
         if (!token) {
             return res.status(401).json({
                 success: false,
+                code: 'NO_TOKEN',
                 message: 'Access token required'
             });
         }
@@ -112,6 +113,7 @@ export const authenticateUser = async (req, res, next) => {
         if (blacklisted) {
             return res.status(401).json({
                 success: false,
+                code: 'TOKEN_REVOKED',
                 message: 'Token has been revoked'
             });
         }
@@ -122,6 +124,7 @@ export const authenticateUser = async (req, res, next) => {
         if (!user || user.status !== 'active') {
             return res.status(401).json({
                 success: false,
+                code: 'USER_INACTIVE',
                 message: 'Invalid token or User inactive'
             });
         }
@@ -129,10 +132,14 @@ export const authenticateUser = async (req, res, next) => {
         req.user = user;
         next();
     } catch (error) {
-        console.error('Auth Middleware Error:', error);
+        // TokenExpiredError là expected (không phải bug) → không log
+        if (error.name !== 'TokenExpiredError') {
+            console.error('Auth Middleware Error:', error);
+        }
         return res.status(401).json({
             success: false,
-            message: 'Invalid or expired token'
+            code: error.name === 'TokenExpiredError' ? 'TOKEN_EXPIRED' : 'INVALID_TOKEN',
+            message: error.name === 'TokenExpiredError' ? 'Access token expired' : 'Invalid or expired token'
         });
     }
 };
@@ -147,6 +154,7 @@ export const authenticateAdmin = async (req, res, next) => {
         if (!token) {
             return res.status(401).json({
                 success: false,
+                code: 'NO_TOKEN',
                 message: 'Access token required'
             });
         }
@@ -158,6 +166,7 @@ export const authenticateAdmin = async (req, res, next) => {
         if (blacklisted) {
             return res.status(401).json({
                 success: false,
+                code: 'TOKEN_REVOKED',
                 message: 'Token has been revoked'
             });
         }
@@ -168,6 +177,7 @@ export const authenticateAdmin = async (req, res, next) => {
         if (!user || user.status !== 'active') {
             return res.status(401).json({
                 success: false,
+                code: 'USER_INACTIVE',
                 message: 'Invalid token or User inactive'
             });
         }
@@ -187,10 +197,13 @@ export const authenticateAdmin = async (req, res, next) => {
         req.user = user;
         next();
     } catch (error) {
-        console.error('Admin Auth Middleware Error:', error);
+        if (error.name !== 'TokenExpiredError') {
+            console.error('Admin Auth Middleware Error:', error);
+        }
         return res.status(401).json({
             success: false,
-            message: 'Invalid or expired token'
+            code: error.name === 'TokenExpiredError' ? 'TOKEN_EXPIRED' : 'INVALID_TOKEN',
+            message: error.name === 'TokenExpiredError' ? 'Access token expired' : 'Invalid or expired token'
         });
     }
 };
