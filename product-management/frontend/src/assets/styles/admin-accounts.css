@@ -1,0 +1,533 @@
+/* ================================================================
+   Admin Accounts – Staff Management
+   Brand green: #1DB56C  |  Dark base: #0f1a18
+   ================================================================ */
+
+/* ── 1. Page Header ─────────────────────────────────────────── */
+.accounts-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 28px;
+    flex-wrap: wrap;
+    gap: 14px;
+}
+
+.accounts-header-info h1 {
+    font-size: 1.65rem;
+    font-weight: 700;
+    color: #0f1a18;
+    margin: 0 0 4px;
+}
+
+.accounts-header-info p {
+    margin: 0;
+    font-size: 0.875rem;
+    color: #6b7280;
+}
+
+.btn-add-staff {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 22px;
+    background: #1DB56C;
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.875rem;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background 0.2s, box-shadow 0.2s, transform 0.15s;
+    white-space: nowrap;
+    letter-spacing: 0.2px;
+}
+
+.btn-add-staff:hover {
+    background: #17a05f;
+    box-shadow: 0 6px 18px rgba(29, 181, 108, 0.35);
+    transform: translateY(-1px);
+}
+
+.btn-add-staff:active {
+    transform: translateY(0);
+}
+
+/* ── 2. Empty / Loading / Error states ──────────────────────── */
+.accounts-loading,
+.accounts-error,
+.accounts-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 240px;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    font-size: 0.95rem;
+    color: #9ca3af;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+}
+
+.accounts-error {
+    color: #dc2626;
+}
+
+/* ── 3. Staff Card Grid ──────────────────────────────────────── */
+.staff-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 18px;
+}
+
+@media (max-width: 1280px) { .staff-grid { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 960px)  { .staff-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 560px)  { .staff-grid { grid-template-columns: 1fr; } }
+
+/* ── 4. Staff Card ───────────────────────────────────────────── */
+.staff-card {
+    background: #fff;
+    border: 1px solid #e9ecef;
+    border-radius: 16px;
+    padding: 20px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: row;
+    gap: 0;
+    transition: transform 0.22s, box-shadow 0.22s, border-color 0.22s;
+    position: relative;
+    overflow: hidden;
+    align-items: stretch;
+}
+
+/* subtle green top accent */
+.staff-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #1DB56C 0%, #0f9b58 100%);
+    opacity: 0;
+    transition: opacity 0.22s;
+    border-radius: 16px 16px 0 0;
+}
+
+.staff-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 32px rgba(29, 181, 108, 0.13), 0 2px 8px rgba(0, 0, 0, 0.06);
+    border-color: rgba(29, 181, 108, 0.35);
+}
+
+.staff-card:hover::before {
+    opacity: 1;
+}
+
+/* 4a. Card Left – Avatar */
+.staff-card-left {
+    width: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-right: 1px solid #f3f4f6;
+    padding-right: 18px;
+    flex-shrink: 0;
+}
+
+/* 4b. Card Right – All info */
+.staff-card-right {
+    width: 50%;
+    padding-left: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    text-align: left;
+    min-width: 0;
+}
+
+.staff-avatar {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2.5px solid #e5e7eb;
+    flex-shrink: 0;
+    transition: border-color 0.2s;
+}
+
+.staff-card:hover .staff-avatar {
+    border-color: rgba(29, 181, 108, 0.5);
+}
+
+.staff-info-icon {
+    width: 20px;
+    height: 20px;
+    border-radius: 6px;
+    background: rgba(29, 181, 108, 0.12);
+    color: #1DB56C;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    margin-top: 2px;
+}
+
+.staff-avatar-placeholder {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+    border: 2.5px solid rgba(29, 181, 108, 0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 1.5rem;
+    color: #065f46;
+    flex-shrink: 0;
+}
+
+
+.status-badge{
+    display: inline-block;
+    padding: 2px 30px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 750;
+    letter-spacing: 0.2px;
+    max-width: max-content;
+}
+
+
+.staff-card-name {
+    font-weight: 700;
+    font-size: 0.925rem;
+    color: #111827;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* 4c. Card Body – contact info */
+.staff-card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    padding: 6px 0;
+    border-top: 1px solid #f3f4f6;
+    border-bottom: 1px solid #f3f4f6;
+    margin-top: 2px;
+}
+
+.staff-info-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.815rem;
+    color: #4b5563;
+    min-width: 0;
+}
+
+.staff-info-icon {
+    font-size: 0.85rem;
+    flex-shrink: 0;
+    width: 18px;
+    text-align: center;
+    opacity: 0.75;
+}
+
+.staff-info-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Role badge */
+.staff-role-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.2px;
+}
+
+.staff-role-badge.has-role {
+    background: #d1fae5;
+    color: #065f46;
+    border: 1px solid rgba(29, 181, 108, 0.2);
+}
+
+.staff-role-badge.no-role {
+    background: #d1fae5;
+    color: #9ca3af;
+    border: 1px solid #e5e7eb;
+}
+.staff-role-badge.role-store-manager {
+    background: #fee2e2;
+    color: rgb(193, 33, 33);
+    border: 1px solid rgba(220, 38, 38, 0.2);
+}
+
+/* 4d. Card Footer – store + date */
+.staff-card-footer {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    font-size: 0.75rem;
+    color: #9ca3af;
+    gap: 3px;
+    margin-top: 2px;
+}
+
+/* ── 5. Modal ────────────────────────────────────────────────── */
+.accounts-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(13, 20, 19, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 16px;
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+}
+
+.accounts-modal {
+    background: #fff;
+    border-radius: 18px;
+    width: 540px;
+    max-width: 100%;
+    max-height: 92vh;
+    overflow-y: auto;
+    box-shadow: 0 24px 64px rgba(13, 20, 19, 0.22);
+    animation: modalSlideIn 0.22s cubic-bezier(0.34, 1.4, 0.64, 1);
+}
+
+@keyframes modalSlideIn {
+    from { opacity: 0; transform: translateY(20px) scale(0.97); }
+    to   { opacity: 1; transform: translateY(0)   scale(1); }
+}
+
+/* scrollbar inside modal */
+.accounts-modal::-webkit-scrollbar { width: 5px; }
+.accounts-modal::-webkit-scrollbar-track { background: transparent; }
+.accounts-modal::-webkit-scrollbar-thumb { background: #e5e7eb; border-radius: 99px; }
+
+/* Modal Header */
+.accounts-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px 16px;
+    border-bottom: 1px solid #f3f4f6;
+    position: sticky;
+    top: 0;
+    background: #fff;
+    z-index: 1;
+    border-radius: 18px 18px 0 0;
+}
+
+.accounts-modal-header h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #0f1a18;
+}
+
+.accounts-modal-close {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f3f4f6;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    color: #6b7280;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+    line-height: 1;
+    flex-shrink: 0;
+}
+
+.accounts-modal-close:hover {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+/* Modal Body */
+.accounts-modal-body {
+    padding: 20px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* Avatar Upload */
+.accounts-avatar-upload {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 0;
+}
+
+.accounts-avatar-preview {
+    width: 88px;
+    height: 88px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid rgba(29, 181, 108, 0.35);
+    box-shadow: 0 4px 14px rgba(29, 181, 108, 0.15);
+}
+
+.accounts-avatar-placeholder-lg {
+    width: 88px;
+    height: 88px;
+    border-radius: 50%;
+    background: #f9fafb;
+    border: 2px dashed #d1d5db;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+}
+
+.accounts-avatar-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    color: #1DB56C;
+    font-weight: 600;
+    font-size: 0.825rem;
+    padding: 5px 14px;
+    border: 1.5px solid rgba(29, 181, 108, 0.4);
+    border-radius: 8px;
+    transition: background 0.15s, box-shadow 0.15s;
+}
+
+.accounts-avatar-label:hover {
+    background: rgba(29, 181, 108, 0.07);
+    box-shadow: 0 2px 8px rgba(29, 181, 108, 0.1);
+}
+
+/* Form group */
+.accounts-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.accounts-form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.accounts-form-label {
+    font-size: 0.83rem;
+    font-weight: 600;
+    color: #374151;
+    letter-spacing: 0.1px;
+}
+
+.accounts-form-label .required {
+    color: #ef4444;
+    margin-left: 2px;
+}
+
+.accounts-form-input,
+.accounts-form-select {
+    width: 100%;
+    padding: 10px 13px;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 10px;
+    font-size: 0.875rem;
+    color: #111827;
+    background: #fafafa;
+    transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+    box-sizing: border-box;
+    font-family: inherit;
+}
+
+.accounts-form-input:hover,
+.accounts-form-select:hover {
+    border-color: #d1d5db;
+    background: #fff;
+}
+
+.accounts-form-input:focus,
+.accounts-form-select:focus {
+    outline: none;
+    background: #fff;
+    border-color: #1DB56C;
+    box-shadow: 0 0 0 3px rgba(29, 181, 108, 0.14);
+}
+
+.accounts-form-input::placeholder {
+    color: #c4c9d4;
+    font-size: 0.85rem;
+}
+
+/* Modal Footer */
+.accounts-modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 14px 24px 20px;
+    border-top: 1px solid #f3f4f6;
+}
+
+.btn-accounts-cancel {
+    padding: 9px 20px;
+    border-radius: 10px;
+    border: 1.5px solid #e5e7eb;
+    background: #fff;
+    color: #374151;
+    font-weight: 600;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+    font-family: inherit;
+}
+
+.btn-accounts-cancel:hover {
+    background: #f9fafb;
+    border-color: #d1d5db;
+}
+
+.btn-accounts-submit {
+    padding: 9px 26px;
+    border-radius: 10px;
+    border: none;
+    background: #1DB56C;
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: background 0.2s, box-shadow 0.2s, transform 0.15s;
+    font-family: inherit;
+    letter-spacing: 0.2px;
+}
+
+.btn-accounts-submit:hover:not(:disabled) {
+    background: #17a05f;
+    box-shadow: 0 6px 16px rgba(29, 181, 108, 0.32);
+    transform: translateY(-1px);
+}
+
+.btn-accounts-submit:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+.btn-accounts-submit:disabled {
+    background: #d1d5db;
+    color: #9ca3af;
+    cursor: not-allowed;
+}

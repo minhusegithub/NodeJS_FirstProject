@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import api from '../../services/axios';
+import '../../assets/styles/admin-accounts.css';
 
 const AdminAccount = () => {
     const [users, setUsers] = useState([]);
@@ -183,259 +184,224 @@ const AdminAccount = () => {
 
     return (
         <div className="admin-page">
-            <div className="admin-page-header" style={{ marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div>
-                    <h1 className="admin-page-title">Quản lý nhân viên cửa hàng</h1>
-                    <p className="text-muted" style={{ color: '#666' }}>Danh sách nhân viên tại (các) cửa hàng bạn quản lý</p>
+            {/* Page Header */}
+            <div className="accounts-header">
+                <div className="accounts-header-info">
+                    <h1>Quản lý nhân viên cửa hàng</h1>
+                    <p>Danh sách nhân viên tại cửa hàng bạn quản lý</p>
                 </div>
-                <button
-                    className="btn-add-new"
-                    onClick={handleAddNew}
-                    style={{
-                        background: '#2ecc71',
-                        color: 'white',
-                        border: 'none',
-                        padding: '10px 20px',
-                        borderRadius: '6px',
-                        cursor: 'pointer',
-                        fontWeight: 'bold',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px'
-                    }}
-                >
-                    <span>+</span> Thêm nhân viên
+                <button className="btn-add-staff" onClick={handleAddNew}>
+                    <span>＋</span> Thêm nhân viên
                 </button>
             </div>
 
-            <div className="admin-table-container">
-                <table className="admin-table">
-                    <thead>
-                        <tr>
-                            <th>Nhân viên</th>
-                            <th>Liên hệ</th>
-                            <th>Vai trò</th>
-                            <th>Cửa hàng</th>
-                            <th>Ngày tham gia</th>
-                            <th>Trạng thái</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {loading ? (
-                            <tr><td colSpan="6" style={{ textAlign: 'center', padding: '20px' }}>Đang tải dữ liệu...</td></tr>
-                        ) : error ? (
-                            <tr><td colSpan="6" style={{ textAlign: 'center', padding: '20px', color: 'red' }}>{error}</td></tr>
-                        ) : users.length > 0 ? (
-                            users.map(user => (
-                                <tr
-                                    key={user.staffId}
-                                    onClick={() => handleEdit(user)}
-                                    style={{ cursor: 'pointer', transition: 'background 0.2s' }}
-                                    className="hover-row"
-                                    title="Nhấn để chỉnh sửa"
-                                >
-                                    <td>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                            {user.avatar ? (
-                                                <img src={user.avatar} alt="avt" style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover' }} />
-                                            ) : (
-                                                <div style={{ width: 32, height: 32, borderRadius: '50%', background: '#eee', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', color: '#555' }}>
-                                                    {user.fullName?.charAt(0).toUpperCase()}
-                                                </div>
-                                            )}
-                                            <strong>{user.fullName}</strong>
+            {/* Staff Cards */}
+            {loading ? (
+                <div className="accounts-loading">Đang tải dữ liệu...</div>
+            ) : error ? (
+                <div className="accounts-error">{error}</div>
+            ) : users.length === 0 ? (
+                <div className="accounts-empty">Chưa có nhân viên nào.</div>
+            ) : (
+                <div className="staff-grid">
+                    {users.map(user => (
+                        <div
+                            key={user.staffId}
+                            className="staff-card"
+                            onClick={() => handleEdit(user)}
+                            title="Nhấn để chỉnh sửa"
+                        >
+                            {/* Left: Avatar */}
+                            <div className="staff-card-left">
+                                {user.avatar ? (
+                                    <img src={user.avatar} alt="avatar" className="staff-avatar" />
+                                ) : (
+                                    <div className="staff-avatar-placeholder">
+                                        {user.fullName?.charAt(0).toUpperCase()}
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Right: All info */}
+                            <div className="staff-card-right">
+                                <div className="staff-card-name">{user.fullName}</div>
+                                <span className={`status-badge ${user.status}`}>
+                                    {user.status === 'active' ? 'Hoạt động' : 'Đã khóa'}
+                                </span>
+
+                                <div className="staff-card-body">
+                                    <div className="staff-info-row">
+                                        
+                                         <span className="staff-info-icon" aria-hidden="true">
+                                            <i className="fa-solid fa-envelope"></i>
+                                        </span>
+                                        <span className="staff-info-text">{user.email}</span>
+                                    </div>
+                                    {user.phone && (
+                                        <div className="staff-info-row">
+                                            <span className="staff-info-icon" aria-hidden="true">
+                                                <i className="fa-solid fa-phone"></i>
+                                            </span>
+                                            <span className="staff-info-text">{user.phone}</span>
                                         </div>
-                                    </td>
-                                    <td>
-                                        <div>{user.email}</div>
-                                        <small style={{ color: '#888' }}>{user.phone}</small>
-                                    </td>
-                                    <td>
-                                        <span style={{
-                                            background: user.roleName ? '#e3f2fd' : '#f5f5f5',
-                                            color: user.roleName ? '#1565c0' : '#757575',
-                                            padding: '4px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: '500',
-                                            border: user.roleName ? 'none' : '1px solid #ddd'
-                                        }}>
+                                    )}
+                                    <div className="staff-info-row">
+                                        
+                                        <span className={`staff-role-badge ${!user.roleName ? 'no-role' : (user.roleName == 'storeManager' ? 'role-store-manager' : 'has-role') }`}>
                                             {user.roleName || 'Chưa gán quyền'}
                                         </span>
-                                    </td>
-                                    <td>{user.storeName}</td>
-                                    <td>{formatDate(user.joinedAt)}</td>
-                                    <td>
-                                        <span className={`status-badge ${user.status}`}>
-                                            {user.status === 'active' ? 'Hoạt động' : 'Đã khóa'}
-                                        </span>
-                                    </td>
-                                </tr>
-                            ))
-                        ) : (
-                            <tr><td colSpan="6" style={{ textAlign: 'center', padding: '20px' }}>Chưa có nhân viên nào.</td></tr>
-                        )}
-                    </tbody>
-                </table>
-            </div>
+                                    </div>
+                                </div>
 
-            {/* Modal Add/Edit */}
+                                <div className="staff-card-footer">
+                                    
+                                    <span>📅 {formatDate(user.joinedAt)}</span>
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            )}
+
+            {/* Modal Add / Edit */}
             {showModal && (
-                <div className="modal-overlay" style={{
-                    position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-                    background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000
-                }}>
-                    <div className="modal-content" style={{
-                        background: 'white', padding: '25px', borderRadius: '12px', width: '500px', maxWidth: '90%',
-                        maxHeight: '90vh', overflowY: 'auto'
-                    }}>
-                        <div className="modal-header" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
-                            <h3 style={{ margin: 0 }}>
-                                {editMode ? 'Cập nhật nhân viên' : 'Thêm nhân viên mới'}
-                            </h3>
-                            <button onClick={() => setShowModal(false)} style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer' }}>×</button>
+                <div className="accounts-modal-overlay" onClick={(e) => e.target === e.currentTarget && setShowModal(false)}>
+                    <div className="accounts-modal">
+                        {/* Modal Header */}
+                        <div className="accounts-modal-header">
+                            <h3>{editMode ? 'Cập nhật nhân viên' : 'Thêm nhân viên mới'}</h3>
+                            <button className="accounts-modal-close" onClick={() => setShowModal(false)}>×</button>
                         </div>
 
                         <form onSubmit={handleSubmit}>
-                            <div className="form-group" style={{ marginBottom: '15px', textAlign: 'center' }}>
-                                <div style={{ marginBottom: '10px' }}>
+                            <div className="accounts-modal-body">
+                                {/* Avatar upload */}
+                                <div className="accounts-avatar-upload">
                                     {previewAvatar ? (
-                                        <img src={previewAvatar} alt="Preview" style={{ width: '80px', height: '80px', borderRadius: '50%', objectFit: 'cover', border: '2px solid #ddd' }} />
+                                        <img src={previewAvatar} alt="Preview" className="accounts-avatar-preview" />
                                     ) : (
-                                        <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: '#eee', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto', fontSize: '24px', color: '#888' }}>
-                                            📷
+                                        <div className="accounts-avatar-placeholder-lg">📷</div>
+                                    )}
+                                    <label className="accounts-avatar-label">
+                                        📁 {editMode ? 'Thay đổi ảnh' : 'Tải lên ảnh'}
+                                        <input type="file" accept="image/*" onChange={handleFileChange} style={{ display: 'none' }} />
+                                    </label>
+                                </div>
+
+                                {/* Full name */}
+                                <div className="accounts-form-group">
+                                    <label className="accounts-form-label">
+                                        Họ và tên <span className="required">*</span>
+                                    </label>
+                                    <input
+                                        type="text"
+                                        name="fullName"
+                                        value={formData.fullName}
+                                        onChange={handleInputChange}
+                                        className="accounts-form-input"
+                                        placeholder="Ví dụ: Nguyễn Văn A"
+                                        required
+                                    />
+                                </div>
+
+                                {/* Email + Phone in one row */}
+                                <div className="accounts-form-row">
+                                    <div className="accounts-form-group">
+                                        <label className="accounts-form-label">
+                                            Email <span className="required">*</span>
+                                        </label>
+                                        <input
+                                            type="email"
+                                            name="email"
+                                            value={formData.email}
+                                            onChange={handleInputChange}
+                                            className="accounts-form-input"
+                                            placeholder="staff@example.com"
+                                            required
+                                        />
+                                    </div>
+                                    <div className="accounts-form-group">
+                                        <label className="accounts-form-label">Số điện thoại</label>
+                                        <input
+                                            type="text"
+                                            name="phone"
+                                            value={formData.phone}
+                                            onChange={handleInputChange}
+                                            className="accounts-form-input"
+                                            placeholder="0901234567"
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* Password */}
+                                <div className="accounts-form-group">
+                                    <label className="accounts-form-label">
+                                        {editMode ? 'Mật khẩu mới (để trống nếu không đổi)' : <>Mật khẩu <span className="required">*</span></>}
+                                    </label>
+                                    <input
+                                        type="password"
+                                        name="password"
+                                        value={formData.password}
+                                        onChange={handleInputChange}
+                                        className="accounts-form-input"
+                                        placeholder={editMode ? '••••••••' : 'Nhập mật khẩu'}
+                                        required={!editMode}
+                                    />
+                                </div>
+
+                                {/* Address */}
+                                <div className="accounts-form-group">
+                                    <label className="accounts-form-label">Địa chỉ</label>
+                                    <input
+                                        type="text"
+                                        name="address"
+                                        value={formData.address}
+                                        onChange={handleInputChange}
+                                        className="accounts-form-input"
+                                        placeholder="Địa chỉ liên hệ"
+                                    />
+                                </div>
+
+                                {/* Role + Status in one row */}
+                                <div className="accounts-form-row">
+                                    <div className="accounts-form-group">
+                                        <label className="accounts-form-label">Vai trò</label>
+                                        <select
+                                            name="roleId"
+                                            value={formData.roleId}
+                                            onChange={handleInputChange}
+                                            className="accounts-form-select"
+                                        >
+                                            <option value="">-- Chưa gán quyền --</option>
+                                            {roles.filter(role => role.name !== 'storeManager' || role.id === formData.roleId).map(role => (
+                                                <option key={role.id} value={role.id}>{role.name}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+
+                                    {editMode && (
+                                        <div className="accounts-form-group">
+                                            <label className="accounts-form-label">Trạng thái</label>
+                                            <select
+                                                name="status"
+                                                value={formData.status}
+                                                onChange={handleInputChange}
+                                                className="accounts-form-select"
+                                            >
+                                                <option value="active">Hoạt động</option>
+                                                <option value="inactive">Vô hiệu hóa</option>
+                                            </select>
                                         </div>
                                     )}
                                 </div>
-                                <label style={{ cursor: 'pointer', color: '#3498db', fontWeight: 'bold' }}>
-                                    {editMode ? 'Thay đổi ảnh đại diện' : 'Tải lên ảnh đại diện'}
-                                    <input type="file" accept="image/*" onChange={handleFileChange} style={{ display: 'none' }} />
-                                </label>
                             </div>
 
-                            <div className="form-group" style={{ marginBottom: '15px' }}>
-                                <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500' }}>Họ và tên <span style={{ color: 'red' }}>*</span></label>
-                                <input
-                                    type="text"
-                                    name="fullName"
-                                    value={formData.fullName}
-                                    onChange={handleInputChange}
-                                    className="form-control"
-                                    placeholder="Ví dụ: Nguyễn Văn A"
-                                    style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #ddd' }}
-                                    required
-                                />
-                            </div>
-
-                            <div className="form-group" style={{ marginBottom: '15px' }}>
-                                <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500' }}>Email <span style={{ color: 'red' }}>*</span></label>
-                                <input
-                                    type="email"
-                                    name="email"
-                                    value={formData.email}
-                                    onChange={handleInputChange}
-                                    className="form-control"
-                                    placeholder="staff@example.com"
-                                    style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #ddd' }}
-                                    required
-                                // Disable email editing? Usually ID shouldn't change, but user asked for "same fields".
-                                // Let's keep editable but backend checks uniqueness.
-                                />
-                            </div>
-
-                            <div className="form-group" style={{ marginBottom: '15px' }}>
-                                <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500' }}>
-                                    {editMode ? 'Mật khẩu mới (Để trống nếu không đổi)' : 'Mật khẩu'}
-                                    {!editMode && <span style={{ color: 'red' }}> *</span>}
-                                </label>
-                                <input
-                                    type="password"
-                                    name="password"
-                                    value={formData.password}
-                                    onChange={handleInputChange}
-                                    className="form-control"
-                                    placeholder={editMode ? "********" : "Nhập mật khẩu"}
-                                    style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #ddd' }}
-                                    required={!editMode}
-                                />
-                            </div>
-
-                            <div className="form-group" style={{ marginBottom: '15px' }}>
-                                <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500' }}>Số điện thoại</label>
-                                <input
-                                    type="text"
-                                    name="phone"
-                                    value={formData.phone}
-                                    onChange={handleInputChange}
-                                    className="form-control"
-                                    placeholder="0901234567"
-                                    style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #ddd' }}
-                                />
-                            </div>
-
-                            <div className="form-group" style={{ marginBottom: '15px' }}>
-                                <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500' }}>Địa chỉ</label>
-                                <input
-                                    type="text"
-                                    name="address"
-                                    value={formData.address}
-                                    onChange={handleInputChange}
-                                    className="form-control"
-                                    placeholder="Địa chỉ liên hệ"
-                                    style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #ddd' }}
-                                />
-                            </div>
-
-                            {/* Role Select */}
-                            <div className="form-group" style={{ marginBottom: '15px' }}>
-                                <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500' }}>Vai trò</label>
-                                <select
-                                    name="roleId"
-                                    value={formData.roleId}
-                                    onChange={handleInputChange}
-                                    style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #ddd', background: 'white' }}
-                                >
-                                    <option value="">-- Chưa gán quyền --</option>
-                                    {roles.map(role => (
-                                        <option key={role.id} value={role.id}>{role.name}</option>
-                                    ))}
-                                </select>
-                            </div>
-
-                            {/* Status Checkbox (Only in Edit Mode) */}
-                            {editMode && (
-                                <div className="form-group" style={{ marginBottom: '15px' }}>
-                                    <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500' }}>Trạng thái</label>
-                                    <select
-                                        name="status"
-                                        value={formData.status}
-                                        onChange={handleInputChange}
-                                        style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #ddd', background: 'white' }}
-                                    >
-                                        <option value="active">Hoạt động</option>
-                                        <option value="inactive">Vô hiệu hóa (Khóa)</option>
-                                    </select>
-                                </div>
-                            )}
-
-                            <div className="form-actions" style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '20px' }}>
-                                <button
-                                    type="button"
-                                    onClick={() => setShowModal(false)}
-                                    style={{ padding: '10px 20px', borderRadius: '6px', border: '1px solid #ddd', background: 'white', cursor: 'pointer' }}
-                                >
+                            {/* Modal Footer */}
+                            <div className="accounts-modal-footer">
+                                <button type="button" className="btn-accounts-cancel" onClick={() => setShowModal(false)}>
                                     Hủy
                                 </button>
-                                <button
-                                    type="submit"
-                                    disabled={submitting}
-                                    style={{
-                                        padding: '10px 20px',
-                                        borderRadius: '6px',
-                                        border: 'none',
-                                        background: submitting ? '#95a5a6' : '#3498db',
-                                        color: 'white',
-                                        cursor: submitting ? 'not-allowed' : 'pointer',
-                                        fontWeight: 'bold'
-                                    }}
-                                >
+                                <button type="submit" className="btn-accounts-submit" disabled={submitting}>
                                     {submitting ? 'Đang xử lý...' : (editMode ? 'Cập nhật' : 'Thêm mới')}
                                 </button>
                             </div>
@@ -443,12 +409,6 @@ const AdminAccount = () => {
                     </div>
                 </div>
             )}
-
-            <style sx>{`
-                .hover-row:hover {
-                    background-color: #f9fafb;
-                }
-            `}</style>
         </div>
     );
 };
