@@ -206,7 +206,7 @@ const AdminProductCategories = () => {
     if (loading) {
         return (
             <div className="admin-page">
-                <div style={{ textAlign: 'center', padding: '50px' }}>
+                <div className="loading-container">
                     <div className="loading-spinner"></div>
                     <p>Đang tải danh mục...</p>
                 </div>
@@ -217,19 +217,11 @@ const AdminProductCategories = () => {
     if (error) {
         return (
             <div className="admin-page">
-                <div style={{ textAlign: 'center', padding: '50px', color: '#dc2626' }}>
+                <div className="error-container">
                     <p>❌ {error}</p>
                     <button
                         onClick={fetchCategories}
-                        style={{
-                            marginTop: '20px',
-                            padding: '10px 20px',
-                            background: '#667eea',
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: '8px',
-                            cursor: 'pointer'
-                        }}
+                        className="btn-retry"
                     >
                         Thử lại
                     </button>
@@ -242,10 +234,10 @@ const AdminProductCategories = () => {
 
     return (
         <div className="admin-page">
-            <div className="admin-page-header" style={{ marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div className="admin-page-header">
                 <div>
                     <h1 className="admin-page-title">Quản lý danh mục sản phẩm</h1>
-                    <p className="text-muted" style={{ color: '#666' }}>
+                    <p className="text-muted">
                         Tổng số: {categories.length} danh mục
                     </p>
                 </div>
@@ -253,7 +245,7 @@ const AdminProductCategories = () => {
 
             <div className="admin-table-container">
                 {categories.length === 0 ? (
-                    <div style={{ textAlign: 'center', padding: '50px', color: '#6b7280' }}>
+                    <div className="empty-state">
                         <p>Chưa có danh mục nào</p>
                     </div>
                 ) : (
@@ -262,7 +254,6 @@ const AdminProductCategories = () => {
                             <tr>
                                 <th>ID</th>
                                 <th>Tên danh mục</th>
-
                                 <th>Ngày cập nhật</th>
                             </tr>
                         </thead>
@@ -271,11 +262,7 @@ const AdminProductCategories = () => {
                                 <tr
                                     key={category.id}
                                     onClick={() => handleRowClick(category)}
-                                    className="hover-row clickable-row"
-                                    style={{
-                                        backgroundColor: category.level > 0 ? '#f9fafb' : 'white',
-                                        cursor: 'pointer'
-                                    }}
+                                    className={`clickable-row ${category.level > 0 ? 'child-category' : 'parent-category'}`}
                                 >
                                     <td><strong>#{category.id}</strong></td>
                                     <td className="category-name-cell">
@@ -295,8 +282,11 @@ const AdminProductCategories = () => {
                 <div className="modal-overlay" onClick={handleCloseModal}>
                     <div className="modal-content" onClick={(e) => e.stopPropagation()}>
                         <div className="modal-header">
-                            <h2>Cập nhật danh mục</h2>
-                            <button className="close-btn" onClick={handleCloseModal}>×</button>
+                            <div className="modal-title">Cập nhật danh mục</div>
+                            <button type="button" className="btn-close" onClick={handleCloseModal}>
+                                ×
+                            </button>
+                            
                         </div>
 
                         <form onSubmit={handleSubmit}>
@@ -305,6 +295,7 @@ const AdminProductCategories = () => {
                                     Tên danh mục
                                 </label>
                                 <input
+                                    className="category-input"
                                     type="text"
                                     id="title"
                                     name="title"
@@ -322,6 +313,7 @@ const AdminProductCategories = () => {
                                     Thêm danh mục con (tùy chọn)
                                 </label>
                                 <input
+                                    className="category-input"
                                     type="text"
                                     id="childCategoryName"
                                     name="childCategoryName"
@@ -335,18 +327,19 @@ const AdminProductCategories = () => {
                             <div className="modal-actions">
                                 <button
                                     type="button"
-                                    className="btn-delete"
                                     onClick={handleDelete}
                                     disabled={submitting}
+                                    style={{ backgroundColor: '#e44848', color: '#fff' , borderRadius: '8px',
+                                            padding: '10px 20px', border: 'none'}}             
                                 >
-                                    Xóa danh mục
+                                    <i className="fa-solid fa-trash"></i>                                    
                                 </button>
 
-                                <div style={{ flex: 1 }}></div>
-
+                                <div className="spacer"></div>
                                 <button
                                     type="submit"
-                                    className="btn-submit"
+                                    style={{ backgroundColor: '#1DB56C', color: '#fff', borderRadius: '8px',
+                                        padding: '10px 20px', border: 'none'}}
                                     disabled={submitting}
                                 >
                                     {submitting ? 'Đang xử lý...' : 'Lưu thay đổi'}
@@ -356,212 +349,6 @@ const AdminProductCategories = () => {
                     </div>
                 </div>
             )}
-
-            <style jsx>{`
-                .hover-row:hover {
-                    background-color: #eef2ff !important;
-                }
-                .clickable-row:hover {
-                    background-color: #e0e7ff !important;
-                    transition: background-color 0.2s ease;
-                }
-                .category-name-cell {
-                    font-family: 'Courier New', monospace;
-                    white-space: pre;
-                }
-                .loading-spinner {
-                    width: 50px;
-                    height: 50px;
-                    border: 4px solid #e5e7eb;
-                    border-top-color: #667eea;
-                    border-radius: 50%;
-                    animation: spin 1s linear infinite;
-                    margin: 0 auto;
-                }
-                @keyframes spin {
-                    to { transform: rotate(360deg); }
-                }
-                .category-tree-table tbody tr[style*="background-color: white"] {
-                    font-weight: 600;
-                }
-
-                /* Modal Styles */
-                .modal-overlay {
-                    position: fixed;
-                    top: 0;
-                    left: 0;
-                    right: 0;
-                    bottom: 0;
-                    background: rgba(0, 0, 0, 0.5);
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    z-index: 1000;
-                    animation: fadeIn 0.2s ease;
-                }
-
-                @keyframes fadeIn {
-                    from { opacity: 0; }
-                    to { opacity: 1; }
-                }
-
-                .modal-content {
-                    background: white;
-                    border-radius: 12px;
-                    padding: 0;
-                    width: 90%;
-                    max-width: 500px;
-                    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-                    animation: slideUp 0.3s ease;
-                }
-
-                @keyframes slideUp {
-                    from {
-                        transform: translateY(20px);
-                        opacity: 0;
-                    }
-                    to {
-                        transform: translateY(0);
-                        opacity: 1;
-                    }
-                }
-
-                .modal-header {
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                    padding: 20px 24px;
-                    border-bottom: 1px solid #e5e7eb;
-                }
-
-                .modal-header h2 {
-                    margin: 0;
-                    font-size: 20px;
-                    font-weight: 700;
-                    color: #1f2937;
-                }
-
-                .close-btn {
-                    background: none;
-                    border: none;
-                    font-size: 28px;
-                    color: #9ca3af;
-                    cursor: pointer;
-                    padding: 0;
-                    width: 32px;
-                    height: 32px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    border-radius: 6px;
-                    transition: all 0.2s ease;
-                }
-
-                .close-btn:hover {
-                    background: #f3f4f6;
-                    color: #1f2937;
-                }
-
-                .modal-content form {
-                    padding: 24px;
-                }
-
-                .form-group {
-                    margin-bottom: 20px;
-                }
-
-                .form-group label {
-                    display: block;
-                    margin-bottom: 8px;
-                    font-weight: 600;
-                    color: #374151;
-                    font-size: 14px;
-                }
-
-                .required {
-                    color: #ef4444;
-                }
-
-                .form-group input {
-                    width: 100%;
-                    padding: 10px 14px;
-                    border: 2px solid #e5e7eb;
-                    border-radius: 8px;
-                    font-size: 14px;
-                    transition: all 0.2s ease;
-                    font-family: inherit;
-                }
-
-                .form-group input:focus {
-                    outline: none;
-                    border-color: #667eea;
-                    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-                }
-
-                .form-group input:disabled {
-                    background: #f9fafb;
-                    cursor: not-allowed;
-                }
-
-                .form-hint {
-                    display: block;
-                    margin-top: 6px;
-                    font-size: 12px;
-                    color: #6b7280;
-                }
-
-                .form-hint strong {
-                    color: #667eea;
-                }
-
-                .modal-actions {
-                    display: flex;
-                    gap: 12px;
-                    justify-content: flex-end;
-                    margin-top: 24px;
-                    padding-top: 20px;
-                    border-top: 1px solid #e5e7eb;
-                }
-
-                .btn-delete,
-                .btn-submit {
-                    padding: 10px 20px;
-                    border-radius: 8px;
-                    font-weight: 600;
-                    font-size: 14px;
-                    cursor: pointer;
-                    transition: all 0.2s ease;
-                    border: none;
-                }
-
-                .btn-delete {
-                    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-                    color: white;
-                }
-
-                .btn-delete:hover:not(:disabled) {
-                    transform: translateY(-1px);
-                    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
-                }
-
-
-
-                .btn-submit {
-                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                    color: white;
-                }
-
-                .btn-submit:hover:not(:disabled) {
-                    transform: translateY(-1px);
-                    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-                }
-
-               
-                .btn-submit:disabled {
-                    opacity: 0.6;
-                    cursor: not-allowed;
-                }
-            `}</style>
         </div>
     );
 };

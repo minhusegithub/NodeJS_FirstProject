@@ -6,6 +6,7 @@ import { useAuthStore } from '../../stores/authStore';
 const Stores = () => {
     const { user, logout } = useAuthStore();
     const [stores, setStores] = useState([]);
+    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [editingStore, setEditingStore] = useState(null);
     const [formData, setFormData] = useState({
         code: '',
@@ -74,6 +75,7 @@ const Stores = () => {
             const res = await api.post('/stores', payload);
             if (res.status === 201) {
                 toast.success("Tạo cửa hàng thành công!");
+                setIsCreateModalOpen(false);
                 resetForm();
                 fetchStores();
             }
@@ -161,6 +163,16 @@ const Stores = () => {
         });
     };
 
+    const openCreateModal = () => {
+        resetForm();
+        setIsCreateModalOpen(true);
+    };
+
+    const closeCreateModal = () => {
+        setIsCreateModalOpen(false);
+        resetForm();
+    };
+
     const formatAddress = (store) => {
         return [store.address?.street, store.address?.district, store.address?.city]
             .filter(Boolean)
@@ -174,121 +186,134 @@ const Stores = () => {
                     <h1 className="store-page-title">
                         {userPermissions.isSystemAdmin ? 'Quản lý Chuỗi Cửa Hàng' : 'Quản lý Cửa Hàng'}
                     </h1>
-                    
                 </div>
+                {userPermissions.isSystemAdmin && (
+                    <div className="store-page-actions">
+                        <button type="button" className="store-btn store-btn-primary" onClick={openCreateModal}>
+                            <i className="fa-solid fa-plus"></i>
+                            Thêm cửa hàng mới
+                        </button>
+                    </div>
+                )}
             </div>
 
-            {userPermissions.isSystemAdmin && !editingStore && (
-                <section className="store-panel">
-                    <div className="store-panel-header">
-                        <h3>Thêm cửa hàng mới</h3>
-                    </div>
-                    <form className="store-form" onSubmit={handleCreate}>
-                        <div className="store-form-grid store-form-grid-2">
-                            <div className="store-field">
-                                <label className="store-label">Mã cửa hàng *</label>
-                                <input
-                                    type="text"
-                                    placeholder="VD: HN01"
-                                    value={formData.code}
-                                    onChange={e => setFormData({ ...formData, code: e.target.value })}
-                                    required
-                                    className="store-input"
-                                />
-                            </div>
-                            <div className="store-field">
-                                <label className="store-label">Tên cửa hàng *</label>
-                                <input
-                                    type="text"
-                                    placeholder="VD: Cửa hàng Hà Nội"
-                                    value={formData.name}
-                                    onChange={e => setFormData({ ...formData, name: e.target.value })}
-                                    required
-                                    className="store-input"
-                                />
-                            </div>
-                        </div>
-
-                        <div className="store-form-grid store-form-grid-3">
-                            <div className="store-field">
-                                <label className="store-label">Số nhà + tên đường</label>
-                                <input
-                                    type="text"
-                                    placeholder="Số nhà và tên đường"
-                                    value={formData.address_street}
-                                    onChange={e => setFormData({ ...formData, address_street: e.target.value })}
-                                    className="store-input"
-                                />
-                            </div>
-                            <div className="store-field">
-                                <label className="store-label">Quận/Huyện</label>
-                                <input
-                                    type="text"
-                                    placeholder="VD: Hoàn Kiếm"
-                                    value={formData.address_district}
-                                    onChange={e => setFormData({ ...formData, address_district: e.target.value })}
-                                    className="store-input"
-                                />
-                            </div>
-                            <div className="store-field">
-                                <label className="store-label">Thành phố</label>
-                                <input
-                                    type="text"
-                                    placeholder="VD: Hà Nội"
-                                    value={formData.address_city}
-                                    onChange={e => setFormData({ ...formData, address_city: e.target.value })}
-                                    className="store-input"
-                                />
-                            </div>
-                        </div>
-
-                        <div className="store-form-grid store-form-grid-3">
-                            <div className="store-field">
-                                <label className="store-label">Số điện thoại</label>
-                                <input
-                                    type="tel"
-                                    placeholder="VD: 024 1234 5678"
-                                    value={formData.contact_phone}
-                                    onChange={e => setFormData({ ...formData, contact_phone: e.target.value })}
-                                    className="store-input"
-                                />
-                            </div>
-                            <div className="store-field">
-                                <label className="store-label">Email liên hệ</label>
-                                <input
-                                    type="email"
-                                    placeholder="VD: store@example.com"
-                                    value={formData.contact_email}
-                                    onChange={e => setFormData({ ...formData, contact_email: e.target.value })}
-                                    className="store-input"
-                                />
-                            </div>
-                            <div className="store-field">
-                                <label className="store-label">Email quản lý</label>
-                                <input
-                                    type="email"
-                                    placeholder="Email của người quản lý"
-                                    value={formData.manager_email}
-                                    onChange={e => setFormData({ ...formData, manager_email: e.target.value })}
-                                    className="store-input"
-                                />
-                            </div>
-                        </div>
-
-                        <div className="store-form-actions">
-                            <button type="submit" className="store-btn store-btn-primary">
-                                <i className="fa-solid fa-pen"></i>
-                                Cập nhật cửa hàng
+            {isCreateModalOpen && (
+                <div className="modal-overlay store-create-modal-overlay" onClick={closeCreateModal}>
+                    <div className="modal-content store-create-modal" onClick={(e) => e.stopPropagation()}>
+                        <div className="modal-header store-create-modal-header">
+                            <div className="modal-title">Thêm cửa hàng mới</div>
+                            <button type="button" className="btn-close" onClick={closeCreateModal}>
+                                ×
                             </button>
                         </div>
-                    </form>
-                </section>
+                        <form className="modal-form store-form" onSubmit={handleCreate}>
+                            <div className="store-form-grid store-form-grid-2">
+                                <div className="store-field">
+                                    <label className="store-label">Mã cửa hàng *</label>
+                                    <input
+                                        type="text"
+                                        placeholder="VD: HN01"
+                                        value={formData.code}
+                                        onChange={e => setFormData({ ...formData, code: e.target.value })}
+                                        required
+                                        className="store-input"
+                                    />
+                                </div>
+                                <div className="store-field">
+                                    <label className="store-label">Tên cửa hàng *</label>
+                                    <input
+                                        type="text"
+                                        placeholder="VD: Cửa hàng Hà Nội"
+                                        value={formData.name}
+                                        onChange={e => setFormData({ ...formData, name: e.target.value })}
+                                        required
+                                        className="store-input"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="store-form-grid store-form-grid-3">
+                                <div className="store-field">
+                                    <label className="store-label">Số nhà + tên đường</label>
+                                    <input
+                                        type="text"
+                                        placeholder="Số nhà và tên đường"
+                                        value={formData.address_street}
+                                        onChange={e => setFormData({ ...formData, address_street: e.target.value })}
+                                        className="store-input"
+                                    />
+                                </div>
+                                <div className="store-field">
+                                    <label className="store-label">Quận/Huyện</label>
+                                    <input
+                                        type="text"
+                                        placeholder="VD: Hoàn Kiếm"
+                                        value={formData.address_district}
+                                        onChange={e => setFormData({ ...formData, address_district: e.target.value })}
+                                        className="store-input"
+                                    />
+                                </div>
+                                <div className="store-field">
+                                    <label className="store-label">Thành phố</label>
+                                    <input
+                                        type="text"
+                                        placeholder="VD: Hà Nội"
+                                        value={formData.address_city}
+                                        onChange={e => setFormData({ ...formData, address_city: e.target.value })}
+                                        className="store-input"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="store-form-grid store-form-grid-3">
+                                <div className="store-field">
+                                    <label className="store-label">Số điện thoại</label>
+                                    <input
+                                        type="tel"
+                                        placeholder="VD: 024 1234 5678"
+                                        value={formData.contact_phone}
+                                        onChange={e => setFormData({ ...formData, contact_phone: e.target.value })}
+                                        className="store-input"
+                                    />
+                                </div>
+                                <div className="store-field">
+                                    <label className="store-label">Email liên hệ</label>
+                                    <input
+                                        type="email"
+                                        placeholder="VD: store@example.com"
+                                        value={formData.contact_email}
+                                        onChange={e => setFormData({ ...formData, contact_email: e.target.value })}
+                                        className="store-input"
+                                    />
+                                </div>
+                                <div className="store-field">
+                                    <label className="store-label">Email quản lý</label>
+                                    <input
+                                        type="email"
+                                        placeholder="Email của người quản lý"
+                                        value={formData.manager_email}
+                                        onChange={e => setFormData({ ...formData, manager_email: e.target.value })}
+                                        className="store-input"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="modal-actions">
+                                
+                                <button type="submit" className="store-btn store-btn-primary">
+                                    
+                                    Tạo cửa hàng
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
             )}
 
             {editingStore && (
                 <div className="modal-overlay" onClick={resetForm}>
                     <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-                        <div className="modal-header">
+                        <div className="modal-header store-edit-modal-header">
                             <div className="modal-title">Chỉnh sửa cửa hàng</div>
                             <button type="button" className="btn-close" onClick={resetForm}>
                                 ×
@@ -381,7 +406,7 @@ const Stores = () => {
 
                             <div className="modal-actions">
                                 <button type="submit" className="store-btn store-btn-primary">
-                                    <i className="fa-solid fa-floppy-disk"></i>
+                                    
                                     Cập nhật
                                 </button>
                                 
@@ -456,7 +481,10 @@ const Stores = () => {
 
                                 {userPermissions.isSystemAdmin && (
                                     <button
-                                        onClick={() => handleDelete(store.id)}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleDelete(store.id);
+                                        }}
                                         className="store-btn store-btn-danger"
                                     >
                                         <i className="fa-solid fa-trash"></i>
