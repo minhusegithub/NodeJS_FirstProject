@@ -69,7 +69,7 @@ const AdminProfileModal = ({ isOpen, onClose }) => {
                             </div>
                             <div className="header-info">
                                 <h3>{profile.fullName}</h3>
-                                <p className="email-text">{profile.email}</p>
+                               
                                 <span className={`status-pill ${profile.status}`}>
                                     {profile.status === 'active' ? '● Đang hoạt động' : '● Vô hiệu hóa'}
                                 </span>
@@ -89,9 +89,14 @@ const AdminProfileModal = ({ isOpen, onClose }) => {
                                     <p>{profile.address || '---'}</p>
                                 </div>
                                 <div className="detail-item">
-                                    <label>Ngày tham gia</label>
-                                    <p>{new Date(profile.createdAt).toLocaleDateString('vi-VN')}</p>
+                                    <label>Email</label>
+                                    <p>{profile.email || '---'}</p>
                                 </div>
+                                <div className="detail-item">
+                                    <label>Ngày tham gia</label>
+                                    <p>{profile.createdAt ? new Date(profile.createdAt).toLocaleDateString('vi-VN') : '---'}</p>
+                                </div>
+                                
                             </div>
                         </div>
 
@@ -103,9 +108,7 @@ const AdminProfileModal = ({ isOpen, onClose }) => {
                                     <div key={idx} className="role-chip-card">
                                         <div className="role-chip-header">
                                             <span className="role-title">{role.roleName}</span>
-                                            <span className={`scope-badge ${role.roleScope}`}>
-                                                {role.roleScope === 'system' ? 'Hệ thống' : 'Cửa hàng'}
-                                            </span>
+                                            
                                         </div>
                                         {role.storeName && (
                                             <div className="store-info-row">
@@ -229,8 +232,7 @@ const AdminProfileModal = ({ isOpen, onClose }) => {
                 .modal-section h4 {
                     margin: 0 0 15px 0;
                     font-size: 16px;
-                    color: #34495e;
-                    border-left: 3px solid #3498db;
+                    border-left: 3px solid #81d48a;
                     padding-left: 10px;
                 }
                 
@@ -276,19 +278,9 @@ const AdminProfileModal = ({ isOpen, onClose }) => {
                 }
                 .role-title {
                     font-weight: bold;
-                    color: #0277bd;
+                    color: #81d48a;
                 }
-                .scope-badge {
-                    font-size: 10px;
-                    text-transform: uppercase;
-                    padding: 2px 6px;
-                    border-radius: 4px;
-                    background: #eee;
-                    color: #555;
-                }
-                .scope-badge.system { background: #E3F2FD; color: #1565C0; }
-                .scope-badge.store { background: #FFF3E0; color: #EF6C00; }
-                
+                                
                 .store-info-row {
                     font-size: 13px;
                     color: #555;

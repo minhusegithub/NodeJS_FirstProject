@@ -188,7 +188,7 @@ const AdminAccount = () => {
             <div className="accounts-header">
                 <div className="accounts-header-info">
                     <h1>Quản lý nhân viên cửa hàng</h1>
-                    <p>Danh sách nhân viên tại cửa hàng bạn quản lý</p>
+                    
                 </div>
                 <button className="btn-add-staff" onClick={handleAddNew}>
                     <span>＋</span> Thêm nhân viên
@@ -268,9 +268,12 @@ const AdminAccount = () => {
                 <div className="accounts-modal-overlay" onClick={(e) => e.target === e.currentTarget && setShowModal(false)}>
                     <div className="accounts-modal">
                         {/* Modal Header */}
-                        <div className="accounts-modal-header">
-                            <h3>{editMode ? 'Cập nhật nhân viên' : 'Thêm nhân viên mới'}</h3>
-                            <button className="accounts-modal-close" onClick={() => setShowModal(false)}>×</button>
+                        <div className="modal-header">
+                            <div className="modal-title">{editMode ? 'Cập nhật nhân viên' : 'Thêm nhân viên mới'}</div>
+                         
+                            <button type="button" className="btn-close" onClick={() => setShowModal(false)}>
+                                ×
+                            </button>
                         </div>
 
                         <form onSubmit={handleSubmit}>
@@ -283,7 +286,7 @@ const AdminAccount = () => {
                                         <div className="accounts-avatar-placeholder-lg">📷</div>
                                     )}
                                     <label className="accounts-avatar-label">
-                                        📁 {editMode ? 'Thay đổi ảnh' : 'Tải lên ảnh'}
+                                         {editMode ? 'Thay ảnh' : 'Tải lên ảnh'}
                                         <input type="file" accept="image/*" onChange={handleFileChange} style={{ display: 'none' }} />
                                     </label>
                                 </div>
@@ -397,10 +400,7 @@ const AdminAccount = () => {
                             </div>
 
                             {/* Modal Footer */}
-                            <div className="accounts-modal-footer">
-                                <button type="button" className="btn-accounts-cancel" onClick={() => setShowModal(false)}>
-                                    Hủy
-                                </button>
+                            <div className="accounts-modal-footer">                         
                                 <button type="submit" className="btn-accounts-submit" disabled={submitting}>
                                     {submitting ? 'Đang xử lý...' : (editMode ? 'Cập nhật' : 'Thêm mới')}
                                 </button>

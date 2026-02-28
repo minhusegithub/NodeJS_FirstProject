@@ -106,25 +106,32 @@ const AdminLayout = () => {
                     )}
                 </nav>
 
+                <aside className="admin-sidebar-footer">
+                    <div className="sidebar-footer-actions">
+                        <button
+                            className="btn-profile-sidebar"
+                            onClick={() => setShowProfileModal(true)}
+                            title="Xem thông tin cá nhân"
+                        >
+                            <i className="fa-regular fa-user" aria-hidden="true"></i>
+                            <span>Thông tin cá nhân</span>
+                        </button>
+                        <button
+                            className="btn-logout-sidebar"
+                            onClick={handleLogout}
+                            title="Đăng xuất tài khoản"
+                        >
+                            <i className="fa-solid fa-right-from-bracket" aria-hidden="true"></i>
+                            <span>Đăng xuất</span>
+                        </button>
+                    </div>
+                </aside>
             </aside>
 
             <div className="admin-main">
                 <header className="admin-topbar">
                     <div className="admin-topbar-content">
                         <h3>Xin chào, {user?.fullName || 'Admin'}</h3>
-                        <div className="topbar-actions">
-                            <button
-                                className="btn-profile"
-                                onClick={() => setShowProfileModal(true)}
-
-                            >
-                                <i className="fa-regular fa-user" aria-hidden="true"></i>
-                                <span>Thông tin cá nhân</span>
-                            </button>
-                            <button className="btn-logout" onClick={handleLogout}>
-                                Đăng xuất
-                            </button>
-                        </div>
                     </div>
                 </header>
 
