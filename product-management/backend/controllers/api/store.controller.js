@@ -7,6 +7,22 @@ const invalidateUserCache = async (userId) => {
     }
 };
 
+const parseCoordinate = (value, fieldName, min, max) => {
+    if (value === undefined) return { shouldUpdate: false, value: undefined };
+    if (value === null || value === '') return { shouldUpdate: true, value: null };
+
+    const parsed = Number(value);
+    if (Number.isNaN(parsed)) {
+        return { error: `${fieldName} must be a valid number` };
+    }
+
+    if (parsed < min || parsed > max) {
+        return { error: `${fieldName} must be between ${min} and ${max}` };
+    }
+
+    return { shouldUpdate: true, value: parsed };
+};
+
 // [GET] /api/stores
 export const getStores = async (req, res) => {
     try {
@@ -119,13 +135,29 @@ export const getStoreDetail = async (req, res) => {
 // [POST] /api/stores
 export const createStore = async (req, res) => {
     try {
-        const { code, name, address, contact, manager_email } = req.body;
+        const { code, name, address, contact, manager_email, latitude, longitude } = req.body;
 
         // Validation
         if (!code || !name) {
             return res.status(400).json({
                 code: 400,
                 message: "Code and Name are required"
+            });
+        }
+
+        const latitudeResult = parseCoordinate(latitude, 'Latitude', -90, 90);
+        if (latitudeResult.error) {
+            return res.status(400).json({
+                code: 400,
+                message: latitudeResult.error
+            });
+        }
+
+        const longitudeResult = parseCoordinate(longitude, 'Longitude', -180, 180);
+        if (longitudeResult.error) {
+            return res.status(400).json({
+                code: 400,
+                message: longitudeResult.error
             });
         }
 
@@ -157,6 +189,8 @@ export const createStore = async (req, res) => {
             name,
             address, // Expect JSON object: {street, district, city}
             contact, // Expect JSON object: {phone, email}
+            latitude: latitudeResult.shouldUpdate ? latitudeResult.value : null,
+            longitude: longitudeResult.shouldUpdate ? longitudeResult.value : null,
             manager_id: managerId,
             is_active: true
         });
@@ -206,7 +240,7 @@ export const createStore = async (req, res) => {
 export const updateStore = async (req, res) => {
     try {
         const { id } = req.params;
-        const { code, name, address, contact, manager_email, is_active } = req.body;
+        const { code, name, address, contact, manager_email, is_active, latitude, longitude } = req.body;
 
         const store = await Store.findByPk(id);
         if (!store) {
@@ -220,6 +254,22 @@ export const updateStore = async (req, res) => {
         const currentUserId = req.user?.id;
         
         let roleChanged = false;
+
+        const latitudeResult = parseCoordinate(latitude, 'Latitude', -90, 90);
+        if (latitudeResult.error) {
+            return res.status(400).json({
+                code: 400,
+                message: latitudeResult.error
+            });
+        }
+
+        const longitudeResult = parseCoordinate(longitude, 'Longitude', -180, 180);
+        if (longitudeResult.error) {
+            return res.status(400).json({
+                code: 400,
+                message: longitudeResult.error
+            });
+        }
         
         // Prevent updating code to existing one
         if (code && code !== store.code) {
@@ -330,6 +380,8 @@ export const updateStore = async (req, res) => {
             ...(name && { name }),
             ...(address && { address }),
             ...(contact && { contact }),
+            ...(latitudeResult.shouldUpdate && { latitude: latitudeResult.value }),
+            ...(longitudeResult.shouldUpdate && { longitude: longitudeResult.value }),
             ...(manager_email !== undefined && { manager_id: managerId }),
             ...(is_active !== undefined && { is_active })
         });

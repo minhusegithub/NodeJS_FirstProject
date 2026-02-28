@@ -9,10 +9,10 @@ services:
     environment:
       POSTGRES_DB: ${PG_DATABASE:-product_management}
       POSTGRES_USER: ${PG_USER:-postgres}
-      POSTGRES_PASSWORD: ${PG_PASSWORD:-postgres123}
+      POSTGRES_PASSWORD: ${PG_PASSWORD:-minhmysql1@}
       POSTGRES_INITDB_ARGS: "-E UTF8 --locale=en_US.UTF-8"
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./backend/scripts/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:ro

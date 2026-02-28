@@ -27,6 +27,16 @@ const Store = sequelize.define('Store', {
         allowNull: true,
         comment: 'Contact info: {phone, email}'
     },
+    latitude: {
+        type: DataTypes.DECIMAL(10, 8),
+        allowNull: true,
+        comment: 'Store latitude coordinate'
+    },
+    longitude: {
+        type: DataTypes.DECIMAL(11, 8),
+        allowNull: true,
+        comment: 'Store longitude coordinate'
+    },
     is_active: {
         type: DataTypes.BOOLEAN,
         defaultValue: true

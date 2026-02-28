@@ -2,12 +2,15 @@ import { useEffect, useState, useMemo } from 'react';
 import api from '../../services/axios';
 import { toast } from 'react-toastify';
 import { useAuthStore } from '../../stores/authStore';
+import StoreLocationMap from '../../components/admin/StoreLocationMap';
+import CoordinatePicker from '../../components/admin/CoordinatePicker';
 
 const Stores = () => {
     const { user, logout } = useAuthStore();
     const [stores, setStores] = useState([]);
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [editingStore, setEditingStore] = useState(null);
+    const [isCoordinatePickerOpen, setIsCoordinatePickerOpen] = useState(false);
     const [formData, setFormData] = useState({
         code: '',
         name: '',
@@ -16,7 +19,9 @@ const Stores = () => {
         address_city: '',
         contact_phone: '',
         contact_email: '',
-        manager_email: ''
+        manager_email: '',
+        latitude: '',
+        longitude: ''
     });
 
     // Check user roles and permissions
@@ -70,7 +75,9 @@ const Stores = () => {
                     phone: formData.contact_phone,
                     email: formData.contact_email
                 },
-                manager_email: formData.manager_email || null
+                manager_email: formData.manager_email || null,
+                latitude: formData.latitude === '' ? null : Number(formData.latitude),
+                longitude: formData.longitude === '' ? null : Number(formData.longitude)
             };
             const res = await api.post('/stores', payload);
             if (res.status === 201) {
@@ -106,7 +113,9 @@ const Stores = () => {
             address_city: store.address?.city || '',
             contact_phone: store.contact?.phone || '',
             contact_email: store.contact?.email || '',
-            manager_email: store.manager?.email || ''
+            manager_email: store.manager?.email || '',
+            latitude: store.latitude ?? '',
+            longitude: store.longitude ?? ''
         });
     };
 
@@ -125,7 +134,9 @@ const Stores = () => {
                     phone: formData.contact_phone,
                     email: formData.contact_email
                 },
-                manager_email: formData.manager_email || null
+                manager_email: formData.manager_email || null,
+                latitude: formData.latitude === '' ? null : Number(formData.latitude),
+                longitude: formData.longitude === '' ? null : Number(formData.longitude)
             };
             const res = await api.put(`/stores/${editingStore}`, payload);
             if (res.status === 200) {
@@ -151,6 +162,7 @@ const Stores = () => {
 
     const resetForm = () => {
         setEditingStore(null);
+        setIsCoordinatePickerOpen(false);
         setFormData({
             code: '',
             name: '',
@@ -159,8 +171,19 @@ const Stores = () => {
             address_city: '',
             contact_phone: '',
             contact_email: '',
-            manager_email: ''
+            manager_email: '',
+            latitude: '',
+            longitude: ''
         });
+    };
+
+    const handleCoordinateSelect = (lat, lng) => {
+        setFormData(prev => ({
+            ...prev,
+            latitude: lat,
+            longitude: lng
+        }));
+        setIsCoordinatePickerOpen(false);
     };
 
     const openCreateModal = () => {
@@ -298,6 +321,49 @@ const Stores = () => {
                                 </div>
                             </div>
 
+                            <div className="store-form-grid store-form-grid-2">
+                                <div className="store-field">
+                                    <label className="store-label">Latitude</label>
+                                    <input
+                                        type="number"
+                                        step="0.00000001"
+                                        min="-90"
+                                        max="90"
+                                        placeholder="VD: 21.027763"
+                                        value={formData.latitude}
+                                        onChange={e => setFormData({ ...formData, latitude: e.target.value })}
+                                        className="store-input"
+                                    />
+                                </div>
+                                <div className="store-field">
+                                    <label className="store-label">Longitude</label>
+                                    <input
+                                        type="number"
+                                        step="0.00000001"
+                                        min="-180"
+                                        max="180"
+                                        placeholder="VD: 105.834160"
+                                        value={formData.longitude}
+                                        onChange={e => setFormData({ ...formData, longitude: e.target.value })}
+                                        className="store-input"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="store-form-actions">
+                                <button 
+                                    type="button" 
+                                    className="store-btn store-btn-secondary"
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        setIsCoordinatePickerOpen(true);
+                                    }}
+                                >
+                                    <i className="fa-solid fa-map"></i>
+                                    Hiển thị bản đồ
+                                </button>
+                            </div>
+
                             <div className="modal-actions">
                                 
                                 <button type="submit" className="store-btn store-btn-primary">
@@ -404,6 +470,47 @@ const Stores = () => {
                                 </div>
                             </div>
 
+                            <div className="store-form-grid store-form-grid-2">
+                                <div className="store-field">
+                                    <label className="store-label">Latitude</label>
+                                    <input
+                                        type="number"
+                                        step="0.00000001"
+                                        min="-90"
+                                        max="90"
+                                        value={formData.latitude}
+                                        onChange={e => setFormData({ ...formData, latitude: e.target.value })}
+                                        className="store-input"
+                                    />
+                                </div>
+                                <div className="store-field">
+                                    <label className="store-label">Longitude</label>
+                                    <input
+                                        type="number"
+                                        step="0.00000001"
+                                        min="-180"
+                                        max="180"
+                                        value={formData.longitude}
+                                        onChange={e => setFormData({ ...formData, longitude: e.target.value })}
+                                        className="store-input"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="store-form-actions">
+                                <button 
+                                    type="button" 
+                                    className="store-btn store-btn-secondary"
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        setIsCoordinatePickerOpen(true);
+                                    }}
+                                >
+                                    <i className="fa-solid fa-map"></i>
+                                    Hiển thị bản đồ
+                                </button>
+                            </div>
+
                             <div className="modal-actions">
                                 <button type="submit" className="store-btn store-btn-primary">
                                     
@@ -473,6 +580,16 @@ const Stores = () => {
                                             ) : '-'}
                                         </div>
                                     </div>
+                                    <div className="store-meta-item">
+                                        <span className="store-meta-icon" aria-hidden="true">
+                                            <i className="fa-solid fa-map-pin"></i>
+                                        </span>
+                                        <div className="store-meta-text">
+                                            {store.latitude && store.longitude
+                                                ? `${store.latitude}, ${store.longitude}`
+                                                : '-'}
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
@@ -495,7 +612,18 @@ const Stores = () => {
                         </article>
                     ))}
                 </div>
+
+                <StoreLocationMap stores={stores} />
             </section>
+
+            {isCoordinatePickerOpen && (
+                <CoordinatePicker
+                    latitude={formData.latitude}
+                    longitude={formData.longitude}
+                    onConfirm={handleCoordinateSelect}
+                    onClose={() => setIsCoordinatePickerOpen(false)}
+                />
+            )}
         </div>
     );
 };
