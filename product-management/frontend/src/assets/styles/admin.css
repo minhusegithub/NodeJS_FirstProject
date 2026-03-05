@@ -277,11 +277,7 @@
 }
 
 /* Admin Pages */
-.admin-page-title {
-    font-size: 2rem;
-    margin-bottom: var(--spacing-xl);
-    color: var(--dark);
-}
+
 
 .admin-header {
     display: flex;
@@ -300,9 +296,39 @@
 
 .store-page-header {
     display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
-    margin-bottom: var(--spacing-lg);
+    justify-content: center;
+    align-items: center;
+    margin: 10px 0px;
+}
+
+.store-nav-tabs {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    width: 100%;
+}
+
+.store-nav-tab {
+    border: 1px solid #d1d5db;
+    background: #ffffff;
+    color: #374151;
+    border-radius: 10px;
+    padding: 10px 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.store-nav-tab:hover {
+    border-color: #1DB56C;
+    color: #0f1a18;
+}
+
+.store-nav-tab.is-active {
+    background: #1DB56C;
+    border-color: #1DB56C;
+    color: #ffffff;
 }
 
 .store-page-title {
@@ -321,6 +347,7 @@
     display: flex;
     align-items: center;
     gap: 10px;
+    margin: 10px 0px
 }
 
 .store-create-modal-overlay {
@@ -653,6 +680,15 @@
     padding: 24px 16px;
     text-align: center;
     color: #64748b;
+}
+
+.store-map-view .store-map-panel {
+    margin-top: 0;
+}
+
+.store-map-view .store-map-container {
+    height: calc(100vh - 260px);
+    min-height: 520px;
 }
 
 .btn-create {
@@ -1124,8 +1160,17 @@
 
     .store-page-header {
         flex-direction: column;
-        align-items: flex-start;
+        
         gap: 12px;
+    }
+
+    .store-nav-tabs {
+        width: 100%;
+    }
+
+    .store-nav-tab {
+        flex: 1;
+        text-align: center;
     }
 
     .store-page-actions {
@@ -1441,14 +1486,11 @@
     align-items: center;
 }
 
-.admin-page-title {
-    font-size: 2rem;
-    margin-bottom: var(--spacing-xl);
-    color: var(--dark);
-}
+
 
 .text-muted {
     color: #666;
+    margin : 10px 0px;
 }
 
 

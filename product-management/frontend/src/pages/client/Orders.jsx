@@ -26,7 +26,8 @@ const Orders = () => {
             confirmed: 'Đã xác nhận',
             shipping: 'Đang giao',
             delivered: 'Đã giao',
-            cancelled: 'Đã hủy'
+            cancelled_no_refund: 'Đã hủy - không hoàn tiền',
+            cancelled_refund: 'Đã hủy - cần hoàn tiền'
         };
         return statusMap[status] || status;
     };
@@ -37,7 +38,8 @@ const Orders = () => {
             confirmed: 'status-confirmed',
             shipping: 'status-shipping',
             delivered: 'status-delivered',
-            cancelled: 'status-cancelled'
+            cancelled_no_refund: 'status-cancelled',
+            cancelled_refund: 'status-cancelled'
         };
         return classMap[status] || '';
     };
@@ -129,10 +131,16 @@ const Orders = () => {
                         Đã giao
                     </button>
                     <button
-                        className={`filter-btn ${selectedStatus === 'cancelled' ? 'active' : ''}`}
-                        onClick={() => setSelectedStatus('cancelled')}
+                        className={`filter-btn ${selectedStatus === 'cancelled_no_refund' ? 'active' : ''}`}
+                        onClick={() => setSelectedStatus('cancelled_no_refund')}
                     >
-                        Đã hủy
+                        Đã hủy - không hoàn tiền
+                    </button>
+                    <button
+                        className={`filter-btn ${selectedStatus === 'cancelled_refund' ? 'active' : ''}`}
+                        onClick={() => setSelectedStatus('cancelled_refund')}
+                    >
+                        Đã hủy - cần hoàn tiền
                     </button>
                 </div>
 

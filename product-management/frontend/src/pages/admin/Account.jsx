@@ -186,10 +186,7 @@ const AdminAccount = () => {
         <div className="admin-page">
             {/* Page Header */}
             <div className="accounts-header">
-                <div className="accounts-header-info">
-                    <h1>Quản lý nhân viên cửa hàng</h1>
-                    
-                </div>
+                
                 <button className="btn-add-staff" onClick={handleAddNew}>
                     <span>＋</span> Thêm nhân viên
                 </button>

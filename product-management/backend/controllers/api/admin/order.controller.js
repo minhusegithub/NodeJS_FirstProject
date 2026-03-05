@@ -62,10 +62,25 @@ export const getOrders = async (req, res) => {
 
         if (keyword) {
             where[Op.or] = [
+                // Tìm theo mã đơn
                 { code: { [Op.iLike]: `%${keyword}%` } },
+                // Tìm theo tên khách hàng
                 sequelize.where(
-                    sequelize.cast(sequelize.col('user_info'), 'text'),
-                    { [Op.iLike]: `%${keyword}%` }
+                    sequelize.literal(`"user_info"->>'fullName'`),
+                    Op.iLike,
+                    `%${keyword}%`
+                ),
+                // Tìm theo email
+                sequelize.where(
+                    sequelize.literal(`"user_info"->>'email'`),
+                    Op.iLike,
+                    `%${keyword}%`
+                ),
+                // Tìm theo số điện thoại
+                sequelize.where(
+                    sequelize.literal(`"user_info"->>'phone'`),
+                    Op.iLike,
+                    `%${keyword}%`
                 )
             ];
         }
@@ -125,7 +140,7 @@ export const updateOrderStatus = async (req, res) => {
         const { id } = req.params;
         const { status } = req.body;
 
-        const validStatuses = ['pending', 'confirmed', 'shipping', 'delivered', 'cancelled'];
+        const validStatuses = ['pending', 'confirmed', 'shipping', 'delivered', 'cancelled_no_refund', 'cancelled_refund'];
         if (!validStatuses.includes(status)) {
             await t.rollback();
             return res.status(400).json({
@@ -155,14 +170,34 @@ export const updateOrderStatus = async (req, res) => {
             });
         }
 
-        // Prevent re-cancelling or restoring already-cancelled orders
-        if (order.status === 'cancelled' && status === 'cancelled') {
+        // Prevent editing if order is already delivered or cancelled
+        if (order.status === 'delivered' || order.status === 'cancelled_no_refund' || order.status === 'cancelled_refund') {
             await t.rollback();
-            return res.status(400).json({ code: 400, message: 'Đơn hàng đã được hủy trước đó' });
+            return res.status(400).json({ 
+                code: 400, 
+                message: 'Không thể chỉnh sửa đơn hàng ở trạng thái này' 
+            });
+        }
+
+        const updateData = { status };
+
+        // Rule 2: If transitioning to 'delivered' and payment method is COD, auto-update payment_status to 'paid'
+        if (status === 'delivered' && order.payment_method === 'COD') {
+            updateData.payment_status = 'paid';
+        }
+
+        // Rule 3: If transitioning to cancelled and payment method is VNPay
+        if ((status === 'cancelled_no_refund' || status === 'cancelled_refund') && order.payment_method === 'VNPay') {
+            // If new status is cancelled_refund, set to cancelled_refund (refund needed)
+            if (status === 'cancelled_refund') {
+                updateData.status = 'cancelled_refund';
+            }
+            // If new status is cancelled_no_refund, keep it
         }
 
         // If cancelling: restore stock for each item
-        if (status === 'cancelled' && order.status !== 'cancelled') {
+        if ((status === 'cancelled_no_refund' || status === 'cancelled_refund') && 
+            order.status !== 'cancelled_no_refund' && order.status !== 'cancelled_refund') {
             for (const item of order.items) {
                 const inventory = await ProductStoreInventory.findOne({
                     where: { product_id: item.product_id, store_id: order.store_id },
@@ -174,7 +209,7 @@ export const updateOrderStatus = async (req, res) => {
             }
         }
 
-        await order.update({ status }, { transaction: t });
+        await order.update(updateData, { transaction: t });
         await t.commit();
 
         res.json({

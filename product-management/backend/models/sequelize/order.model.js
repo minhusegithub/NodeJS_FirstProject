@@ -51,7 +51,7 @@ const Order = sequelize.define('Order', {
         type: DataTypes.STRING(20),
         defaultValue: 'pending',
         validate: {
-            isIn: [['pending', 'confirmed', 'processing', 'shipping', 'delivered', 'cancelled', 'returned']]
+            isIn: [['pending', 'confirmed', 'shipping', 'delivered', 'cancelled_no_refund', 'cancelled_refund']]
         }
     },
     is_rush_order: {

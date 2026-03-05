@@ -8,6 +8,7 @@ import CoordinatePicker from '../../components/admin/CoordinatePicker';
 const Stores = () => {
     const { user, logout } = useAuthStore();
     const [stores, setStores] = useState([]);
+    const [activeView, setActiveView] = useState('stores');
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [editingStore, setEditingStore] = useState(null);
     const [isCoordinatePickerOpen, setIsCoordinatePickerOpen] = useState(false);
@@ -202,23 +203,38 @@ const Stores = () => {
             .join(', ') || '-';
     };
 
+    const managementTabLabel = userPermissions.isSystemAdmin ? 'Chuỗi cửa hàng' : 'Quản lí cửa hàng';
+
     return (
         <div className="store-page">
             <div className="store-page-header">
-                <div>
-                    <h1 className="store-page-title">
-                        {userPermissions.isSystemAdmin ? 'Quản lý Chuỗi Cửa Hàng' : 'Quản lý Cửa Hàng'}
-                    </h1>
+                
+                <div className="store-nav-tabs">
+                    <button
+                        type="button"
+                        className={`store-nav-tab ${activeView === 'stores' ? 'is-active' : ''}`}
+                        onClick={() => setActiveView('stores')}
+                    >
+                        {managementTabLabel}
+                    </button>
+                    <button
+                        type="button"
+                        className={`store-nav-tab ${activeView === 'map' ? 'is-active' : ''}`}
+                        onClick={() => setActiveView('map')}
+                    >
+                        Bản đồ
+                    </button>
                 </div>
-                {userPermissions.isSystemAdmin && (
+            </div>
+
+            {userPermissions.isSystemAdmin && activeView === 'stores' && (
                     <div className="store-page-actions">
                         <button type="button" className="store-btn store-btn-primary" onClick={openCreateModal}>
                             <i className="fa-solid fa-plus"></i>
-                            Thêm cửa hàng mới
+                            Thêm cửa hàng
                         </button>
                     </div>
                 )}
-            </div>
 
             {isCreateModalOpen && (
                 <div className="modal-overlay store-create-modal-overlay" onClick={closeCreateModal}>
@@ -359,7 +375,7 @@ const Stores = () => {
                                         setIsCoordinatePickerOpen(true);
                                     }}
                                 >
-                                    <i className="fa-solid fa-map"></i>
+                                    
                                     Hiển thị bản đồ
                                 </button>
                             </div>
@@ -506,7 +522,7 @@ const Stores = () => {
                                         setIsCoordinatePickerOpen(true);
                                     }}
                                 >
-                                    <i className="fa-solid fa-map"></i>
+                                    
                                     Hiển thị bản đồ
                                 </button>
                             </div>
@@ -523,98 +539,93 @@ const Stores = () => {
                 </div>
             )}
 
-            <section className="store-list">
-                {stores.length === 0 && (
-                    <div className="store-empty">
-                        Không có cửa hàng nào
+            {activeView === 'stores' ? (
+                <section className="store-list">
+                    {stores.length === 0 && (
+                        <div className="store-empty">
+                            Không có cửa hàng nào
+                        </div>
+                    )}
+
+                    <div className={stores.length === 1 ? "store-single" : "store-grid"}>
+                        {stores.map(store => (
+                            <article className="store-card" key={store.id} onClick={() => handleEdit(store)}>
+                                <div className="store-card-header">
+                                    <div>
+                                        <h4 className="store-card-title">{store.name}</h4>
+                                        <span className="store-card-code">#{store.code}</span>
+                                    </div>
+                                    <span className={`store-status ${store.is_active ? 'is-active' : 'is-inactive'}`}>
+                                        {store.is_active ? 'Hoạt động' : 'Ngừng'}
+                                    </span>
+                                </div>
+
+                                <div className="store-card-body">
+                                    <div className="store-meta">
+                                        <div className="store-meta-item">
+                                            <span className="store-meta-icon" aria-hidden="true">
+                                                <i className="fa-solid fa-location-dot"></i>
+                                            </span>
+                                            <div className="store-meta-text">{formatAddress(store)}</div>
+                                        </div>
+                                        <div className="store-meta-item">
+                                            <span className="store-meta-icon" aria-hidden="true">
+                                                <i className="fa-solid fa-phone"></i>
+                                            </span>
+                                            <div className="store-meta-text">
+                                                {store.contact?.phone || '-'}
+                                            </div>
+                                        </div>
+                                        <div className="store-meta-item">
+                                            <span className="store-meta-icon" aria-hidden="true">
+                                                <i className="fa-regular fa-envelope"></i>
+                                            </span>
+                                            <div className="store-meta-text">
+                                                {store.contact?.email || '-'}
+                                            </div>
+                                        </div>
+                                        <div className="store-meta-item">
+                                            <span className="store-meta-icon" aria-hidden="true">
+                                                <i className="fa-solid fa-user-tie"></i>
+                                            </span>
+                                            <div className="store-meta-text">
+                                                {store.manager ? (
+                                                    <div>
+                                                        <div className="store-manager-name">{store.manager.full_name}</div>
+                                                        <div className="store-manager-email">{store.manager.email}</div>
+                                                    </div>
+                                                ) : '-'}
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+
+                                <div className="store-card-actions">
+
+
+                                    {userPermissions.isSystemAdmin && (
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleDelete(store.id);
+                                            }}
+                                            className="store-btn store-btn-danger"
+                                        >
+                                            <i className="fa-solid fa-trash"></i>
+
+                                        </button>
+                                    )}
+                                </div>
+                            </article>
+                        ))}
                     </div>
-                )}
-
-                <div className={stores.length === 1 ? "store-single" : "store-grid"}>
-                    {stores.map(store => (
-                        <article className="store-card" key={store.id}  onClick={() => handleEdit(store)}>
-                            <div className="store-card-header">
-                                <div>
-                                    <h4 className="store-card-title">{store.name}</h4>
-                                    <span className="store-card-code">#{store.code}</span>
-                                </div>
-                                <span className={`store-status ${store.is_active ? 'is-active' : 'is-inactive'}`}>
-                                    {store.is_active ? 'Hoạt động' : 'Ngừng'}
-                                </span>
-                            </div>
-
-                            <div className="store-card-body">
-                                <div className="store-meta">
-                                    <div className="store-meta-item">
-                                        <span className="store-meta-icon" aria-hidden="true">
-                                            <i className="fa-solid fa-location-dot"></i>
-                                        </span>
-                                        <div className="store-meta-text">{formatAddress(store)}</div>
-                                    </div>
-                                    <div className="store-meta-item">
-                                        <span className="store-meta-icon" aria-hidden="true">
-                                            <i className="fa-solid fa-phone"></i>
-                                        </span>
-                                        <div className="store-meta-text">
-                                            {store.contact?.phone || '-'}
-                                        </div>
-                                    </div>
-                                    <div className="store-meta-item">
-                                        <span className="store-meta-icon" aria-hidden="true">
-                                            <i className="fa-regular fa-envelope"></i>
-                                        </span>
-                                        <div className="store-meta-text">
-                                            {store.contact?.email || '-'}
-                                        </div>
-                                    </div>
-                                    <div className="store-meta-item">
-                                        <span className="store-meta-icon" aria-hidden="true">
-                                            <i className="fa-solid fa-user-tie"></i>
-                                        </span>
-                                        <div className="store-meta-text">
-                                            {store.manager ? (
-                                                <div>
-                                                    <div className="store-manager-name">{store.manager.full_name}</div>
-                                                    <div className="store-manager-email">{store.manager.email}</div>
-                                                </div>
-                                            ) : '-'}
-                                        </div>
-                                    </div>
-                                    <div className="store-meta-item">
-                                        <span className="store-meta-icon" aria-hidden="true">
-                                            <i className="fa-solid fa-map-pin"></i>
-                                        </span>
-                                        <div className="store-meta-text">
-                                            {store.latitude && store.longitude
-                                                ? `${store.latitude}, ${store.longitude}`
-                                                : '-'}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="store-card-actions">
-                                            
-
-                                {userPermissions.isSystemAdmin && (
-                                    <button
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            handleDelete(store.id);
-                                        }}
-                                        className="store-btn store-btn-danger"
-                                    >
-                                        <i className="fa-solid fa-trash"></i>
-                                        Xóa
-                                    </button>
-                                )}
-                            </div>
-                        </article>
-                    ))}
-                </div>
-
-                <StoreLocationMap stores={stores} />
-            </section>
+                </section>
+            ) : (
+                <section className="store-map-view">
+                    <StoreLocationMap stores={stores} />
+                </section>
+            )}
 
             {isCoordinatePickerOpen && (
                 <CoordinatePicker

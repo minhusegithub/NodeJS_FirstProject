@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useAdminOrderStore } from '/src/stores/admin/orderStore.js';
 import { useNavigate } from 'react-router-dom';
 import moment from 'moment';
@@ -12,9 +12,24 @@ const AdminOrders = () => {
         status: '',
         page: 1
     });
+    const debounceTimerRef = useRef(null);
 
+    // Debounce keyword - wait 1.5 seconds before making API call
     useEffect(() => {
-        getOrders(filters);
+        if (debounceTimerRef.current) {
+            clearTimeout(debounceTimerRef.current);
+        }
+
+        debounceTimerRef.current = setTimeout(() => {
+            getOrders(filters);
+        }, 1500);
+
+        // Cleanup
+        return () => {
+            if (debounceTimerRef.current) {
+                clearTimeout(debounceTimerRef.current);
+            }
+        };
     }, [filters, getOrders]);
 
     const handleUpdateStatus = async (id, newStatus) => {
@@ -38,9 +53,14 @@ const AdminOrders = () => {
             confirmed: 'Đã xác nhận',
             shipping: 'Đang giao',
             delivered: 'Đã giao',
-            cancelled: 'Đã hủy'
+            cancelled_no_refund: 'Đã hủy - không hoàn tiền',
+            cancelled_refund: 'Đã hủy - cần hoàn tiền'
         };
         return statusMap[status] || status;
+    };
+
+    const isOrderLocked = (orderStatus) => {
+        return orderStatus === 'delivered' || orderStatus === 'cancelled_no_refund' || orderStatus === 'cancelled_refund';
     };
 
     const getPaymentStatusText = (paymentStatus) => {
@@ -55,7 +75,7 @@ const AdminOrders = () => {
     return (
         <div className="admin-orders">
             <div className="container">
-                <h1 className="admin-page-title">Quản lý Đơn hàng Cửa hàng</h1>
+                
 
                 {/* Filters */}
                 <div className="admin-filters">
@@ -76,7 +96,8 @@ const AdminOrders = () => {
                         <option value="confirmed">Đã xác nhận</option>
                         <option value="shipping">Đang giao</option>
                         <option value="delivered">Đã giao</option>
-                        <option value="cancelled">Đã hủy</option>
+                        <option value="cancelled_no_refund">Đã hủy - không hoàn tiền</option>
+                        <option value="cancelled_refund">Đã hủy - cần hoàn tiền</option>
                     </select>
                 </div>
 
@@ -93,13 +114,10 @@ const AdminOrders = () => {
                                     <tr>
                                         <th>Mã đơn</th>
                                         <th>Khách hàng</th>
-                                        <th>Sản phẩm</th>
-
+                                        <th className="hide-on-mobile">Sản phẩm</th>
                                         <th>Tổng tiền</th>
                                         <th>Trạng thái</th>
                                         <th>Thanh toán</th>
-                                        <th>Ngày đặt</th>
-
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -107,16 +125,14 @@ const AdminOrders = () => {
                                         orders.map((order) => (
                                             <tr key={order.id}>
                                                 <td>
-                                                    <strong>{order.code}</strong>
+                                                    <span className="order-code">{order.code}</span>
                                                 </td>
                                                 <td>
-                                                    <div>
-                                                        <strong>{order.user_info?.fullName || order.user?.full_name || 'N/A'}</strong>
-                                                        <p className="text-small">{order.user_info?.phone || order.user?.phone || 'N/A'}</p>
-                                                        <p className="text-small text-muted">{order.user_info?.email || order.user?.email || ''}</p>
-                                                    </div>
+                                                    <div className="customer-name">{order.user_info?.fullName || order.user?.full_name || 'N/A'}</div>
+                                                    <p className="text-small">{order.user_info?.phone || order.user?.phone || 'N/A'}</p>
+                                                    <p className="text-small text-muted">{order.user_info?.email || order.user?.email || ''}</p>
                                                 </td>
-                                                <td>
+                                                <td className="hide-on-mobile">
                                                     <div className="order-items-mini">
                                                         {order.items && order.items.slice(0, 2).map((item, idx) => (
                                                             <div key={idx} className="item-mini">
@@ -128,11 +144,10 @@ const AdminOrders = () => {
                                                             </div>
                                                         ))}
                                                         {order.items && order.items.length > 2 && (
-                                                            <span className="more-items">+{order.items.length - 2} sản phẩm</span>
+                                                            <span className="more-items">+{order.items.length - 2} mục</span>
                                                         )}
                                                     </div>
                                                 </td>
-
                                                 <td>
                                                     <strong className="price-highlight">{formatPrice(order.total_price)}</strong>
                                                 </td>
@@ -140,29 +155,28 @@ const AdminOrders = () => {
                                                     <select
                                                         value={order.status}
                                                         onChange={(e) => handleUpdateStatus(order.id, e.target.value)}
-                                                        className={`status-select status-${order.status}`}
+                                                        disabled={isOrderLocked(order.status)}
+                                                        className={`status-select status-${order.status} ${isOrderLocked(order.status) ? 'is-disabled' : ''}`}
                                                     >
                                                         <option value="pending">Chờ xác nhận</option>
                                                         <option value="confirmed">Đã xác nhận</option>
                                                         <option value="shipping">Đang giao</option>
                                                         <option value="delivered">Đã giao</option>
-                                                        <option value="cancelled">Đã hủy</option>
+                                                        <option value="cancelled_no_refund">Đã hủy - không hoàn tiền</option>
+                                                        <option value="cancelled_refund">Đã hủy - cần hoàn tiền</option>
                                                     </select>
                                                 </td>
                                                 <td>
                                                     <span className={`payment-badge payment-${order.payment_status}`}>
                                                         {getPaymentStatusText(order.payment_status)}
                                                     </span>
-                                                    <br />
-                                                    <small>{order.payment_method === 'VNPay' ? 'VNPay' : 'COD'}</small>
+                                                    <div className="payment-method">{order.payment_method === 'VNPay' ? 'VNPay' : 'COD'}</div>
                                                 </td>
-                                                <td>{moment(order.created_at).format('DD/MM/YYYY HH:mm')}</td>
-
                                             </tr>
                                         ))
                                     ) : (
                                         <tr>
-                                            <td colSpan="9" className="text-center">
+                                            <td colSpan="6" className="text-center">
                                                 Không có đơn hàng nào
                                             </td>
                                         </tr>

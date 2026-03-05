@@ -13,24 +13,13 @@
     gap: 14px;
 }
 
-.accounts-header-info h1 {
-    font-size: 1.65rem;
-    font-weight: 700;
-    color: #0f1a18;
-    margin: 0 0 4px;
-}
 
-.accounts-header-info p {
-    margin: 0;
-    font-size: 0.875rem;
-    color: #6b7280;
-}
 
 .btn-add-staff {
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    padding: 10px 22px;
+    padding: 10px 20px;
     background: #1DB56C;
     color: #fff;
     font-weight: 700;
@@ -39,14 +28,13 @@
     border-radius: 10px;
     cursor: pointer;
     transition: background 0.2s, box-shadow 0.2s, transform 0.15s;
-    white-space: nowrap;
-    letter-spacing: 0.2px;
+    margin: 10px 0px
+   
 }
 
 .btn-add-staff:hover {
     background: #17a05f;
     box-shadow: 0 6px 18px rgba(29, 181, 108, 0.35);
-    transform: translateY(-1px);
 }
 
 .btn-add-staff:active {

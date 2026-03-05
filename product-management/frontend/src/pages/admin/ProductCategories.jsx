@@ -236,7 +236,7 @@ const AdminProductCategories = () => {
         <div className="admin-page">
             <div className="admin-page-header">
                 <div>
-                    <h1 className="admin-page-title">Quản lý danh mục sản phẩm</h1>
+                    
                     <p className="text-muted">
                         Tổng số: {categories.length} danh mục
                     </p>
@@ -252,7 +252,7 @@ const AdminProductCategories = () => {
                     <table className="admin-table category-tree-table">
                         <thead>
                             <tr>
-                                <th>ID</th>
+                               
                                 <th>Tên danh mục</th>
                                 <th>Ngày cập nhật</th>
                             </tr>
@@ -264,7 +264,7 @@ const AdminProductCategories = () => {
                                     onClick={() => handleRowClick(category)}
                                     className={`clickable-row ${category.level > 0 ? 'child-category' : 'parent-category'}`}
                                 >
-                                    <td><strong>#{category.id}</strong></td>
+                                    
                                     <td className="category-name-cell">
                                         {renderCategoryName(category)}
                                     </td>
