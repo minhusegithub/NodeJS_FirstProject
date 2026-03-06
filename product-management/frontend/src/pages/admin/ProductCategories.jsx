@@ -329,17 +329,15 @@ const AdminProductCategories = () => {
                                     type="button"
                                     onClick={handleDelete}
                                     disabled={submitting}
-                                    style={{ backgroundColor: '#e44848', color: '#fff' , borderRadius: '8px',
-                                            padding: '10px 20px', border: 'none'}}             
+                                    className="store-btn store-btn-danger"
                                 >
                                     <i className="fa-solid fa-trash"></i>                                    
                                 </button>
 
-                                <div className="spacer"></div>
+                                
                                 <button
                                     type="submit"
-                                    style={{ backgroundColor: '#1DB56C', color: '#fff', borderRadius: '8px',
-                                        padding: '10px 20px', border: 'none'}}
+                                    className="btn-category-submit"
                                     disabled={submitting}
                                 >
                                     {submitting ? 'Đang xử lý...' : 'Lưu thay đổi'}

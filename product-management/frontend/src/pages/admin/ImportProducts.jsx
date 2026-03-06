@@ -1,20 +1,20 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAdminProductStore } from '../../stores/admin/productStore';
-import { Link } from 'react-router-dom';
 
 const ImportProducts = () => {
     const { getImportableProducts, importProduct, loading } = useAdminProductStore();
     const [products, setProducts] = useState([]);
     const [pagination, setPagination] = useState(null);
     const [filters, setFilters] = useState({ page: 1, limit: 10, keyword: '' });
+    const debounceTimerRef = useRef(null);
 
     // Modal state for import
     const [selectedProduct, setSelectedProduct] = useState(null);
     const [importQuantity, setImportQuantity] = useState('');
 
-    const fetchData = async () => {
+    const fetchData = async (filtersToUse = filters) => {
         try {
-            const data = await getImportableProducts(filters);
+            const data = await getImportableProducts(filtersToUse);
             setProducts(data.products);
             setPagination(data.pagination);
         } catch (error) {
@@ -22,8 +22,22 @@ const ImportProducts = () => {
         }
     };
 
+    // Debounce keyword search - wait 1 second before making API call
     useEffect(() => {
-        fetchData();
+        if (debounceTimerRef.current) {
+            clearTimeout(debounceTimerRef.current);
+        }
+
+        debounceTimerRef.current = setTimeout(() => {
+            fetchData(filters);
+        }, 1000);
+
+        // Cleanup
+        return () => {
+            if (debounceTimerRef.current) {
+                clearTimeout(debounceTimerRef.current);
+            }
+        };
     }, [filters.page, filters.keyword]);
 
     const handleSearch = (e) => {
@@ -64,33 +78,25 @@ const ImportProducts = () => {
         }
     };
 
-    const formatCurrency = (amount) => {
-        return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
-    };
-
     return (
-        <div className="admin-page">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                <h1 className="admin-page-title">Nhập sản phẩm mới từ Kho Chính</h1>
-
-            </div>
-
-            {/* Filter */}
-            <div className="admin-filters">
-                <form onSubmit={handleSearch} style={{ display: 'flex', gap: '10px', flex: 1 }}>
+        <div className="admin-page import-products-page">
+            <div className="container">
+                {/* Filter */}
+                <div className="admin-filters import-products-filters">
+                <form onSubmit={handleSearch} className="import-products-search-form">
                     <input
                         type="text"
-                        placeholder="Tìm sản phẩm..."
-                        className="filter-input"
+                        placeholder="Tìm theo tên sản phẩm, SKU..."
+                        className="filter-input import-products-search-input"
                         value={filters.keyword}
-                        onChange={(e) => setFilters({ ...filters, keyword: e.target.value })}
+                        onChange={(e) => setFilters({ ...filters, keyword: e.target.value, page: 1 })}
                     />
-                    <button type="submit" className="btn-create">Tìm</button>
+                    
                 </form>
             </div>
 
             {/* Table */}
-            <div className="admin-table-container">
+            <div className="admin-table-container import-products-table-wrap">
                 <table className="admin-table">
                     <thead>
                         <tr>
@@ -107,18 +113,18 @@ const ImportProducts = () => {
                             <tr><td colSpan="6" className="text-center">Đang tải...</td></tr>
                         ) : products.length > 0 ? (
                             products.map(product => (
-                                <tr key={product.id} onClick={() => handleImportClick(product)}>
+                                <tr key={product.id} className="clickable-row" onClick={() => handleImportClick(product)}>
                                     <td>
                                         <img
                                             src={product.thumbnail || 'https://via.placeholder.com/50'}
                                             alt={product.title}
-                                            style={{ width: '50px', height: '50px', objectFit: 'cover' }}
+                                            className="import-product-thumb"
                                         />
                                     </td>
-                                    <td>{product.title}</td>
-                                    <td>{product.sku}</td>
+                                    <td className="import-product-title">{product.title}</td>
+                                    <td className="import-product-sku">{product.sku}</td>
                                     <td>{product.category?.title || "Chưa phân loại"}</td>
-                                    <td style={{ fontWeight: 'bold', color: product.stock > 0 ? 'green' : 'red' }}>
+                                    <td className={`import-product-stock ${product.stock > 0 ? 'in-stock' : 'out-stock'}`}>
                                         {product.stock}
                                     </td>
 
@@ -133,43 +139,52 @@ const ImportProducts = () => {
 
             {/* Pagination */}
             {pagination && pagination.totalPages > 1 && (
-                <div className="pagination" style={{ display: 'flex', gap: '10px', justifyContent: 'center', marginTop: '20px' }}>
-                    <button disabled={pagination.currentPage === 1} onClick={() => setFilters({ ...filters, page: filters.page - 1 })}>Trước</button>
-                    <span>Trang {pagination.currentPage} / {pagination.totalPages}</span>
-                    <button disabled={pagination.currentPage === pagination.totalPages} onClick={() => setFilters({ ...filters, page: filters.page + 1 })}>Sau</button>
+                <div className="pagination import-products-pagination">
+                    {Array.from({ length: pagination.totalPages }, (_, i) => i + 1).map((page) => (
+                        <button
+                            key={page}
+                            className={`import-products-page-btn ${page === pagination.currentPage ? 'active' : ''}`}
+                            onClick={() => setFilters({ ...filters, page })}
+                        >
+                            {page}
+                        </button>
+                    ))}
                 </div>
             )}
 
             {/* Import Modal */}
             {selectedProduct && (
                 <div className="modal-overlay">
-                    <div className="modal-content" style={{ maxWidth: '400px' }}>
-                        <div className="modal-header">
-                            <h3>Nhập hàng: {selectedProduct.title}</h3>
-
+                    <div className="modal-content import-products-modal">
+                        <div className="modal-header import-products-modal-header">          
+                            <div className="modal-title">Nhập hàng: {selectedProduct.title}</div>
+                            <button type="button" className="btn-close" onClick={() => setSelectedProduct(null)}>
+                                ×
+                            </button>
                         </div>
-                        <div className="modal-body" style={{ padding: '20px' }}>
-                            <p><strong>Tồn kho chính:</strong> {selectedProduct.stock}</p>
-                            <div className="form-group" style={{ marginTop: '15px' }}>
+                        <div className="modal-body import-products-modal-body">
+                            <p className="import-products-stock-note">Tồn kho chính: {selectedProduct.stock}</p>
+                            <div className="form-group import-products-quantity-group">
                                 <label>Số lượng muốn nhập:</label>
                                 <input
                                     type="number"
-                                    className="form-control"
+                                    className="form-control import-products-quantity-input"
                                     min="1"
                                     max={selectedProduct.stock}
                                     value={importQuantity}
                                     onChange={(e) => setImportQuantity(e.target.value)}
-                                    autoFocus
+                                    
                                 />
                             </div>
-                            <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
-                                <button className="btn-secondary" onClick={() => setSelectedProduct(null)}>Hủy</button>
-                                <button className="btn-primary" onClick={handleImportSubmit}>Xác nhận nhập</button>
+                            <div className="import-products-modal-actions">
+                                
+                                <button className="btn-import-submit" onClick={handleImportSubmit}>Xác nhận nhập</button>
                             </div>
                         </div>
                     </div>
                 </div>
             )}
+            </div>
         </div>
     );
 };

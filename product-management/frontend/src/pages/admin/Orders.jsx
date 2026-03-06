@@ -14,7 +14,7 @@ const AdminOrders = () => {
     });
     const debounceTimerRef = useRef(null);
 
-    // Debounce keyword - wait 1.5 seconds before making API call
+    // Debounce keyword - wait 1 seconds before making API call
     useEffect(() => {
         if (debounceTimerRef.current) {
             clearTimeout(debounceTimerRef.current);
@@ -22,7 +22,7 @@ const AdminOrders = () => {
 
         debounceTimerRef.current = setTimeout(() => {
             getOrders(filters);
-        }, 1500);
+        }, 1000);
 
         // Cleanup
         return () => {
@@ -118,6 +118,7 @@ const AdminOrders = () => {
                                         <th>Tổng tiền</th>
                                         <th>Trạng thái</th>
                                         <th>Thanh toán</th>
+                                        <th>Lịch sử cập nhật</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -172,11 +173,15 @@ const AdminOrders = () => {
                                                     </span>
                                                     <div className="payment-method">{order.payment_method === 'VNPay' ? 'VNPay' : 'COD'}</div>
                                                 </td>
+                                                <td>
+                                                    <div className="text-small">Tạo: {moment(order.created_at).format('DD/MM/YYYY HH:mm')}</div>
+                                                    <div className="text-small text-muted">Cập nhật: {moment(order.updated_at).format('DD/MM/YYYY HH:mm')}</div>
+                                                </td>
                                             </tr>
                                         ))
                                     ) : (
                                         <tr>
-                                            <td colSpan="6" className="text-center">
+                                            <td colSpan="7" className="text-center">
                                                 Không có đơn hàng nào
                                             </td>
                                         </tr>

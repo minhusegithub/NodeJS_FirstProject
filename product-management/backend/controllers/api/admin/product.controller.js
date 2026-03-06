@@ -370,7 +370,11 @@ export const getProductsAvailableForImport = async (req, res) => {
         };
 
         if (keyword) {
-            where.title = { [Op.iLike]: `%${keyword}%` };
+            // Search by title OR SKU
+            where[Op.or] = [
+                { title: { [Op.iLike]: `%${keyword}%` } },
+                { sku: { [Op.iLike]: `%${keyword}%` } }
+            ];
         }
 
         // Use literal subquery to find products NOT in store inventory

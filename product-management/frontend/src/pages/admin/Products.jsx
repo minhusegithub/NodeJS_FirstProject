@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import api from '../../services/axios';
 import { useAuthStore } from '../../stores/authStore';
 import { useAdminProductStore } from '../../stores/admin/productStore';
+import '../../assets/styles/admin-products.css';
 
 const AdminProducts = () => {
     const { user } = useAuthStore();
@@ -22,7 +23,7 @@ const AdminProducts = () => {
 
     const [filters, setFilters] = useState({
         page: 1,
-        limit: 10,
+        limit: 7,
         keyword: '',
         status: ''
     });
@@ -45,10 +46,32 @@ const AdminProducts = () => {
     const [showEditModal, setShowEditModal] = useState(false);
     const [editingProduct, setEditingProduct] = useState(null);
 
+    const [debouncedKeyword, setDebouncedKeyword] = useState('');
+    const debounceTimerRef = useRef(null);
+
     useEffect(() => {
-        getProducts(filters);
         fetchCategories();
-    }, [filters.page, filters.status, getProducts]);
+    }, []);
+
+    // Debounce only the keyword input
+    useEffect(() => {
+        if (debounceTimerRef.current) {
+            clearTimeout(debounceTimerRef.current);
+        }
+        debounceTimerRef.current = setTimeout(() => {
+            setDebouncedKeyword(filters.keyword);
+        }, 1000);
+        return () => {
+            if (debounceTimerRef.current) {
+                clearTimeout(debounceTimerRef.current);
+            }
+        };
+    }, [filters.keyword]);
+
+    // Fetch immediately when page, status, or debounced keyword changes
+    useEffect(() => {
+        getProducts({ ...filters, keyword: debouncedKeyword });
+    }, [debouncedKeyword, filters.page, filters.status, getProducts]);
 
     const fetchCategories = async () => {
         try {
@@ -67,12 +90,6 @@ const AdminProducts = () => {
         } catch (error) {
             console.error("Error fetching categories", error);
         }
-    };
-
-    const handleSearch = (e) => {
-        e.preventDefault();
-        setFilters(prev => ({ ...prev, page: 1 }));
-        getProducts({ ...filters, page: 1 });
     };
 
     const handleCreateInputChange = (e) => {
@@ -210,24 +227,22 @@ const AdminProducts = () => {
     };
 
     return (
-        <div className="admin-page">
-            <h1 className="admin-page-title">Quản lý Sản Phẩm</h1>
+        <div className="admin-products">
+            <div className="ap-container">
+            <h1 className="ap-page-title">Quản lý Sản Phẩm</h1>
 
             {/* Filter Section */}
-            <div className="admin-filters">
-                <form onSubmit={handleSearch} style={{ display: 'flex', gap: '10px', flex: 1 }}>
-                    <input
-                        type="text"
-                        placeholder="Tìm kiếm sản phẩm..."
-                        className="filter-input"
-                        value={filters.keyword}
-                        onChange={(e) => setFilters({ ...filters, keyword: e.target.value })}
-                    />
-                    <button type="submit" className="btn-create">Tìm</button>
-                </form>
+            <div className="ap-filters">
+                <input
+                    type="text"
+                    placeholder="Tìm kiếm theo tên sản phẩm hoặc SKU..."
+                    className="ap-filter-input"
+                    value={filters.keyword}
+                    onChange={(e) => setFilters({ ...filters, keyword: e.target.value, page: 1 })}
+                />
 
                 <select
-                    className="filter-select"
+                    className="ap-filter-select"
                     value={filters.status}
                     onChange={(e) => setFilters({ ...filters, status: e.target.value, page: 1 })}
                 >
@@ -238,9 +253,8 @@ const AdminProducts = () => {
 
                 {isSystemAdmin && (
                     <button
-                        className="btn-create"
+                        className="ap-btn-create"
                         onClick={() => setShowCreateModal(true)}
-                        style={{ backgroundColor: '#28a745', marginLeft: '10px' }}
                     >
                         + Tạo mới
                     </button>
@@ -248,8 +262,8 @@ const AdminProducts = () => {
             </div>
 
             {/* Table Section */}
-            <div className="admin-table-container">
-                <table className="admin-table">
+            <div className="ap-table-container">
+                <table className="ap-table">
                     <thead>
                         <tr>
                             <th>Ảnh</th>
@@ -263,42 +277,46 @@ const AdminProducts = () => {
                     <tbody>
                         {loading ? (
                             <tr>
-                                <td colSpan="6" style={{ textAlign: 'center', padding: '20px' }}>
+                                <td colSpan="6" className="ap-empty-cell">
+                                    <div className="ap-loading-spinner"></div>
                                     Đang tải dữ liệu...
                                 </td>
                             </tr>
                         ) : products.length > 0 ? (
                             products.map(product => (
-                                <tr key={product.id} onClick={() => handleEditClick(product)} style={{ cursor: 'pointer' }}>
-                                    <td>
+                                <tr key={product.id} onClick={() => handleEditClick(product)} className="ap-clickable-row">
+                                    <td className="ap-td-center">
                                         <img
                                             src={product.thumbnail || 'https://via.placeholder.com/50'}
                                             alt={product.title}
-                                            className="product-thumb"
-                                            style={{ width: '50px', height: '50px', objectFit: 'cover', borderRadius: '4px' }}
+                                            className="ap-product-thumb"
                                         />
                                     </td>
                                     <td>
-                                        <strong>{product.title}</strong>
-                                        <p className="text-small" style={{ color: '#666', margin: 0 }}>SKU: {product.sku}</p>
+                                        <strong className="ap-product-name">{product.title}</strong>
+                                        <p className="ap-product-sku">SKU: {product.sku}</p>
                                     </td>
-                                    <td>{product.category?.title || 'Chưa phân loại'}</td>
-                                    <td style={{ fontWeight: 'bold', color: '#1E4A7B' }}>
+                                    <td className="ap-td-center">
+                                        <span className="ap-category-badge">
+                                            {product.category?.title || 'Chưa phân loại'}
+                                        </span>
+                                    </td>
+                                    <td className="ap-td-center ap-price">
                                         {formatCurrency(product.price)}
                                     </td>
-                                    <td>
+                                    <td className="ap-td-center">
                                         {isSystemAdmin ? (
-                                            <span className={(product.stock || 0) > 0 ? 'stock-ok' : 'stock-low'}>
+                                            <span className={(product.stock || 0) > 0 ? 'ap-stock-ok' : 'ap-stock-low'}>
                                                 {product.stock || 0}
                                             </span>
                                         ) : (
-                                            <span className={calculateTotalStock(product.inventory) > 0 ? 'stock-ok' : 'stock-low'}>
+                                            <span className={calculateTotalStock(product.inventory) > 0 ? 'ap-stock-ok' : 'ap-stock-low'}>
                                                 {calculateTotalStock(product.inventory)}
                                             </span>
                                         )}
                                     </td>
-                                    <td>
-                                        <span className={`status-badge ${product.status}`}>
+                                    <td className="ap-td-center">
+                                        <span className={`ap-status-badge ap-status-${product.status}`}>
                                             {product.status === 'active' ? 'Đang bán' : 'Ngừng bán'}
                                         </span>
                                     </td>
@@ -306,7 +324,7 @@ const AdminProducts = () => {
                             ))
                         ) : (
                             <tr>
-                                <td colSpan="6" style={{ textAlign: 'center', padding: '20px' }}>
+                                <td colSpan="6" className="ap-empty-cell">
                                     Không tìm thấy sản phẩm nào.
                                 </td>
                             </tr>
@@ -317,22 +335,16 @@ const AdminProducts = () => {
 
             {/* Pagination Controls */}
             {pagination && pagination.totalPages > 1 && (
-                <div className="pagination" style={{ display: 'flex', gap: '10px', justifyContent: 'center', marginTop: '20px' }}>
-                    <button
-                        disabled={pagination.currentPage === 1}
-                        onClick={() => setFilters({ ...filters, page: filters.page - 1 })}
-                        style={{ padding: '5px 10px', cursor: 'pointer' }}
-                    >
-                        Trước
-                    </button>
-                    <span>Trang {pagination.currentPage} / {pagination.totalPages}</span>
-                    <button
-                        disabled={pagination.currentPage === pagination.totalPages}
-                        onClick={() => setFilters({ ...filters, page: filters.page + 1 })}
-                        style={{ padding: '5px 10px', cursor: 'pointer' }}
-                    >
-                        Sau
-                    </button>
+                <div className="ap-pagination">
+                    {Array.from({ length: pagination.totalPages }, (_, i) => i + 1).map(page => (
+                        <button
+                            key={page}
+                            className={`ap-page-btn ${page === filters.page ? 'active' : ''}`}
+                            onClick={() => setFilters({ ...filters, page })}
+                        >
+                            {page}
+                        </button>
+                    ))}
                 </div>
             )}
 
@@ -341,7 +353,7 @@ const AdminProducts = () => {
                 <div className="modal-overlay">
                     <div className="modal-content">
                         <div className="modal-header">
-                            <h2>Thêm sản phẩm mới</h2>
+                            <div className="modal-title">Thêm sản phẩm mới</div>
                             <button className="btn-close" onClick={() => setShowCreateModal(false)}>&times;</button>
                         </div>
                         <form onSubmit={handleCreateSubmit} className="modal-form">
@@ -446,7 +458,7 @@ const AdminProducts = () => {
                                 <textarea
                                     name="description" rows="4"
                                     value={newProduct.description} onChange={handleCreateInputChange}
-                                    className="form-control"
+                                    // className="form-control"
                                     placeholder="Mô tả chi tiết sản phẩm..."
                                 />
                             </div>
@@ -465,16 +477,10 @@ const AdminProducts = () => {
                             </div>
 
                             <div className="modal-actions">
-                                <button
-                                    type="button"
-                                    onClick={() => setShowCreateModal(false)}
-                                    className="btn-secondary"
-                                >
-                                    Hủy
-                                </button>
+                                
                                 <button
                                     type="submit"
-                                    className="btn-primary"
+                                    className="store-btn btn-store-submit"
                                 >
                                     Tạo sản phẩm
                                 </button>
@@ -489,7 +495,8 @@ const AdminProducts = () => {
                 <div className="modal-overlay">
                     <div className="modal-content">
                         <div className="modal-header">
-                            <h2>Cập nhật sản phẩm</h2>
+                            <div className="modal-title">Cập nhật sản phẩm</div>
+                            
                             <button className="btn-close" onClick={() => setShowEditModal(false)}>&times;</button>
                         </div>
                         <form onSubmit={handleUpdateSubmit} className="modal-form">
@@ -651,16 +658,10 @@ const AdminProducts = () => {
                             </div>
 
                             <div className="modal-actions">
-                                <button
-                                    type="button"
-                                    onClick={() => setShowEditModal(false)}
-                                    className="btn-secondary"
-                                >
-                                    Hủy
-                                </button>
+                                
                                 <button
                                     type="submit"
-                                    className="btn-primary"
+                                    className="store-btn btn-store-submit"
                                 >
                                     Cập nhật
                                 </button>
@@ -669,6 +670,7 @@ const AdminProducts = () => {
                     </div>
                 </div>
             )}
+            </div>
         </div>
     );
 };

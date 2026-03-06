@@ -528,7 +528,7 @@ const Stores = () => {
                             </div>
 
                             <div className="modal-actions">
-                                <button type="submit" className="store-btn store-btn-primary">
+                                <button type="submit" className="store-btn btn-store-submit">
                                     
                                     Cập nhật
                                 </button>

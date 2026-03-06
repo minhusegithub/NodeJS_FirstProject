@@ -3,6 +3,13 @@
     min-height: 100vh;
 }
 
+.admin-orders .container {
+    margin: 0 auto;
+    padding: 2rem;
+    max-width: 1400px;
+    width: 100%;
+}
+
 /* Search and Filter Bar */
 .admin-orders .admin-filters {
     display: flex;
@@ -58,6 +65,15 @@
     border: 1px solid #e5e7eb;
     border-radius: 12px;
     overflow: hidden;
+    max-height: 800px;
+    overflow-y: auto;
+    /* Hide scrollbar */
+    /* scrollbar-width: none;  */
+    /* -ms-overflow-style: none;  */
+}
+
+.admin-orders .admin-table-container::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
 }
 
 .admin-orders .admin-table thead {
@@ -71,6 +87,10 @@
     font-size: 0.85rem;
     letter-spacing: 0.5px;
     padding: 1rem;
+    position: sticky;
+    top: 0;
+    background: #1DB56C;
+    z-index: 10;
 }
 
 .admin-orders .admin-table tbody tr {

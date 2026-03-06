@@ -481,7 +481,7 @@
     padding: 9px 26px;
     border-radius: 10px;
     border: none;
-    background: #1DB56C;
+    background: #2a5f46;
     color: #fff;
     font-weight: 700;
     font-size: 0.875rem;
@@ -491,18 +491,3 @@
     letter-spacing: 0.2px;
 }
 
-.btn-accounts-submit:hover:not(:disabled) {
-    background: #17a05f;
-    box-shadow: 0 6px 16px rgba(29, 181, 108, 0.32);
-    transform: translateY(-1px);
-}
-
-.btn-accounts-submit:active:not(:disabled) {
-    transform: translateY(0);
-}
-
-.btn-accounts-submit:disabled {
-    background: #d1d5db;
-    color: #9ca3af;
-    cursor: not-allowed;
-}
