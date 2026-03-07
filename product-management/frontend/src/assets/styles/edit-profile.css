@@ -133,20 +133,15 @@
 
 .btn-cancel:hover {
     background: #5a6268;
-    color: #fff;
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(108, 117, 125, 0.3);
     text-decoration: none;
 }
 
 .btn-submit {
     background: #1E4A7B;
-    color: #fff;
     border: none;
     border-radius: 10px;
     font-weight: 600;
     font-size: 15px;
-    transition: all 0.3s ease;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -156,10 +151,7 @@
 }
 
 .btn-submit:hover {
-
     color: #fff;
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(229, 152, 155, 0.4);
 }
 
 @media (max-width: 768px) {
@@ -179,7 +171,7 @@
 
 
 
-.user-edit-card:hover {
+.user-edit-card{
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08) !important;
     transition: all 0.3s ease;
     border: 1px solid #1E4A7B;

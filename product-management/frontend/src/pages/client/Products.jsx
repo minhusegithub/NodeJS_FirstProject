@@ -43,7 +43,7 @@ const Products = () => {
     }, []);
 
     const fetchProducts = (page = 1, filters = null) => {
-        const params = { page, limit: 12 };
+        const params = { page, limit: 8 };
 
         // Use provided filters or fall back to applied filters
         const keyword = filters?.keyword !== undefined ? filters.keyword : appliedSearchKeyword;
@@ -355,29 +355,63 @@ const Products = () => {
                         {pagination && pagination.totalPages > 1 && (
                             <div className="pagination">
                                 <button
-                                    className="page-btn"
+                                    className="page-btn page-nav"
+                                    onClick={() => fetchProducts(1)}
+                                    disabled={pagination.page === 1}
+                                >
+                                    &laquo;
+                                </button>
+                                <button
+                                    className="page-btn page-nav"
                                     onClick={() => fetchProducts(pagination.page - 1)}
                                     disabled={pagination.page === 1}
                                 >
-                                    ←
+                                    &larr;
                                 </button>
 
-                                {Array.from({ length: pagination.totalPages }, (_, i) => i + 1).map((pageNum) => (
-                                    <button
-                                        key={pageNum}
-                                        className={`page-btn ${pageNum === pagination.page ? 'active' : ''}`}
-                                        onClick={() => fetchProducts(pageNum)}
-                                    >
-                                        {pageNum}
-                                    </button>
-                                ))}
+                                {(() => {
+                                    const total = pagination.totalPages;
+                                    const current = pagination.page;
+                                    let startPage, endPage;
+
+                                    if (total <= 3) {
+                                        startPage = 1;
+                                        endPage = total;
+                                    } else if (current <= 1) {
+                                        startPage = 1;
+                                        endPage = 3;
+                                    } else if (current >= total) {
+                                        startPage = total - 2;
+                                        endPage = total;
+                                    } else {
+                                        startPage = current - 1;
+                                        endPage = current + 1;
+                                    }
+
+                                    return Array.from({ length: endPage - startPage + 1 }, (_, i) => startPage + i).map(pageNum => (
+                                        <button
+                                            key={pageNum}
+                                            className={`page-btn ${pageNum === current ? 'active' : ''}`}
+                                            onClick={() => fetchProducts(pageNum)}
+                                        >
+                                            {pageNum}
+                                        </button>
+                                    ));
+                                })()}
 
                                 <button
-                                    className="page-btn"
+                                    className="page-btn page-nav"
                                     onClick={() => fetchProducts(pagination.page + 1)}
                                     disabled={pagination.page === pagination.totalPages}
                                 >
-                                    →
+                                    &rarr;
+                                </button>
+                                <button
+                                    className="page-btn page-nav"
+                                    onClick={() => fetchProducts(pagination.totalPages)}
+                                    disabled={pagination.page === pagination.totalPages}
+                                >
+                                    &raquo;
                                 </button>
                             </div>
                         )}

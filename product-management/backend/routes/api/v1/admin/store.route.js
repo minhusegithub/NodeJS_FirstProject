@@ -1,9 +1,9 @@
 import express from 'express';
-import * as controller from '../../../controllers/api/store.controller.js';
+import * as controller from '../../../../controllers/api/admin/store.controller.js';
 
 
-import { authenticateUser } from '../../../middlewares/jwt.middleware.js';
-import { authorize } from '../../../middlewares/rbac.middleware.js';
+import { authenticateUser } from '../../../../middlewares/jwt.middleware.js';
+import { authorize } from '../../../../middlewares/rbac.middleware.js';
 
 const router = express.Router();
 

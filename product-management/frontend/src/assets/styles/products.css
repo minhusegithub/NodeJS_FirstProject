@@ -305,14 +305,11 @@
     transition: all 0.2s;
 }
 
-/* .btn-view {
-    background-color: #f3f4f6;
-    color: #1f2937;
-} */
+
 
 .btn-view:hover {
     background-color: #e5e7eb;
-    color: #1f2937;
+    color: #2766bf;
 }
 
 .btn-add-cart {

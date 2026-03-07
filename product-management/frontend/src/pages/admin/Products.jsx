@@ -336,15 +336,65 @@ const AdminProducts = () => {
             {/* Pagination Controls */}
             {pagination && pagination.totalPages > 1 && (
                 <div className="ap-pagination">
-                    {Array.from({ length: pagination.totalPages }, (_, i) => i + 1).map(page => (
-                        <button
-                            key={page}
-                            className={`ap-page-btn ${page === filters.page ? 'active' : ''}`}
-                            onClick={() => setFilters({ ...filters, page })}
-                        >
-                            {page}
-                        </button>
-                    ))}
+                    <button
+                        className="ap-page-btn ap-page-nav"
+                        onClick={() => setFilters({ ...filters, page: 1 })}
+                        disabled={filters.page === 1}
+                    >
+                        &laquo;
+                    </button>
+                    <button
+                        className="ap-page-btn ap-page-nav"
+                        onClick={() => setFilters({ ...filters, page: filters.page - 1 })}
+                        disabled={filters.page === 1}
+                    >
+                        &larr;
+                    </button>
+
+                    {(() => {
+                        const total = pagination.totalPages;
+                        const current = filters.page;
+                        let startPage, endPage;
+
+                        if (total <= 3) {
+                            startPage = 1;
+                            endPage = total;
+                        } else if (current <= 1) {
+                            startPage = 1;
+                            endPage = 3;
+                        } else if (current >= total) {
+                            startPage = total - 2;
+                            endPage = total;
+                        } else {
+                            startPage = current - 1;
+                            endPage = current + 1;
+                        }
+
+                        return Array.from({ length: endPage - startPage + 1 }, (_, i) => startPage + i).map(page => (
+                            <button
+                                key={page}
+                                className={`ap-page-btn ${page === current ? 'active' : ''}`}
+                                onClick={() => setFilters({ ...filters, page })}
+                            >
+                                {page}
+                            </button>
+                        ));
+                    })()}
+
+                    <button
+                        className="ap-page-btn ap-page-nav"
+                        onClick={() => setFilters({ ...filters, page: filters.page + 1 })}
+                        disabled={filters.page === pagination.totalPages}
+                    >
+                        &rarr;
+                    </button>
+                    <button
+                        className="ap-page-btn ap-page-nav"
+                        onClick={() => setFilters({ ...filters, page: pagination.totalPages })}
+                        disabled={filters.page === pagination.totalPages}
+                    >
+                        &raquo;
+                    </button>
                 </div>
             )}
 

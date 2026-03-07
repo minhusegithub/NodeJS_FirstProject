@@ -378,6 +378,12 @@
     box-shadow: 0 3px 10px rgba(29, 181, 108, 0.35);
 }
 
+.ap-page-nav:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
 /* ============================================================
    btn-primary used in modals
    ============================================================ */

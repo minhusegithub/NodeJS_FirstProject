@@ -6,13 +6,14 @@ const ImportProducts = () => {
     const [products, setProducts] = useState([]);
     const [pagination, setPagination] = useState(null);
     const [filters, setFilters] = useState({ page: 1, limit: 10, keyword: '' });
+    const [debouncedKeyword, setDebouncedKeyword] = useState('');
     const debounceTimerRef = useRef(null);
 
     // Modal state for import
     const [selectedProduct, setSelectedProduct] = useState(null);
     const [importQuantity, setImportQuantity] = useState('');
 
-    const fetchData = async (filtersToUse = filters) => {
+    const fetchData = async (filtersToUse) => {
         try {
             const data = await getImportableProducts(filtersToUse);
             setProducts(data.products);
@@ -22,23 +23,19 @@ const ImportProducts = () => {
         }
     };
 
-    // Debounce keyword search - wait 1 second before making API call
+    // Debounce only the keyword input
     useEffect(() => {
-        if (debounceTimerRef.current) {
-            clearTimeout(debounceTimerRef.current);
-        }
-
+        if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
         debounceTimerRef.current = setTimeout(() => {
-            fetchData(filters);
+            setDebouncedKeyword(filters.keyword);
         }, 1000);
+        return () => { if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current); };
+    }, [filters.keyword]);
 
-        // Cleanup
-        return () => {
-            if (debounceTimerRef.current) {
-                clearTimeout(debounceTimerRef.current);
-            }
-        };
-    }, [filters.page, filters.keyword]);
+    // Fetch immediately when page or debouncedKeyword changes
+    useEffect(() => {
+        fetchData({ ...filters, keyword: debouncedKeyword });
+    }, [filters.page, debouncedKeyword]);
 
     const handleSearch = (e) => {
         e.preventDefault();
@@ -72,7 +69,7 @@ const ImportProducts = () => {
             }, false); // don't refetch main product list, we refetch import list
 
             setSelectedProduct(null);
-            fetchData(); // Refresh list to remove imported product or update status
+            fetchData({ ...filters, keyword: debouncedKeyword }); // Refresh list
         } catch (error) {
             // Toast handled in store
         }
@@ -140,15 +137,65 @@ const ImportProducts = () => {
             {/* Pagination */}
             {pagination && pagination.totalPages > 1 && (
                 <div className="pagination import-products-pagination">
-                    {Array.from({ length: pagination.totalPages }, (_, i) => i + 1).map((page) => (
-                        <button
-                            key={page}
-                            className={`import-products-page-btn ${page === pagination.currentPage ? 'active' : ''}`}
-                            onClick={() => setFilters({ ...filters, page })}
-                        >
-                            {page}
-                        </button>
-                    ))}
+                    <button
+                        className="import-products-page-btn import-products-page-nav"
+                        onClick={() => setFilters({ ...filters, page: 1 })}
+                        disabled={filters.page === 1}
+                    >
+                        &laquo;
+                    </button>
+                    <button
+                        className="import-products-page-btn import-products-page-nav"
+                        onClick={() => setFilters({ ...filters, page: filters.page - 1 })}
+                        disabled={filters.page === 1}
+                    >
+                        &larr;
+                    </button>
+
+                    {(() => {
+                        const total = pagination.totalPages;
+                        const current = filters.page;
+                        let startPage, endPage;
+
+                        if (total <= 3) {
+                            startPage = 1;
+                            endPage = total;
+                        } else if (current <= 1) {
+                            startPage = 1;
+                            endPage = 3;
+                        } else if (current >= total) {
+                            startPage = total - 2;
+                            endPage = total;
+                        } else {
+                            startPage = current - 1;
+                            endPage = current + 1;
+                        }
+
+                        return Array.from({ length: endPage - startPage + 1 }, (_, i) => startPage + i).map(page => (
+                            <button
+                                key={page}
+                                className={`import-products-page-btn ${page === current ? 'active' : ''}`}
+                                onClick={() => setFilters({ ...filters, page })}
+                            >
+                                {page}
+                            </button>
+                        ));
+                    })()}
+
+                    <button
+                        className="import-products-page-btn import-products-page-nav"
+                        onClick={() => setFilters({ ...filters, page: filters.page + 1 })}
+                        disabled={filters.page === pagination.totalPages}
+                    >
+                        &rarr;
+                    </button>
+                    <button
+                        className="import-products-page-btn import-products-page-nav"
+                        onClick={() => setFilters({ ...filters, page: pagination.totalPages })}
+                        disabled={filters.page === pagination.totalPages}
+                    >
+                        &raquo;
+                    </button>
                 </div>
             )}
 

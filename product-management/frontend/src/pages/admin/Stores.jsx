@@ -44,7 +44,7 @@ const Stores = () => {
 
     const fetchStores = async () => {
         try {
-            const res = await api.get('/stores');
+            const res = await api.get('/admin/stores');
             if (res.data.code === 200) {
                 let storeList = res.data.data;
 
@@ -80,7 +80,7 @@ const Stores = () => {
                 latitude: formData.latitude === '' ? null : Number(formData.latitude),
                 longitude: formData.longitude === '' ? null : Number(formData.longitude)
             };
-            const res = await api.post('/stores', payload);
+            const res = await api.post('/admin/stores', payload);
             if (res.status === 201) {
                 toast.success("Tạo cửa hàng thành công!");
                 setIsCreateModalOpen(false);
@@ -96,7 +96,7 @@ const Stores = () => {
         if (!window.confirm('Bạn có chắc chắn muốn xóa cửa hàng này?')) return;
 
         try {
-            await api.delete(`/stores/${storeId}`);
+            await api.delete(`/admin/stores/${storeId}`);
             toast.success("Xóa cửa hàng thành công!");
             fetchStores();
         } catch (error) {
@@ -139,7 +139,7 @@ const Stores = () => {
                 latitude: formData.latitude === '' ? null : Number(formData.latitude),
                 longitude: formData.longitude === '' ? null : Number(formData.longitude)
             };
-            const res = await api.put(`/stores/${editingStore}`, payload);
+            const res = await api.put(`/admin/stores/${editingStore}`, payload);
             if (res.status === 200) {
                 // If current user lost manager role, force logout
                 if (res.data?.roleChanged) {

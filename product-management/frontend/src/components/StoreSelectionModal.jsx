@@ -60,8 +60,11 @@ const StoreSelectionModal = ({ product, onClose, onConfirm }) => {
         >
             <div className="modal-content" onClick={(e) => e.stopPropagation()}>
                 <div className="modal-header">
-                    <h2>Chọn cửa hàng</h2>
-                    <button className="modal-close-btn" onClick={onClose}>✕</button>
+                    <div className="modal-title">Chọn cửa hàng</div>
+                    <button type="button" className="btn-close" onClick={onClose}>
+                                ×
+                    </button>
+                    {/* <button className="modal-close-btn" onClick={onClose}>✕</button> */}
                 </div>
 
                 <div className="modal-body">

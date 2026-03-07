@@ -15,11 +15,9 @@ body > main {
     flex: 1;
 }
 
-/* header */
+/* header - overridden by index.css */
 .header {
-    background-color: #1E4A7B;
-    border-bottom: 2px solid #163a63;
-    padding: 12px 0;
+    padding: 0;
     height: auto;
     font-family: 'Inter', 'Poppins', 'Roboto', sans-serif;
 }
@@ -473,11 +471,11 @@ body > main {
     font-family: 'Inter', 'Poppins', 'Roboto', sans-serif;
 }
 
-.btn-view:hover {
+/* .btn-view:hover {
     background: #E5989B;
     color: #fff;
     transform: translateY(-2px);
-}
+} */
 
 .btn-cart:hover {
     background: #1E4A7B;

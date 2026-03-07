@@ -829,10 +829,10 @@
 
 
 
-.btn-edit:hover,
+/* .btn-edit:hover,
 .btn-view:hover {
     transform: scale(1.2);
-}
+} */
 
 .btn-delete:hover {
     transform: scale(1.2);
@@ -1576,6 +1576,12 @@
     color: white;
     border-color: #1DB56C;
     box-shadow: 0 2px 8px rgba(29, 181, 108, 0.2);
+}
+
+.import-products-page-nav:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+    pointer-events: none;
 }
 
 .import-products-modal {

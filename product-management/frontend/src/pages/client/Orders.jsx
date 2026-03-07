@@ -240,15 +240,65 @@ const Orders = () => {
 
                 {pagination && pagination.totalPages > 1 && (
                     <div className="pagination">
-                        {Array.from({ length: pagination.totalPages }, (_, i) => i + 1).map((page) => (
-                            <button
-                                key={page}
-                                className={`page-btn ${page === pagination.page ? 'active' : ''}`}
-                                onClick={() => getOrders({ page })}
-                            >
-                                {page}
-                            </button>
-                        ))}
+                        <button
+                            className="page-btn page-nav"
+                            onClick={() => getOrders({ page: 1 })}
+                            disabled={pagination.page === 1}
+                        >
+                            &laquo;
+                        </button>
+                        <button
+                            className="page-btn page-nav"
+                            onClick={() => getOrders({ page: pagination.page - 1 })}
+                            disabled={pagination.page === 1}
+                        >
+                            &larr;
+                        </button>
+
+                        {(() => {
+                            const total = pagination.totalPages;
+                            const current = pagination.page;
+                            let startPage, endPage;
+
+                            if (total <= 3) {
+                                startPage = 1;
+                                endPage = total;
+                            } else if (current <= 1) {
+                                startPage = 1;
+                                endPage = 3;
+                            } else if (current >= total) {
+                                startPage = total - 2;
+                                endPage = total;
+                            } else {
+                                startPage = current - 1;
+                                endPage = current + 1;
+                            }
+
+                            return Array.from({ length: endPage - startPage + 1 }, (_, i) => startPage + i).map(page => (
+                                <button
+                                    key={page}
+                                    className={`page-btn ${page === current ? 'active' : ''}`}
+                                    onClick={() => getOrders({ page })}
+                                >
+                                    {page}
+                                </button>
+                            ));
+                        })()}
+
+                        <button
+                            className="page-btn page-nav"
+                            onClick={() => getOrders({ page: pagination.page + 1 })}
+                            disabled={pagination.page === pagination.totalPages}
+                        >
+                            &rarr;
+                        </button>
+                        <button
+                            className="page-btn page-nav"
+                            onClick={() => getOrders({ page: pagination.totalPages })}
+                            disabled={pagination.page === pagination.totalPages}
+                        >
+                            &raquo;
+                        </button>
                     </div>
                 )}
             </div>

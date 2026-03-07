@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuthStore } from '../../stores/authStore';
 import { toast } from 'react-toastify';
+import '../../assets/styles/profile.css';
 
 const EditProfile = () => {
     const navigate = useNavigate();
@@ -115,7 +116,7 @@ const EditProfile = () => {
                                     </div>
 
                                     <div className="form-section">
-                                        <div className="form-group mb-4">
+                                        <div className="form-groupx mb-4">
                                             <label className="form-label" htmlFor="fullName">
                                                 <i className="fa-solid fa-user me-2"></i>
                                                 Họ và tên
@@ -132,7 +133,7 @@ const EditProfile = () => {
                                             />
                                         </div>
 
-                                        <div className="form-group mb-4">
+                                        <div className="form-groupx mb-4">
                                             <label className="form-label" htmlFor="email">
                                                 <i className="fa-solid fa-envelope me-2"></i>
                                                 Email
@@ -149,7 +150,7 @@ const EditProfile = () => {
                                             />
                                         </div>
 
-                                        <div className="form-group mb-4">
+                                        <div className="form-groupx mb-4">
                                             <label className="form-label" htmlFor="phone">
                                                 <i className="fa-solid fa-phone me-2"></i>
                                                 Số điện thoại
@@ -165,7 +166,7 @@ const EditProfile = () => {
                                             />
                                         </div>
 
-                                        <div className="form-group mb-4">
+                                        <div className="form-groupx mb-4">
                                             <label className="form-label" htmlFor="address">
                                                 <i className="fa-solid fa-location-dot me-2"></i>
                                                 Địa chỉ
@@ -181,7 +182,7 @@ const EditProfile = () => {
                                             />
                                         </div>
 
-                                        <div className="form-group mb-4">
+                                        <div className="form-groupx mb-4">
                                             <label className="form-label" htmlFor="password">
                                                 <i className="fa-solid fa-lock me-2"></i>
                                                 Mật khẩu mới (để trống nếu không đổi)

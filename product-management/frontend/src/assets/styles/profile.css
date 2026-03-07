@@ -103,7 +103,7 @@
     padding-left: 26px;
 }
 
-.user-info-modal:hover {
+.user-info-modal {
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08) !important;
     transition: all 0.3s ease;
     border: 1px solid #1E4A7B;

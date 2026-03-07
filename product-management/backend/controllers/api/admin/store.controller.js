@@ -1,5 +1,5 @@
-import { Store, User, StoreStaff } from '../../models/sequelize/index.js';
-import { isRedisReady, redisDel } from '../../config/redis.js';
+import { Store, User, StoreStaff } from '../../../models/sequelize/index.js';
+import { isRedisReady, redisDel } from '../../../config/redis.js';
 
 const invalidateUserCache = async (userId) => {
     if (userId && isRedisReady()) {
@@ -23,7 +23,7 @@ const parseCoordinate = (value, fieldName, min, max) => {
     return { shouldUpdate: true, value: parsed };
 };
 
-// [GET] /api/stores
+// [GET] /api/v1/admin/stores
 export const getStores = async (req, res) => {
     try {
         const { page = 1, limit = 10, keyword, status } = req.query;
@@ -84,7 +84,7 @@ export const getStores = async (req, res) => {
     }
 };
 
-// [GET] /api/stores/:id
+// [GET] /api/v1/admin/stores/:id
 export const getStoreDetail = async (req, res) => {
     try {
         const { id } = req.params;
@@ -132,7 +132,7 @@ export const getStoreDetail = async (req, res) => {
     }
 };
 
-// [POST] /api/stores
+// [POST] /api/v1/admin/stores
 export const createStore = async (req, res) => {
     try {
         const { code, name, address, contact, manager_email, latitude, longitude } = req.body;
@@ -197,7 +197,7 @@ export const createStore = async (req, res) => {
 
         // Auto-assign manager as StoreStaff with storeManager role
         if (managerId) {
-            const { Role } = await import('../../models/sequelize/index.js');
+            const { Role } = await import('../../../models/sequelize/index.js');
             const storeManagerRole = await Role.findOne({ where: { name: 'storeManager' } });
 
             if (storeManagerRole) {
@@ -236,7 +236,7 @@ export const createStore = async (req, res) => {
     }
 };
 
-// [PUT] /api/stores/:id
+// [PUT] /api/v1/admin/stores/:id
 export const updateStore = async (req, res) => {
     try {
         const { id } = req.params;
@@ -307,7 +307,7 @@ export const updateStore = async (req, res) => {
                         roleChanged = true;
                     }
 
-                    const { Role } = await import('../../models/sequelize/index.js');
+                    const { Role } = await import('../../../models/sequelize/index.js');
                     const storeManagerRole = await Role.findOne({ where: { name: 'storeManager' } });
 
                     if (storeManagerRole) {
@@ -414,7 +414,7 @@ export const updateStore = async (req, res) => {
     }
 };
 
-// [DELETE] /api/stores/:id
+// [DELETE] /api/v1/admin/stores/:id
 export const deleteStore = async (req, res) => {
     try {
         const { id } = req.params;

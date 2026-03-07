@@ -12,7 +12,7 @@ import {
 // Get orders for current authenticated user
 export const getOrders = async (req, res) => {
     try {
-        const { page = 1, limit = 10, status } = req.query;
+        const { page = 1, limit = 5, status } = req.query;
         const offset = (page - 1) * limit;
 
         const userId = req.user.id;

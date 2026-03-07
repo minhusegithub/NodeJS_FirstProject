@@ -125,7 +125,7 @@ const ProductDetail = () => {
                             )}
                             {currentProduct.category && (
                                 <div className="meta-item">
-                                    <strong>📂 Danh mục:</strong> {currentProduct.category.title}
+                                    <strong>Danh mục:</strong> {currentProduct.category.title}
                                 </div>
                             )}
                         </div>
