@@ -13,6 +13,7 @@ import StockMovement from './stock-movement.model.js';
 import Cart from './cart.model.js';
 import CartItem from './cart-item.model.js';
 import BlacklistedToken from './blacklisted-token.model.js';
+import StoreRevenueStat from './store-revenue-stat.model.js';
 
 // Define model associations
 const setupAssociations = () => {
@@ -213,6 +214,17 @@ const setupAssociations = () => {
         foreignKey: 'inventory_id',
         as: 'cart_items'
     });
+
+    // StoreRevenueStat associations
+    Store.hasMany(StoreRevenueStat, {
+        foreignKey: 'store_id',
+        as: 'revenueStats'
+    });
+
+    StoreRevenueStat.belongsTo(Store, {
+        foreignKey: 'store_id',
+        as: 'store'
+    });
 };
 
 // Initialize associations
@@ -234,7 +246,8 @@ export {
     StockMovement,
     Cart,
     CartItem,
-    BlacklistedToken
+    BlacklistedToken,
+    StoreRevenueStat
 };
 
 export default {
@@ -252,5 +265,6 @@ export default {
     StockMovement,
     Cart,
     CartItem,
-    BlacklistedToken
+    BlacklistedToken,
+    StoreRevenueStat
 };

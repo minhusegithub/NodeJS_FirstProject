@@ -5,8 +5,12 @@ import { redisDel } from '../../../config/redis.js';
 // [GET] /api/v1/admin/products
 export const index = async (req, res) => {
     try {
-        const { page = 1, limit = 10, keyword = '', status } = req.query;
-        const offset = (page - 1) * limit;
+        const { page = 1, limit = 10, keyword = '', status, stock_threshold, stockThreshold } = req.query;
+        const parsedPage = parseInt(page, 10) || 1;
+        const parsedLimit = parseInt(limit, 10) || 10;
+        const offset = (parsedPage - 1) * parsedLimit;
+        const stockThresholdValue = parseInt(stock_threshold ?? stockThreshold, 10);
+        const hasStockThreshold = Number.isInteger(stockThresholdValue) && stockThresholdValue > 0;
 
         // Check Roles
         const systemAdminRole = req.user.store_roles?.find(
@@ -23,12 +27,15 @@ export const index = async (req, res) => {
             const where = { deleted_at: null };
             if (keyword) where.title = { [Op.iLike]: `%${keyword}%` };
             if (status) where.status = status;
+            if (hasStockThreshold) where.stock = { [Op.lt]: stockThresholdValue };
 
             result = await Product.findAndCountAll({
                 where,
-                limit: parseInt(limit),
-                offset: parseInt(offset),
-                order: [['id', 'DESC']],
+                limit: parsedLimit,
+                offset,
+                order: hasStockThreshold
+                    ? [['stock', 'ASC'], ['title', 'ASC']]
+                    : [['title', 'ASC']],
                 include: [
                     {
                         model: ProductCategory,
@@ -63,7 +70,7 @@ export const index = async (req, res) => {
             if (storeIds.length === 0) {
                 return res.json({
                     success: true,
-                    data: { products: [], pagination: { total: 0, currentPage: 1, totalPages: 0, limit: parseInt(limit) } }
+                    data: { products: [], pagination: { total: 0, currentPage: 1, totalPages: 0, limit: parsedLimit } }
                 });
             }
 
@@ -71,6 +78,7 @@ export const index = async (req, res) => {
             const inventoryWhere = {
                 store_id: { [Op.in]: storeIds }
             };
+            if (hasStockThreshold) inventoryWhere.stock = { [Op.lt]: stockThresholdValue };
 
             // Build Where Clause for Associated Product (Filter by Keyword/Status)
             const productWhere = {
@@ -81,8 +89,8 @@ export const index = async (req, res) => {
 
             result = await ProductStoreInventory.findAndCountAll({
                 where: inventoryWhere,
-                limit: parseInt(limit),
-                offset: parseInt(offset),
+                limit: parsedLimit,
+                offset,
                 include: [
                     {
                         model: Product,
@@ -104,6 +112,9 @@ export const index = async (req, res) => {
                         attributes: ['id', 'name']
                     }
                 ],
+                order: hasStockThreshold
+                    ? [['stock', 'ASC'], [{ model: Product, as: 'product' }, 'title', 'ASC']]
+                    : [[{ model: Product, as: 'product' }, 'title', 'ASC']],
                 distinct: true
             });
 
@@ -127,9 +138,9 @@ export const index = async (req, res) => {
                 products: productsData,
                 pagination: {
                     total: result.count,
-                    currentPage: parseInt(page),
-                    totalPages: Math.ceil(result.count / limit),
-                    limit: parseInt(limit)
+                    currentPage: parsedPage,
+                    totalPages: Math.ceil(result.count / parsedLimit),
+                    limit: parsedLimit
                 }
             }
         });

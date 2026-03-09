@@ -24,6 +24,7 @@ import VNPayReturn from './pages/client/VNPayReturn';
 
 // Admin pages
 
+import Dashboard from './pages/admin/Dashboard';
 import AdminProducts from './pages/admin/Products';
 import AdminOrders from './pages/admin/Orders';
 import AdminStores from './pages/admin/Stores';
@@ -95,6 +96,7 @@ function App() {
                         </ProtectedRoute>
                     }>
 
+                        <Route index element={<Dashboard />} />
                         <Route path="products" element={<AdminProducts />} />
                         <Route path="products/import" element={<ImportProducts />} />
                         <Route path="product-categories" element={<AdminProductCategories />} />

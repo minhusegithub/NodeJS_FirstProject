@@ -25,7 +25,8 @@ const AdminProducts = () => {
         page: 1,
         limit: 7,
         keyword: '',
-        status: ''
+        status: '',
+        stockThreshold: ''
     });
 
     const [showCreateModal, setShowCreateModal] = useState(false);
@@ -70,8 +71,8 @@ const AdminProducts = () => {
 
     // Fetch immediately when page, status, or debounced keyword changes
     useEffect(() => {
-        getProducts({ ...filters, keyword: debouncedKeyword });
-    }, [debouncedKeyword, filters.page, filters.status, getProducts]);
+        getProducts({ ...filters, keyword: debouncedKeyword, stock_threshold: filters.stockThreshold || undefined });
+    }, [debouncedKeyword, filters.page, filters.status, filters.stockThreshold, getProducts]);
 
     const fetchCategories = async () => {
         try {
@@ -136,6 +137,10 @@ const AdminProducts = () => {
     const calculateTotalStock = (inventory) => {
         if (!inventory) return 0;
         return inventory.reduce((sum, item) => sum + (item.quantity || 0), 0);
+    };
+
+    const getProductStock = (product) => {
+        return isSystemAdmin ? (parseInt(product.stock, 10) || 0) : calculateTotalStock(product.inventory);
     };
 
     const handleEditClick = async (product) => {
@@ -243,6 +248,17 @@ const AdminProducts = () => {
 
                 <select
                     className="ap-filter-select"
+                    value={filters.stockThreshold}
+                    onChange={(e) => setFilters({ ...filters, stockThreshold: e.target.value, page: 1 })}
+                >
+                    <option value="">Sắp xếp: A-Z</option>
+                    <option value="10">Tồn kho dưới 10</option>
+                    <option value="20">Tồn kho dưới 20</option>
+                    <option value="30">Tồn kho dưới 30</option>
+                </select>
+
+                <select
+                    className="ap-filter-select"
                     value={filters.status}
                     onChange={(e) => setFilters({ ...filters, status: e.target.value, page: 1 })}
                 >
@@ -305,15 +321,9 @@ const AdminProducts = () => {
                                         {formatCurrency(product.price)}
                                     </td>
                                     <td className="ap-td-center">
-                                        {isSystemAdmin ? (
-                                            <span className={(product.stock || 0) > 0 ? 'ap-stock-ok' : 'ap-stock-low'}>
-                                                {product.stock || 0}
-                                            </span>
-                                        ) : (
-                                            <span className={calculateTotalStock(product.inventory) > 0 ? 'ap-stock-ok' : 'ap-stock-low'}>
-                                                {calculateTotalStock(product.inventory)}
-                                            </span>
-                                        )}
+                                        <span className={getProductStock(product) > 0 ? 'ap-stock-ok' : 'ap-stock-low'}>
+                                            {getProductStock(product)}
+                                        </span>
                                     </td>
                                     <td className="ap-td-center">
                                         <span className={`ap-status-badge ap-status-${product.status}`}>

@@ -1,0 +1,387 @@
+/* ===== Dashboard ===== */
+
+.dash-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.dash-header h2 {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #0F1A18;
+}
+
+.dash-updated {
+    font-size: 0.82rem;
+    color: #6b7280;
+    font-style: italic;
+}
+
+/* Filters */
+.dash-filters {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    align-items: flex-end;
+}
+
+.dash-filter-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.dash-filter-item label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #374151;
+}
+
+.dash-filter-item input,
+.dash-filter-item select {
+    padding: 8px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    background: #fff;
+    color: #1f2937;
+    transition: border-color 0.2s;
+}
+
+.dash-filter-item input:focus,
+.dash-filter-item select:focus {
+    outline: none;
+    border-color: #1DB56C;
+    box-shadow: 0 0 0 3px rgba(29, 181, 108, 0.12);
+}
+
+/* Summary Cards */
+.dash-summary {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 28px;
+}
+
+.dash-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.dash-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.dash-card-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+}
+
+.dash-card-icon.revenue {
+    background: rgba(29, 181, 108, 0.12);
+    color: #1DB56C;
+}
+
+.dash-card-icon.orders {
+    background: rgba(14, 165, 233, 0.12);
+    color: #0ea5e9;
+}
+
+.dash-card-icon.customers {
+    background: rgba(139, 92, 246, 0.12);
+    color: #8b5cf6;
+}
+
+.dash-card-icon.items {
+    background: rgba(245, 158, 11, 0.12);
+    color: #f59e0b;
+}
+
+.dash-card-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.dash-card-label {
+    font-size: 0.78rem;
+    color: #6b7280;
+    font-weight: 500;
+}
+
+.dash-card-value {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #0F1A18;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Chart Sections */
+.dash-chart-section {
+    background: #fff;
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.dash-chart-section h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #0F1A18;
+    margin-bottom: 16px;
+}
+
+/* Chart Header with Controls */
+.dash-chart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.dash-chart-header h3 {
+    margin-bottom: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #0F1A18;
+}
+
+.dash-sort-selector {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.dash-sort-selector label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #374151;
+}
+
+.dash-sort-select {
+    padding: 6px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    background: #fff;
+    color: #1f2937;
+    cursor: pointer;
+    transition: border-color 0.2s;
+}
+
+.dash-sort-select:focus {
+    outline: none;
+    border-color: #1DB56C;
+    box-shadow: 0 0 0 3px rgba(29, 181, 108, 0.12);
+}
+
+.dash-chart-container {
+    width: 100%;
+    min-height: 350px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Charts Row (2 columns) */
+.dash-charts-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.dash-chart-half {
+    margin-bottom: 0;
+}
+
+.dash-chart-full {
+    grid-column: 1 / -1;
+    margin-bottom: 0;
+}
+
+/* Tooltip */
+.dash-tooltip {
+    background: #fff;
+    padding: 10px 14px;
+    border-radius: 8px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+    border: 1px solid #e5e7eb;
+    font-size: 0.82rem;
+}
+
+.dash-tooltip-label {
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 4px;
+}
+
+/* Loading & Empty */
+.dash-loading,
+.dash-empty {
+    font-size: 0.9rem;
+    color: #9ca3af;
+    text-align: center;
+    padding: 40px 20px;
+}
+
+/* Dead Stock Table */
+.dash-table-container {
+    overflow-x: auto;
+}
+
+.dash-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+}
+
+.dash-table thead {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+.dash-table th {
+    background: #1DB56C;
+    color: #fff;
+    padding: 12px 16px;
+    text-align: left;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.dash-table th:first-child {
+    border-radius: 8px 0 0 0;
+}
+
+.dash-table th:last-child {
+    border-radius: 0 8px 0 0;
+}
+
+.dash-table td {
+    padding: 10px 16px;
+    border-bottom: 1px solid #f3f4f6;
+    color: #374151;
+}
+
+.dash-table tr:hover td {
+    background: #f9fafb;
+}
+
+/* Dead stock severity rows */
+.dead-stock-critical td {
+    background: rgba(239, 68, 68, 0.04);
+}
+
+.dead-stock-warning td {
+    background: rgba(245, 158, 11, 0.04);
+}
+
+.dash-product-cell {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.dash-product-thumb {
+    width: 36px;
+    height: 36px;
+    border-radius: 6px;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+/* Badge */
+.dash-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.dash-badge.critical {
+    background: #fef2f2;
+    color: #dc2626;
+}
+
+.dash-badge.warning {
+    background: #fffbeb;
+    color: #d97706;
+}
+
+.dash-badge.normal {
+    background: #f0fdf4;
+    color: #16a34a;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 1024px) {
+    .dash-summary {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .dash-charts-row {
+        grid-template-columns: 1fr;
+    }
+
+    .dash-chart-half {
+        margin-bottom: 20px;
+    }
+}
+
+@media (max-width: 640px) {
+    .dash-summary {
+        grid-template-columns: 1fr;
+    }
+
+    .dash-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+    }
+
+    .dash-filters {
+        flex-direction: column;
+    }
+
+    .dash-filter-item {
+        width: 100%;
+    }
+
+    .dash-filter-item input,
+    .dash-filter-item select {
+        width: 100%;
+    }
+
+    .dash-card-value {
+        font-size: 1rem;
+    }
+
+    .dash-chart-container {
+        min-height: 280px;
+    }
+}

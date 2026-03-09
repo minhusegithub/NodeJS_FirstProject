@@ -5,6 +5,7 @@ import orderRoutes from './order.route.js';
 import storeUserRoutes from './store-user.route.js';
 import productCategoryRoutes from './product-category.route.js';
 import { storeRoutes } from "./store.route.js";
+import analyticsRoutes from './analytics.route.js';
 
 const router = express.Router();
 
@@ -16,5 +17,6 @@ router.use('/orders', orderRoutes);
 router.use('/stores', storeRoutes);
 router.use('/store-users', storeUserRoutes);
 router.use('/product-categories', productCategoryRoutes);
+router.use('/analytics', analyticsRoutes);
 
 export default router;

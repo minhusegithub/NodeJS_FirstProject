@@ -24,6 +24,7 @@ const __dirname = dirname(__filename);
 
 // Connect PostgreSQL
 import { sequelize } from './models/sequelize/index.js';
+import { startRevenueAggregator } from './services/revenueAggregator.js';
 sequelize.authenticate()
   .then(async () => {
     console.log('✅ PostgreSQL connected successfully');
@@ -37,6 +38,9 @@ sequelize.authenticate()
         console.error('⚠️ Database sync warning:', syncError.message);
       }
     }
+
+    // Start revenue aggregation cron jobs
+    startRevenueAggregator();
   })
   .catch(err => console.error('❌ PostgreSQL connection failed:', err));
 
