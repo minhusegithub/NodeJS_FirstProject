@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useAuthStore } from './stores/authStore';
@@ -23,8 +23,8 @@ import EditProfile from './pages/client/EditProfile';
 import VNPayReturn from './pages/client/VNPayReturn';
 
 // Admin pages
-
-import Dashboard from './pages/admin/Dashboard';
+import RevenueBestSellers from './pages/admin/dashboard/RevenueBestSellers';
+import DeadStock from './pages/admin/dashboard/DeadStock';
 import AdminProducts from './pages/admin/Products';
 import AdminOrders from './pages/admin/Orders';
 import AdminStores from './pages/admin/Stores';
@@ -95,8 +95,9 @@ function App() {
                             <AdminLayout />
                         </ProtectedRoute>
                     }>
-
-                        <Route index element={<Dashboard />} />
+                        <Route index element={<Navigate to="/admin/dashboard/revenue" replace />} />
+                        <Route path="dashboard/revenue" element={<RevenueBestSellers />} />
+                        <Route path="dashboard/dead-stock" element={<DeadStock />} />
                         <Route path="products" element={<AdminProducts />} />
                         <Route path="products/import" element={<ImportProducts />} />
                         <Route path="product-categories" element={<AdminProductCategories />} />

@@ -11,6 +11,9 @@
     font-size: 1.6rem;
     font-weight: 700;
     color: #0F1A18;
+        border-bottom: 3px solid #1DB56C;
+        padding-bottom: 0.5rem;
+        display: inline-block;
 }
 
 .dash-updated {

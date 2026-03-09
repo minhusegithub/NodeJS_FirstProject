@@ -40,12 +40,22 @@ const AdminLayout = () => {
                 <nav className="admin-nav">
                     {/* Dashboard - for SystemAdmin and storeManager */}
                     {(userRoles.isSystemAdmin || userRoles.isStoreManager) && (
-                        <NavLink to="/admin" end className={({ isActive }) => `admin-nav-item${isActive ? ' active' : ''}`}>
-                            <span className="nav-icon" aria-hidden="true">
-                                <i className="fa-solid fa-chart-line"></i>
-                            </span>
-                            <span className="nav-label">Dashboard</span>
-                        </NavLink>
+                        <div className="admin-nav-group">
+                            <div className="admin-nav-parent">
+                                <span className="nav-icon" aria-hidden="true">
+                                    <i className="fa-solid fa-chart-line"></i>
+                                </span>
+                                <span className="nav-label">Dashboard</span>
+                            </div>
+                            <div className="admin-nav-submenu">
+                                <NavLink to="/admin/dashboard/revenue" className={({ isActive }) => `admin-nav-subitem${isActive ? ' active' : ''}`}>
+                                    <span className="subnav-label">Doanh thu - Bán chạy</span>
+                                </NavLink>
+                                <NavLink to="/admin/dashboard/dead-stock" className={({ isActive }) => `admin-nav-subitem${isActive ? ' active' : ''}`}>
+                                    <span className="subnav-label">Tồn kho chết</span>
+                                </NavLink>
+                            </div>
+                        </div>
                     )}
 
                     {/* Products menu - only for storeManager and InventoryStaff */}

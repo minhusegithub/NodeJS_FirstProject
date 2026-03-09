@@ -1,12 +1,12 @@
 import { useEffect, useState, useMemo } from 'react';
-import { useAdminAnalyticsStore } from '../../stores/admin/analyticsStore';
-import { useAuthStore } from '../../stores/authStore';
+import { useAdminAnalyticsStore } from '../../../stores/admin/analyticsStore';
+import { useAuthStore } from '../../../stores/authStore';
 import {
     LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid,
     Tooltip, ResponsiveContainer, Cell
 } from 'recharts';
 import moment from 'moment';
-import '../../assets/styles/admin-dashboard.css';
+import '../../../assets/styles/admin-dashboard.css';
 
 const COLORS = ['#1DB56C', '#0ea5e9', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316'];
 
@@ -20,11 +20,11 @@ const formatVND = (value) => {
 const formatFullVND = (value) =>
     new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
 
-const Dashboard = () => {
+const RevenueBestSellers = () => {
     const { user } = useAuthStore();
     const {
-        revenue, storePerformance, bestSellers, deadStock,
-        loading, getRevenueOverview, getStorePerformance, getBestSellers, getDeadStock
+        revenue, storePerformance, bestSellers,
+        loading, getRevenueOverview, getStorePerformance, getBestSellers
     } = useAdminAnalyticsStore();
 
     const isSystemAdmin = useMemo(() =>
@@ -34,8 +34,7 @@ const Dashboard = () => {
     const [filters, setFilters] = useState({
         from: '',
         to: '',
-        store_id: '',
-        deadStockDays: 30
+        store_id: ''
     });
 
     // Best Sellers Sort Criteria
@@ -51,12 +50,11 @@ const Dashboard = () => {
 
         getRevenueOverview(params);
         getBestSellers({ ...params, sort_by: bestSellersSortBy, limit: bestSellersTopLimit });
-        getDeadStock({ store_id: filters.store_id, days: filters.deadStockDays });
 
         if (isSystemAdmin) {
             getStorePerformance({ from: filters.from, to: filters.to });
         }
-    }, [filters.from, filters.to, filters.store_id, filters.deadStockDays, bestSellersSortBy, bestSellersTopLimit, isSystemAdmin]);
+    }, [filters.from, filters.to, filters.store_id, bestSellersSortBy, bestSellersTopLimit, isSystemAdmin]);
 
     const handleFilterChange = (key, value) => {
         setFilters(prev => ({ ...prev, [key]: value }));
@@ -93,7 +91,7 @@ const Dashboard = () => {
         <div className="admin-page">
             <div className="ap-container">
                 <div className="dash-header">
-                    <h2>Dashboard</h2>
+                    <h2> Doanh thu - Bán chạy</h2>
                     <span className="dash-updated">
                         Cập nhật lần cuối: {moment().format('DD/MM/YYYY HH:mm')}
                     </span>
@@ -131,17 +129,6 @@ const Dashboard = () => {
                             </select>
                         </div>
                     )}
-                    <div className="dash-filter-item">
-                        <label>Tồn kho chết</label>
-                        <select
-                            value={filters.deadStockDays}
-                            onChange={e => handleFilterChange('deadStockDays', e.target.value)}
-                        >
-                            <option value={30}>30 ngày</option>
-                            <option value={60}>60 ngày</option>
-                            <option value={90}>90 ngày</option>
-                        </select>
-                    </div>
                 </div>
 
                 {/* Summary Cards */}
@@ -283,8 +270,8 @@ const Dashboard = () => {
                                     <option value={50}>50</option>
                                 </select>
                                 
-                                <select 
-                                    value={bestSellersSortBy} 
+                                <select
+                                    value={bestSellersSortBy}
                                     onChange={(e) => setBestSellersSortBy(e.target.value)}
                                     className="dash-sort-select"
                                 >
@@ -300,9 +287,9 @@ const Dashboard = () => {
                                 <ResponsiveContainer width="100%" height={350}>
                                     <BarChart data={bestSellers.products} layout="vertical">
                                         <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                                        <XAxis 
-                                            type="number" 
-                                            stroke="#6b7280" 
+                                        <XAxis
+                                            type="number"
+                                            stroke="#6b7280"
                                             fontSize={12}
                                             tickFormatter={bestSellersSortBy === 'revenue' ? formatVND : undefined}
                                         />
@@ -319,11 +306,11 @@ const Dashboard = () => {
                                                 name === 'Số lượng bán' ? `${value} SP` : formatFullVND(value)
                                             }
                                         />
-                                        <Bar 
-                                            dataKey={bestSellersSortBy === 'revenue' ? 'revenue' : 'totalSold'} 
-                                            name={bestSellersSortBy === 'revenue' ? 'Doanh thu' : 'Số lượng bán'} 
-                                            fill={bestSellersSortBy === 'revenue' ? '#0ea5e9' : '#1DB56C'} 
-                                            radius={[0, 6, 6, 0]} 
+                                        <Bar
+                                            dataKey={bestSellersSortBy === 'revenue' ? 'revenue' : 'totalSold'}
+                                            name={bestSellersSortBy === 'revenue' ? 'Doanh thu' : 'Số lượng bán'}
+                                            fill={bestSellersSortBy === 'revenue' ? '#0ea5e9' : '#1DB56C'}
+                                            radius={[0, 6, 6, 0]}
                                         />
                                     </BarChart>
                                 </ResponsiveContainer>
@@ -333,61 +320,9 @@ const Dashboard = () => {
                         </div>
                     </div>
                 </div>
-
-                {/* Dead Stock Table */}
-                <div className="dash-chart-section">
-                    <h3>⚠️ Tồn kho chết (không bán trong {filters.deadStockDays} ngày)</h3>
-                    <div className="dash-table-container">
-                        {loading.deadStock ? (
-                            <div className="dash-loading">Đang tải...</div>
-                        ) : deadStock?.items?.length > 0 ? (
-                            <table className="dash-table">
-                                <thead>
-                                    <tr>
-                                        <th>Sản phẩm</th>
-                                        <th>Cửa hàng</th>
-                                        <th>Tồn kho</th>
-                                        <th>Giá trị đọng</th>
-                                        <th>Ngày bán cuối</th>
-                                        <th>Số ngày</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {deadStock.items.map((item, i) => {
-                                        const severity = item.daysSinceLastSold > 60 ? 'critical' :
-                                            item.daysSinceLastSold > 30 ? 'warning' : 'normal';
-                                        return (
-                                            <tr key={i} className={`dead-stock-${severity}`}>
-                                                <td>
-                                                    <div className="dash-product-cell">
-                                                        {item.thumbnail && (
-                                                            <img src={item.thumbnail} alt="" className="dash-product-thumb" />
-                                                        )}
-                                                        <span>{item.title}</span>
-                                                    </div>
-                                                </td>
-                                                <td>{item.storeCode} - {item.storeName}</td>
-                                                <td>{item.stock}</td>
-                                                <td>{formatFullVND(item.stockValue)}</td>
-                                                <td>{item.lastSoldDate ? moment(item.lastSoldDate).format('DD/MM/YYYY') : 'Chưa bán'}</td>
-                                                <td>
-                                                    <span className={`dash-badge ${severity}`}>
-                                                        {item.daysSinceLastSold >= 9999 ? '∞' : `${item.daysSinceLastSold} ngày`}
-                                                    </span>
-                                                </td>
-                                            </tr>
-                                        );
-                                    })}
-                                </tbody>
-                            </table>
-                        ) : (
-                            <div className="dash-empty">Không có sản phẩm tồn kho chết 🎉</div>
-                        )}
-                    </div>
-                </div>
             </div>
         </div>
     );
 };
 
-export default Dashboard;
+export default RevenueBestSellers;
