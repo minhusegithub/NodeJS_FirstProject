@@ -13,8 +13,7 @@ const AdminProducts = () => {
         getProducts,
         createProduct,
         updateProduct,
-        getProduct,
-        importProduct
+        getProduct
     } = useAdminProductStore();
 
     const isSystemAdmin = user?.roles?.some(
@@ -39,7 +38,6 @@ const AdminProducts = () => {
         discount_percentage: 0,
         stock: 0,
         description: '',
-        status: 'active',
         thumbnail: null
     });
     const [previewImage, setPreviewImage] = useState(null);
@@ -71,7 +69,12 @@ const AdminProducts = () => {
 
     // Fetch immediately when page, status, or debounced keyword changes
     useEffect(() => {
-        getProducts({ ...filters, keyword: debouncedKeyword, stock_threshold: filters.stockThreshold || undefined });
+        getProducts({
+            ...filters,
+            keyword: debouncedKeyword,
+            status: isSystemAdmin ? undefined : filters.status,
+            stock_threshold: filters.stockThreshold || undefined
+        });
     }, [debouncedKeyword, filters.page, filters.status, filters.stockThreshold, getProducts]);
 
     const fetchCategories = async () => {
@@ -122,7 +125,7 @@ const AdminProducts = () => {
 
             setShowCreateModal(false);
             setNewProduct({
-                title: '', sku: '', category_id: '', price: 0, discount_percentage: 0, stock: 0, description: '', status: 'active', thumbnail: null
+                title: '', sku: '', category_id: '', price: 0, discount_percentage: 0, stock: 0, description: '', thumbnail: null
             });
             setPreviewImage(null);
         } catch (error) {
@@ -156,8 +159,10 @@ const AdminProducts = () => {
                 setEditingProduct({
                     ...productData,
                     currentStoreStock: currentStoreStock,
-                    mainStock: productData.stock, // Main warehouse stock
-                    stock: isSystemAdmin ? productData.stock : 0, // For Admin: stock value. For Staff: import quantity (init 0)
+                    mainStock: parseInt(productData.stock, 10) || 0,
+                    stock: isSystemAdmin ? (parseInt(productData.stock, 10) || 0) : currentStoreStock,
+                    importQuantity: 0,
+                    status: productData.inventory?.[0]?.status || productData.status || 'active',
                     previewThumbnail: productData.thumbnail
                 });
                 setPreviewImage(productData.thumbnail);
@@ -186,22 +191,19 @@ const AdminProducts = () => {
         e.preventDefault();
         try {
             if (!isSystemAdmin) {
-                // Handle Import Stock for Store Staff
-                const importQty = parseInt(editingProduct.stock);
-
-                if (!importQty || importQty <= 0) {
-                    alert("Số lượng nhập phải lớn hơn 0");
+                const importQty = parseInt(editingProduct.importQuantity, 10);
+                if (!Number.isInteger(importQty) || importQty < 0) {
+                    alert('Số lượng muốn nhập không hợp lệ (>= 0)');
+                    return;
+                }
+                if (importQty > (editingProduct.mainStock || 0)) {
+                    alert(`Kho chính không đủ hàng (Còn: ${editingProduct.mainStock || 0})`);
                     return;
                 }
 
-                if (importQty > editingProduct.mainStock) {
-                    alert(`Kho chính không đủ hàng (Còn: ${editingProduct.mainStock})`);
-                    return;
-                }
-
-                await importProduct({
-                    product_id: editingProduct.id,
-                    quantity: importQty
+                await updateProduct(editingProduct.id, {
+                    import_quantity: importQty,
+                    status: editingProduct.status || 'active'
                 });
 
             } else {
@@ -214,7 +216,6 @@ const AdminProducts = () => {
                 formData.append('discount_percentage', editingProduct.discount_percentage || 0);
                 formData.append('stock', editingProduct.stock || 0);
                 formData.append('description', editingProduct.description || '');
-                formData.append('status', editingProduct.status || 'active');
 
                 if (editingProduct.thumbnailFile) {
                     formData.append('thumbnail', editingProduct.thumbnailFile);
@@ -257,15 +258,17 @@ const AdminProducts = () => {
                     <option value="30">Tồn kho dưới 30</option>
                 </select>
 
-                <select
-                    className="ap-filter-select"
-                    value={filters.status}
-                    onChange={(e) => setFilters({ ...filters, status: e.target.value, page: 1 })}
-                >
-                    <option value="">Tất cả trạng thái</option>
-                    <option value="active">Đang bán</option>
-                    <option value="inactive">Ngừng bán</option>
-                </select>
+                {!isSystemAdmin && (
+                    <select
+                        className="ap-filter-select"
+                        value={filters.status}
+                        onChange={(e) => setFilters({ ...filters, status: e.target.value, page: 1 })}
+                    >
+                        <option value="">Tất cả trạng thái</option>
+                        <option value="active">Đang bán</option>
+                        <option value="inactive">Ngừng bán</option>
+                    </select>
+                )}
 
                 {isSystemAdmin && (
                     <button
@@ -286,14 +289,14 @@ const AdminProducts = () => {
                             <th>Tên sản phẩm</th>
                             <th>Danh mục</th>
                             <th>Giá</th>
-                            <th>{isSystemAdmin ? 'Tồn kho (Kho chính)' : 'Tồn kho (Tại cửa hàng)'}</th>
-                            <th>Trạng thái</th>
+                            <th>Tồn kho</th>
+                            {!isSystemAdmin && <th>Trạng thái</th>}
                         </tr>
                     </thead>
                     <tbody>
                         {loading ? (
                             <tr>
-                                <td colSpan="6" className="ap-empty-cell">
+                                <td colSpan={isSystemAdmin ? 5 : 6} className="ap-empty-cell">
                                     <div className="ap-loading-spinner"></div>
                                     Đang tải dữ liệu...
                                 </td>
@@ -325,16 +328,18 @@ const AdminProducts = () => {
                                             {getProductStock(product)}
                                         </span>
                                     </td>
-                                    <td className="ap-td-center">
-                                        <span className={`ap-status-badge ap-status-${product.status}`}>
-                                            {product.status === 'active' ? 'Đang bán' : 'Ngừng bán'}
-                                        </span>
-                                    </td>
+                                    {!isSystemAdmin && (
+                                        <td className="ap-td-center">
+                                            <span className={`ap-status-badge ap-status-${product.status || 'active'}`}>
+                                                {(product.status || 'active') === 'active' ? 'Đang bán' : 'Ngừng bán'}
+                                            </span>
+                                        </td>
+                                    )}
                                 </tr>
                             ))
                         ) : (
                             <tr>
-                                <td colSpan="6" className="ap-empty-cell">
+                                <td colSpan={isSystemAdmin ? 5 : 6} className="ap-empty-cell">
                                     Không tìm thấy sản phẩm nào.
                                 </td>
                             </tr>
@@ -523,19 +528,6 @@ const AdminProducts = () => {
                                 />
                             </div>
 
-                            <div className="form-group">
-                                <label>Trạng thái</label>
-                                <select
-                                    name="status"
-                                    value={newProduct.status} onChange={handleCreateInputChange}
-                                    className="form-control"
-                                    style={{ padding: '5px' }}
-                                >
-                                    <option value="active">Đang bán</option>
-                                    <option value="inactive">Ngừng bán</option>
-                                </select>
-                            </div>
-
                             <div className="modal-actions">
                                 
                                 <button
@@ -632,7 +624,7 @@ const AdminProducts = () => {
                                     <div className="form-group">
                                         <label>Tồn kho hiện tại (Tại cửa hàng)</label>
                                         <input
-                                            type="text"
+                                            type="number"
                                             value={editingProduct.currentStoreStock || 0}
                                             className="form-control"
                                             disabled
@@ -641,14 +633,42 @@ const AdminProducts = () => {
                                     </div>
 
                                     <div className="form-group">
-                                        <label>Số lượng muốn nhập thêm ( tối đa: <i>{editingProduct.mainStock}</i> )  <span className="text-danger">*</span></label>
+                                        <label>Tồn kho kho chính</label>
                                         <input
-                                            type="number" name="stock" min="1" max={editingProduct.mainStock}
-                                            value={editingProduct.stock} onChange={handleEditInputChange}
+                                            type="number"
+                                            value={editingProduct.mainStock || 0}
                                             className="form-control"
-                                            placeholder="Nhập số lượng..."
-                                            autoFocus
+                                            disabled
+                                            style={{ backgroundColor: '#f0f0f0' }}
                                         />
+                                    </div>
+
+                                    <div className="form-group">
+                                        <label>Số lượng muốn nhập </label>
+                                        <input
+                                            type="number"
+                                            name="importQuantity"
+                                            min="0"
+                                            max={editingProduct.mainStock || 0}
+                                            value={editingProduct.importQuantity ?? 0}
+                                            onChange={handleEditInputChange}
+                                            className="form-control"
+                                            placeholder="Nhập số lượng cần nhập"
+                                        />
+                                    </div>
+
+                                    <div className="form-group">
+                                        <label>Trạng thái tại cửa hàng</label>
+                                        <select
+                                            name="status"
+                                            value={editingProduct.status || 'active'}
+                                            onChange={handleEditInputChange}
+                                            className="form-control"
+                                            style={{ padding: '5px' }}
+                                        >
+                                            <option value="active">Đang bán</option>
+                                            <option value="inactive">Ngừng bán</option>
+                                        </select>
                                     </div>
                                 </>
                             )}
@@ -701,20 +721,6 @@ const AdminProducts = () => {
                                     className="form-control"
                                     disabled={!isSystemAdmin}
                                 />
-                            </div>
-
-                            <div className="form-group">
-                                <label>Trạng thái</label>
-                                <select
-                                    name="status"
-                                    value={editingProduct.status} onChange={handleEditInputChange}
-                                    className="form-control"
-                                    disabled={!isSystemAdmin}
-                                    style={{ padding: '5px' }}
-                                >
-                                    <option value="active">Đang bán</option>
-                                    <option value="inactive">Ngừng bán</option>
-                                </select>
                             </div>
 
                             <div className="modal-actions">

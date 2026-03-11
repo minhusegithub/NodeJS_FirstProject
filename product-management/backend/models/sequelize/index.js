@@ -14,6 +14,7 @@ import Cart from './cart.model.js';
 import CartItem from './cart-item.model.js';
 import BlacklistedToken from './blacklisted-token.model.js';
 import StoreRevenueStat from './store-revenue-stat.model.js';
+import DsiReport from './dsi-report.model.js';
 
 // Define model associations
 const setupAssociations = () => {
@@ -225,6 +226,27 @@ const setupAssociations = () => {
         foreignKey: 'store_id',
         as: 'store'
     });
+
+    // DsiReport associations
+    Store.hasMany(DsiReport, {
+        foreignKey: 'store_id',
+        as: 'dsiReports'
+    });
+
+    DsiReport.belongsTo(Store, {
+        foreignKey: 'store_id',
+        as: 'store'
+    });
+
+    Product.hasMany(DsiReport, {
+        foreignKey: 'product_id',
+        as: 'dsiReports'
+    });
+
+    DsiReport.belongsTo(Product, {
+        foreignKey: 'product_id',
+        as: 'product'
+    });
 };
 
 // Initialize associations
@@ -247,7 +269,8 @@ export {
     Cart,
     CartItem,
     BlacklistedToken,
-    StoreRevenueStat
+    StoreRevenueStat,
+    DsiReport
 };
 
 export default {
@@ -266,5 +289,6 @@ export default {
     Cart,
     CartItem,
     BlacklistedToken,
-    StoreRevenueStat
+    StoreRevenueStat,
+    DsiReport
 };

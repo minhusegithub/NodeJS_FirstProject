@@ -31,6 +31,14 @@ const ProductStoreInventory = sequelize.define('ProductStoreInventory', {
             min: 0
         }
     },
+    status: {
+        type: DataTypes.STRING(20),
+        allowNull: false,
+        defaultValue: 'active',
+        validate: {
+            isIn: [['active', 'inactive']]
+        }
+    },
     reserved_stock: {
         type: DataTypes.INTEGER,
         defaultValue: 0,
@@ -39,22 +47,6 @@ const ProductStoreInventory = sequelize.define('ProductStoreInventory', {
             min: 0
         },
         comment: 'Stock reserved for pending orders'
-    },
-    min_stock: {
-        type: DataTypes.INTEGER,
-        defaultValue: 0,
-        allowNull: false,
-        comment: 'Minimum stock level - alert when below this'
-    },
-    max_stock: {
-        type: DataTypes.INTEGER,
-        allowNull: true,
-        comment: 'Maximum stock capacity for this store'
-    },
-    store_price: {
-        type: DataTypes.DECIMAL(10, 2),
-        allowNull: true,
-        comment: 'Store-specific price (overrides product base price if set)'
     },
     location: {
         type: DataTypes.STRING(100),
@@ -80,6 +72,9 @@ const ProductStoreInventory = sequelize.define('ProductStoreInventory', {
         },
         {
             fields: ['product_id']
+        },
+        {
+            fields: ['status']
         }
     ]
 });

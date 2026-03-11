@@ -133,7 +133,7 @@ export const addToCart = async (req, res) => {
                 {
                     model: Product,
                     as: 'product',
-                    attributes: ['id', 'title', 'status']
+                    attributes: ['id', 'title']
                 }
             ]
         });
@@ -145,7 +145,7 @@ export const addToCart = async (req, res) => {
             });
         }
 
-        if (inventory.product.status !== 'active') {
+        if (inventory.status !== 'active') {
             return res.status(400).json({
                 code: 400,
                 message: 'Sản phẩm không còn hoạt động!'

@@ -1,13 +1,16 @@
 import {
-    Store,
     StoreRevenueStat,
-    ProductStoreInventory,
+    DsiReport,
     Product,
+    Store,
+    Order,
+    OrderItem,
     sequelize
 } from '../../../models/sequelize/index.js';
 import { Op, QueryTypes } from 'sequelize';
 import { redisGet, redisSet } from '../../../config/redis.js';
 import { hashQueryKey } from '../../../helpers/cacheKey.js';
+import { calculateAndSaveDSI } from '../../../services/dsiReport.service.js';
 
 // Helper to get allowed store IDs for the current user
 const getAllowedStoreIds = (user) => {
@@ -30,8 +33,19 @@ export const getRevenueOverview = async (req, res) => {
             return res.json({ code: 200, message: 'Success', data: { summary: { totalRevenue: 0, totalOrders: 0, uniqueCustomers: 0, totalItemsSold: 0 }, daily: [] } });
         }
 
-        // Cache check
-        const cacheKey = hashQueryKey('analytics:revenue:v2', { from, to, store_id, allowedStoreIds });
+        // Cache check: include MAX(updated_at) so cache auto-invalidates when cron updates DB
+        const latestStatAt = await StoreRevenueStat.max('updated_at', {
+            where: {
+                report_date: {
+                    [Op.between]: [
+                        from || (() => { const d = new Date(); d.setDate(d.getDate() - 30); return d.toISOString().split('T')[0]; })(),
+                        to || new Date().toISOString().split('T')[0]
+                    ]
+                },
+                ...(store_id ? { store_id: parseInt(store_id, 10) } : allowedStoreIds !== null ? { store_id: { [Op.in]: allowedStoreIds } } : {})
+            }
+        });
+        const cacheKey = hashQueryKey('analytics:revenue:v3', { from, to, store_id, allowedStoreIds, latestStatAt });
         const cached = await redisGet(cacheKey);
         if (cached) {
             return res.json({ code: 200, message: 'Success (cached)', data: JSON.parse(cached) });
@@ -47,22 +61,57 @@ export const getRevenueOverview = async (req, res) => {
         };
 
         if (store_id) {
-            where.store_id = store_id;
+            where.store_id = parseInt(store_id, 10);
         } else if (allowedStoreIds !== null) {
             where.store_id = { [Op.in]: allowedStoreIds };
         }
-
-        // Summary aggregation
-        const summaryResult = await StoreRevenueStat.findOne({
-            where,
-            attributes: [
-                [sequelize.fn('COALESCE', sequelize.fn('SUM', sequelize.col('total_revenue')), 0), 'totalRevenue'],
-                [sequelize.fn('COALESCE', sequelize.fn('SUM', sequelize.col('total_orders')), 0), 'totalOrders'],
-                [sequelize.fn('COALESCE', sequelize.fn('SUM', sequelize.col('unique_customers')), 0), 'uniqueCustomers'],
-                [sequelize.fn('COALESCE', sequelize.fn('SUM', sequelize.col('total_items_sold')), 0), 'totalItemsSold']
-            ],
-            raw: true
-        });
+        // Summary + daily using raw SQL (avoids Sequelize ORM type casting issues)
+        let summaryResult;
+        if (store_id) {
+            const results = await sequelize.query(`
+                SELECT 
+                    COALESCE(SUM(total_revenue), 0) AS "totalRevenue",
+                    COALESCE(SUM(total_orders), 0) AS "totalOrders",
+                    COALESCE(SUM(unique_customers), 0) AS "uniqueCustomers",
+                    COALESCE(SUM(total_items_sold), 0) AS "totalItemsSold"
+                FROM store_revenue_stats
+                WHERE store_id = :storeId
+                  AND report_date BETWEEN :startDate AND :endDate
+            `, {
+                replacements: { storeId: parseInt(store_id, 10), startDate, endDate },
+                type: QueryTypes.SELECT
+            });
+            summaryResult = results[0] || { totalRevenue: 0, totalOrders: 0, uniqueCustomers: 0, totalItemsSold: 0 };
+        } else if (allowedStoreIds !== null && allowedStoreIds.length > 0) {
+            const results = await sequelize.query(`
+                SELECT 
+                    COALESCE(SUM(total_revenue), 0) AS "totalRevenue",
+                    COALESCE(SUM(total_orders), 0) AS "totalOrders",
+                    COALESCE(SUM(unique_customers), 0) AS "uniqueCustomers",
+                    COALESCE(SUM(total_items_sold), 0) AS "totalItemsSold"
+                FROM store_revenue_stats
+                WHERE store_id IN (:storeIds)
+                  AND report_date BETWEEN :startDate AND :endDate
+            `, {
+                replacements: { storeIds: allowedStoreIds, startDate, endDate },
+                type: QueryTypes.SELECT
+            });
+            summaryResult = results[0] || { totalRevenue: 0, totalOrders: 0, uniqueCustomers: 0, totalItemsSold: 0 };
+        } else {
+            const results = await sequelize.query(`
+                SELECT 
+                    COALESCE(SUM(total_revenue), 0) AS "totalRevenue",
+                    COALESCE(SUM(total_orders), 0) AS "totalOrders",
+                    COALESCE(SUM(unique_customers), 0) AS "uniqueCustomers",
+                    COALESCE(SUM(total_items_sold), 0) AS "totalItemsSold"
+                FROM store_revenue_stats
+                WHERE report_date BETWEEN :startDate AND :endDate
+            `, {
+                replacements: { startDate, endDate },
+                type: QueryTypes.SELECT
+            });
+            summaryResult = results[0] || { totalRevenue: 0, totalOrders: 0, uniqueCustomers: 0, totalItemsSold: 0 };
+        }
 
         // Daily trend
         const daily = await StoreRevenueStat.findAll({
@@ -240,92 +289,145 @@ export const getBestSellers = async (req, res) => {
 };
 
 // [GET] /api/v1/admin/analytics/dead-stock
-// Products with stock > 0 but no sales in N days
 export const getDeadStock = async (req, res) => {
     try {
         const { store_id, days = 30 } = req.query;
         const allowedStoreIds = getAllowedStoreIds(req.user);
+        const normalizedDays = Math.max(parseInt(days, 10) || 30, 0);
 
         if (allowedStoreIds !== null && allowedStoreIds.length === 0) {
             return res.json({ code: 200, message: 'Success', data: { items: [] } });
         }
 
-        const cacheKey = hashQueryKey('analytics:dead-stock:v2', { store_id, days, allowedStoreIds });
+        const snapshotWhere = {};
+        if (store_id) {
+            snapshotWhere.store_id = parseInt(store_id, 10);
+        } else if (allowedStoreIds !== null) {
+            snapshotWhere.store_id = { [Op.in]: allowedStoreIds };
+        }
+
+        // Include latest snapshot timestamp in cache key so cache is invalidated after each DSI upsert.
+        const latestSnapshotAt = await DsiReport.max('calculated_at', { where: snapshotWhere });
+        const cacheKey = hashQueryKey('analytics:dead-stock:v6', {
+            store_id,
+            days: normalizedDays,
+            allowedStoreIds,
+            latestSnapshotAt
+        });
         const cached = await redisGet(cacheKey);
         if (cached) {
             return res.json({ code: 200, message: 'Success (cached)', data: JSON.parse(cached) });
         }
 
-        // Build store filter
-        let storeFilter = '';
-        const replacements = { days: parseInt(days) };
+        // Build DSI filter conditions
+        const dsiWhere = {
+            stock: { [Op.gt]: 0 },
+            days_stale: { [Op.gte]: normalizedDays }
+        };
 
         if (store_id) {
-            storeFilter = 'AND psi.store_id = :storeId';
-            replacements.storeId = parseInt(store_id);
+            dsiWhere.store_id = parseInt(store_id, 10);
         } else if (allowedStoreIds !== null) {
-            storeFilter = 'AND psi.store_id IN (:allowedStoreIds)';
-            replacements.allowedStoreIds = allowedStoreIds;
+            dsiWhere.store_id = { [Op.in]: allowedStoreIds };
         }
 
-        const results = await sequelize.query(`
-            SELECT 
-                p.id AS "productId",
-                p.title,
-                p.thumbnail,
-                psi.store_id AS "storeId",
-                s.name AS "storeName",
-                s.code AS "storeCode",
-                psi.stock,
-                COALESCE(psi.store_price, p.price) AS price,
-                psi.stock * COALESCE(psi.store_price, p.price) AS "stockValue",
-                last_sale.last_sold_date AS "lastSoldDate",
-                CASE 
-                    WHEN last_sale.last_sold_date IS NULL THEN 9999
-                    ELSE EXTRACT(DAY FROM NOW() - last_sale.last_sold_date)::INT
-                END AS "daysSinceLastSold"
-            FROM product_store_inventory psi
-            INNER JOIN products p ON p.id = psi.product_id AND p.deleted_at IS NULL
-            INNER JOIN stores s ON s.id = psi.store_id AND s.is_active = true
-            LEFT JOIN LATERAL (
-                SELECT MAX(o.created_at) AS last_sold_date
-                FROM order_items oi
-                INNER JOIN orders o ON o.id = oi.order_id
-                WHERE oi.product_id = psi.product_id
-                  AND o.store_id = psi.store_id
-                  AND o.status = 'delivered'
-                  AND o.deleted_at IS NULL
-            ) last_sale ON true
-            WHERE psi.stock > 0
-              ${storeFilter}
-              AND (
-                  last_sale.last_sold_date IS NULL 
-                  OR last_sale.last_sold_date < NOW() - INTERVAL '1 day' * :days
-              )
-            ORDER BY "stockValue" DESC
-            LIMIT 50
-        `, {
-            replacements,
-            type: QueryTypes.SELECT
+        // Query using Sequelize ORM for main data
+        const dsiReports = await DsiReport.findAll({
+            where: dsiWhere,
+            include: [
+                {
+                    model: Product,
+                    as: 'product',
+                    attributes: ['id', 'title', 'thumbnail', 'price']
+                },
+                {
+                    model: Store,
+                    as: 'store',
+                    attributes: ['id', 'name', 'code']
+                }
+            ],
+            order: [['dsi_score', 'DESC']],
+            limit: 50
         });
 
+        // If no results yet, generate snapshot then re-query
+        if (dsiReports.length === 0) {
+            await calculateAndSaveDSI({
+                storeId: store_id || null,
+                allowedStoreIds
+            });
+            const retried = await DsiReport.findAll({
+                where: dsiWhere,
+                include: [
+                    { model: Product, as: 'product', attributes: ['id', 'title', 'thumbnail', 'price'] },
+                    { model: Store, as: 'store', attributes: ['id', 'name', 'code'] }
+                ],
+                order: [['dsi_score', 'DESC']],
+                limit: 50
+            });
+            if (retried.length === 0) {
+                return res.json({ code: 200, message: 'Success', data: { items: [] } });
+            }
+            dsiReports.push(...retried);
+        }
+
+        // Get last sold dates for these product-store combinations
+        const productStoreKeys = dsiReports.map(r => ({
+            product_id: r.product_id,
+            store_id: r.store_id
+        }));
+
+        let lastSoldMap = new Map();
+        if (productStoreKeys.length > 0) {
+            // Use raw query for complex aggregation (last_sold_date calculation)
+            const lastSoldResults = await sequelize.query(`
+                SELECT 
+                    oi.product_id,
+                    o.store_id,
+                    MAX(o.created_at) AS last_sold_date
+                FROM order_items oi
+                INNER JOIN orders o ON o.id = oi.order_id
+                WHERE oi.product_id IN (:productIds)
+                  AND o.store_id IN (:storeIds)
+                  AND o.deleted_at IS NULL
+                                    AND o.status = 'delivered'
+                                    AND o.payment_status = 'paid'
+                GROUP BY oi.product_id, o.store_id
+            `, {
+                replacements: {
+                    productIds: [...new Set(productStoreKeys.map(k => k.product_id))],
+                    storeIds: [...new Set(productStoreKeys.map(k => k.store_id))]
+                },
+                type: QueryTypes.SELECT
+            });
+
+            lastSoldMap = new Map(
+                lastSoldResults.map(r => [`${r.product_id}_${r.store_id}`, r.last_sold_date])
+            );
+        }
+
+        // Map results (parseFloat for DECIMAL fields — Sequelize returns them as strings)
         const data = {
-            items: results.map(r => ({
-                productId: r.productId,
-                title: r.title,
-                thumbnail: r.thumbnail,
-                storeId: r.storeId,
-                storeName: r.storeName,
-                storeCode: r.storeCode,
-                stock: parseInt(r.stock) || 0,
-                price: parseFloat(r.price) || 0,
-                stockValue: parseFloat(r.stockValue) || 0,
-                lastSoldDate: r.lastSoldDate || null,
-                daysSinceLastSold: parseInt(r.daysSinceLastSold) || 9999
+            items: dsiReports.map(r => ({
+                productId: r.product_id,
+                title: r.product?.title ?? '',
+                thumbnail: r.product?.thumbnail ?? null,
+                storeId: r.store_id,
+                storeName: r.store?.name ?? '',
+                storeCode: r.store?.code ?? '',
+                stock: parseInt(r.stock, 10) || 0,
+                price: parseFloat(r.product?.price) || 0,
+                stockValue: parseFloat(r.capital_tied_up) || 0,
+                lastSoldDate: lastSoldMap.get(`${r.product_id}_${r.store_id}`) || null,
+                daysSinceLastSold: parseInt(r.days_stale, 10) || 0,
+                velocity: parseInt(r.velocity, 10) || 0,
+                dsiScore: parseFloat(r.dsi_score) || 0,
+                riskLevel: r.risk_level,
+                calculatedAt: r.calculated_at
             }))
         };
 
-        await redisSet(cacheKey, JSON.stringify(data), 3600); // 1 hour TTL
+        await redisSet(cacheKey, JSON.stringify(data), 3600);
 
         res.json({ code: 200, message: 'Success', data });
     } catch (error) {

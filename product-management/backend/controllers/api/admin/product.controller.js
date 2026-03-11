@@ -26,8 +26,12 @@ export const index = async (req, res) => {
             // --- CASE 1: SYSTEM ADMIN ---
             const where = { deleted_at: null };
             if (keyword) where.title = { [Op.iLike]: `%${keyword}%` };
-            if (status) where.status = status;
             if (hasStockThreshold) where.stock = { [Op.lt]: stockThresholdValue };
+
+            const inventoryWhere = {};
+            if (status) inventoryWhere.status = status;
+
+            const hasInventoryFilters = Object.keys(inventoryWhere).length > 0;
 
             result = await Product.findAndCountAll({
                 where,
@@ -46,8 +50,9 @@ export const index = async (req, res) => {
                     {
                         model: ProductStoreInventory,
                         as: 'inventory',
-                        attributes: [['stock', 'quantity'], 'store_id'],
-                        required: false,
+                        attributes: [['stock', 'quantity'], 'store_id', 'status'],
+                        where: hasInventoryFilters ? inventoryWhere : undefined,
+                        required: hasInventoryFilters,
                         include: [
                             {
                                 model: Store,
@@ -79,12 +84,12 @@ export const index = async (req, res) => {
                 store_id: { [Op.in]: storeIds }
             };
             if (hasStockThreshold) inventoryWhere.stock = { [Op.lt]: stockThresholdValue };
+            if (status) inventoryWhere.status = status;
 
             // Build Where Clause for Associated Product (Filter by Keyword/Status)
             const productWhere = {
                 deleted_at: null
             };
-            if (status) productWhere.status = status;
             if (keyword) productWhere.title = { [Op.iLike]: `%${keyword}%` };
 
             result = await ProductStoreInventory.findAndCountAll({
@@ -123,8 +128,10 @@ export const index = async (req, res) => {
                 const p = inv.product ? inv.product.toJSON() : {};
                 return {
                     ...p,
+                    status: inv.status,
                     inventory: [{
                         quantity: inv.stock,
+                        status: inv.status,
                         store: inv.store
                     }],
                     inventory_id: inv.id
@@ -213,7 +220,7 @@ export const show = async (req, res) => {
 export const update = async (req, res) => {
     try {
         const { id } = req.params;
-        const { title, description, price, discount_percentage, stock, status, category_id, sku, brand } = req.body;
+        const { title, description, price, discount_percentage, stock, import_quantity, status, category_id, sku, brand } = req.body;
 
         const systemAdminRole = req.user.store_roles?.find(
             r => r.role_data?.name === 'SystemAdmin' || r.role_data?.scope === 'system'
@@ -242,40 +249,95 @@ export const update = async (req, res) => {
                 description,
                 price: parseFloat(price) || 0,
                 discount_percentage: parseFloat(discount_percentage) || 0,
-                stock: parseInt(stock) || 0,
+                stock: parseInt(stock, 10) || 0,
                 thumbnail, // Ensure this is saved
-                status,
                 product_category_id: category_id || null,
                 sku: sku || null,
                 brand
             });
 
         } else {
-            // Store Manager: Update ONLY inventory for their store
+            // Store Manager / InventoryStaff: import quantity from main warehouse stock
             const storeIds = req.user.store_roles?.map(r => r.store_id).filter(Boolean) || [];
+            const importQty = parseInt(import_quantity ?? stock, 10);
+
+            if (!Number.isInteger(importQty) || importQty < 0) {
+                return res.status(400).json({ success: false, message: 'Số lượng muốn nhập không hợp lệ (>= 0)' });
+            }
+
+            if (importQty > (parseInt(product.stock, 10) || 0)) {
+                return res.status(400).json({
+                    success: false,
+                    message: `Kho chính không đủ hàng. Chỉ còn ${product.stock} sản phẩm.`
+                });
+            }
 
             // Find or Create inventory record
             if (storeIds.length > 0) {
-                let inventory = await ProductStoreInventory.findOne({
-                    where: {
-                        product_id: id,
-                        store_id: { [Op.in]: storeIds }
-                    }
-                });
+                const t = await sequelize.transaction();
 
-                if (inventory) {
-                    await inventory.update({ stock: parseInt(stock) || 0 });
-                } else {
-                    await ProductStoreInventory.create({
-                        product_id: id,
-                        store_id: storeIds[0], // Default to first store
-                        stock: parseInt(stock) || 0
+                try {
+                    // Lock product row to avoid concurrent over-imports.
+                    const lockedProduct = await Product.findByPk(id, {
+                        transaction: t,
+                        lock: t.LOCK.UPDATE
                     });
+
+                    if (!lockedProduct) {
+                        await t.rollback();
+                        return res.status(404).json({ success: false, message: 'Không tìm thấy sản phẩm' });
+                    }
+
+                    const mainStock = parseInt(lockedProduct.stock, 10) || 0;
+                    if (importQty > mainStock) {
+                        await t.rollback();
+                        return res.status(400).json({
+                            success: false,
+                            message: `Kho chính không đủ hàng. Chỉ còn ${mainStock} sản phẩm.`
+                        });
+                    }
+
+                    let inventory = await ProductStoreInventory.findOne({
+                        where: {
+                            product_id: id,
+                            store_id: { [Op.in]: storeIds }
+                        },
+                        transaction: t,
+                        lock: t.LOCK.UPDATE
+                    });
+
+                    if (inventory) {
+                        if (importQty > 0) {
+                            await inventory.increment('stock', { by: importQty, transaction: t });
+                        }
+                        if (status === 'inactive' || status === 'active') {
+                            await inventory.update({ status }, { transaction: t });
+                        } else if (importQty > 0 && inventory.status !== 'active') {
+                            await inventory.update({ status: 'active' }, { transaction: t });
+                        }
+                    } else {
+                        await ProductStoreInventory.create({
+                            product_id: id,
+                            store_id: storeIds[0], // Default to first store
+                            stock: importQty,
+                            status: status === 'inactive' ? 'inactive' : 'active'
+                        }, { transaction: t });
+                    }
+
+                    if (importQty > 0) {
+                        await lockedProduct.decrement('stock', { by: importQty, transaction: t });
+                    }
+                    await t.commit();
+                } catch (txnError) {
+                    await t.rollback();
+                    throw txnError;
                 }
             } else {
                 return res.status(403).json({ success: false, message: 'Bạn không quản lý cửa hàng nào để cập nhật kho' });
             }
         }
+
+        await product.reload();
 
         // Invalidate cache
         if (product.slug) {
@@ -304,7 +366,7 @@ export const update = async (req, res) => {
 // [POST] /api/v1/admin/products/create
 export const create = async (req, res) => {
     try {
-        const { title, description, price, discount_percentage, stock, status, category_id, sku, brand } = req.body;
+        const { title, description, price, discount_percentage, stock, category_id, sku, brand } = req.body;
 
         let thumbnail = "";
 
@@ -324,9 +386,8 @@ export const create = async (req, res) => {
             description,
             price: parseFloat(price) || 0,
             discount_percentage: parseFloat(discount_percentage) || 0,
-            stock: parseInt(stock) || 0,
+            stock: parseInt(stock, 10) || 0,
             thumbnail,
-            status: status || 'active',
             product_category_id: category_id || null,
             sku: sku || null, // Convert empty string to null to avoid unique constraint violation
             brand
@@ -376,8 +437,7 @@ export const getProductsAvailableForImport = async (req, res) => {
         const storeId = storeIds[0];
 
         const where = {
-            deleted_at: null,
-            status: 'active'
+            deleted_at: null
         };
 
         if (keyword) {
@@ -458,7 +518,7 @@ export const importProduct = async (req, res) => {
             return res.status(404).json({ success: false, message: "Sản phẩm không tồn tại" });
         }
 
-        // 2. Check stock
+        // Check stock at main warehouse
         if (product.stock < importQty) {
             await t.rollback();
             return res.status(400).json({
@@ -467,10 +527,10 @@ export const importProduct = async (req, res) => {
             });
         }
 
-        // 3. Deduct from Main Warehouse
+        // Deduct from main warehouse
         await product.decrement('stock', { by: importQty, transaction: t });
 
-        // 4. Add to Store Warehouse
+        // Add to Store Warehouse
         // Check if inventory exists
         let inventory = await ProductStoreInventory.findOne({
             where: { product_id, store_id: storeId },
@@ -479,11 +539,15 @@ export const importProduct = async (req, res) => {
 
         if (inventory) {
             await inventory.increment('stock', { by: importQty, transaction: t });
+            if (inventory.status !== 'active') {
+                await inventory.update({ status: 'active' }, { transaction: t });
+            }
         } else {
             await ProductStoreInventory.create({
                 product_id,
                 store_id: storeId,
-                stock: importQty
+                stock: importQty,
+                status: 'active'
             }, { transaction: t });
         }
 

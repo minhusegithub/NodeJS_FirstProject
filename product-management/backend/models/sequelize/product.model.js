@@ -57,13 +57,6 @@ const Product = sequelize.define('Product', {
         type: DataTypes.STRING(500),
         allowNull: true
     },
-    status: {
-        type: DataTypes.STRING(20),
-        defaultValue: 'active',
-        validate: {
-            isIn: [['active', 'inactive']]
-        }
-    },
     featured: {
         type: DataTypes.BOOLEAN,
         defaultValue: false
@@ -111,9 +104,6 @@ const Product = sequelize.define('Product', {
         {
             unique: true,
             fields: ['slug']
-        },
-        {
-            fields: ['status']
         },
         {
             fields: ['featured']

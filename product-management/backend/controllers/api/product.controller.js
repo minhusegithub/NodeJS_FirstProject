@@ -31,6 +31,9 @@ export const getProducts = async (req, res) => {
         // 3. Cache miss → query DB
         const offset = (page - 1) * limit;
         const where = {};
+        const inventoryWhere = {
+            status: status || 'active'
+        };
 
         if (keyword) {
             where[Op.or] = [
@@ -70,13 +73,6 @@ export const getProducts = async (req, res) => {
             }
         }
 
-        // Default to active products only (unless explicitly specified)
-        if (status) {
-            where.status = status;
-        } else {
-            where.status = 'active'; // Only show active products by default
-        }
-
         if (featured !== undefined) {
             where.featured = featured === 'true';
         }
@@ -95,6 +91,8 @@ export const getProducts = async (req, res) => {
                 {
                     model: ProductStoreInventory,
                     as: 'inventory',
+                    where: inventoryWhere,
+                    required: true,
                     include: [
                         {
                             model: Store,
@@ -165,6 +163,8 @@ export const getProductDetail = async (req, res) => {
                 {
                     model: ProductStoreInventory,
                     as: 'inventory',
+                    where: { status: 'active' },
+                    required: false,
                     include: [
                         {
                             model: Store,
@@ -188,6 +188,8 @@ export const getProductDetail = async (req, res) => {
                     {
                         model: ProductStoreInventory,
                         as: 'inventory',
+                        where: { status: 'active' },
+                        required: false,
                         include: [
                             {
                                 model: Store,
