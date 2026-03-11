@@ -15,6 +15,7 @@ import CartItem from './cart-item.model.js';
 import BlacklistedToken from './blacklisted-token.model.js';
 import StoreRevenueStat from './store-revenue-stat.model.js';
 import DsiReport from './dsi-report.model.js';
+import MomentumReport from './momentum-report.model.js';
 
 // Define model associations
 const setupAssociations = () => {
@@ -247,6 +248,27 @@ const setupAssociations = () => {
         foreignKey: 'product_id',
         as: 'product'
     });
+    
+    // MomentumReport associations
+    Store.hasMany(MomentumReport, {
+        foreignKey: 'store_id',
+        as: 'momentumReports'
+    });
+    
+    MomentumReport.belongsTo(Store, {
+        foreignKey: 'store_id',
+        as: 'store'
+    });
+    
+    Product.hasMany(MomentumReport, {
+        foreignKey: 'product_id',
+        as: 'momentumReports'
+    });
+    
+    MomentumReport.belongsTo(Product, {
+        foreignKey: 'product_id',
+        as: 'product'
+    });
 };
 
 // Initialize associations
@@ -270,7 +292,8 @@ export {
     CartItem,
     BlacklistedToken,
     StoreRevenueStat,
-    DsiReport
+    DsiReport,
+    MomentumReport
 };
 
 export default {
@@ -290,5 +313,6 @@ export default {
     CartItem,
     BlacklistedToken,
     StoreRevenueStat,
-    DsiReport
+    DsiReport,
+    MomentumReport
 };

@@ -26,6 +26,7 @@ const __dirname = dirname(__filename);
 import { sequelize } from './models/sequelize/index.js';
 import { startRevenueAggregator } from './services/revenueAggregator.js';
 import { startDSIAggregator } from './services/dsiReport.service.js';
+import { startMomentumAggregator } from './services/momentumReport.service.js';
 sequelize.authenticate()
   .then(async () => {
     console.log('✅ PostgreSQL connected successfully');
@@ -43,6 +44,7 @@ sequelize.authenticate()
     // Start revenue aggregation cron jobs
     startRevenueAggregator();
     startDSIAggregator();
+    startMomentumAggregator();
   })
   .catch(err => console.error('❌ PostgreSQL connection failed:', err));
 

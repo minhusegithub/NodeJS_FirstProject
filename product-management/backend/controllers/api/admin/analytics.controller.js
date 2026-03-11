@@ -1,10 +1,9 @@
 import {
     StoreRevenueStat,
+    MomentumReport,
     DsiReport,
     Product,
     Store,
-    Order,
-    OrderItem,
     sequelize
 } from '../../../models/sequelize/index.js';
 import { Op, QueryTypes } from 'sequelize';
@@ -209,74 +208,109 @@ export const getStorePerformance = async (req, res) => {
 };
 
 // [GET] /api/v1/admin/analytics/best-sellers
-// Top selling products per store
 export const getBestSellers = async (req, res) => {
     try {
-        const { store_id, from, to, limit = 10, sort_by = 'quantity' } = req.query;
+        const { store_id, limit = 10, sort_by = 'momentum' } = req.query;
         const allowedStoreIds = getAllowedStoreIds(req.user);
         const normalizedLimit = Math.min(Math.max(parseInt(limit, 10) || 10, 1), 50);
+        const normalizedSortBy = ['momentum', 'quantity'].includes(sort_by) ? sort_by : 'momentum';
 
         if (allowedStoreIds !== null && allowedStoreIds.length === 0) {
-            return res.json({ code: 200, message: 'Success', data: { products: [], sortBy: sort_by, limit: normalizedLimit } });
+            return res.json({
+                code: 200,
+                message: 'Success',
+                data: {
+                    products: [],
+                    sortBy: normalizedSortBy,
+                    limit: normalizedLimit,
+                    labelsSummary: {
+                        SKYROCKETING: 0,
+                        RISING: 0,
+                        STABLE: 0,
+                        COOLING: 0
+                    }
+                }
+            });
         }
 
-        const cacheKey = hashQueryKey('analytics:best-sellers:v4', { store_id, from, to, limit: normalizedLimit, sort_by, allowedStoreIds });
+        const momentumWhere = {};
+        if (store_id) {
+            momentumWhere.store_id = parseInt(store_id, 10);
+        } else if (allowedStoreIds !== null) {
+            momentumWhere.store_id = { [Op.in]: allowedStoreIds };
+        }
+
+        const latestMomentumAt = await MomentumReport.max('calculated_at', { where: momentumWhere });
+        const cacheKey = hashQueryKey('analytics:best-sellers:v5', {
+            store_id,
+            limit: normalizedLimit,
+            sort_by: normalizedSortBy,
+            allowedStoreIds,
+            latestMomentumAt
+        });
         const cached = await redisGet(cacheKey);
         if (cached) {
             return res.json({ code: 200, message: 'Success (cached)', data: JSON.parse(cached) });
         }
 
-        const endDate = to || new Date().toISOString().split('T')[0];
-        const startDate = from || (() => { const d = new Date(); d.setDate(d.getDate() - 30); return d.toISOString().split('T')[0]; })();
+        const orderBy = normalizedSortBy === 'quantity'
+            ? [['current_qty', 'DESC'], ['momentum_score', 'DESC']]
+            : [['momentum_score', 'DESC'], ['current_qty', 'DESC']];
 
-        // Build store filter
-        let storeFilter = '';
-        const replacements = { startDate, endDate, limit: normalizedLimit };
+        const momentumRows = await MomentumReport.findAll({
+            where: momentumWhere,
+            include: [
+                {
+                    model: Product,
+                    as: 'product',
+                    attributes: ['id', 'title', 'thumbnail'],
+                    where: { deleted_at: null },
+                    required: true
+                },
+                {
+                    model: Store,
+                    as: 'store',
+                    attributes: ['id', 'code', 'name'],
+                    required: false
+                }
+            ],
+            order: orderBy,
+            limit: normalizedLimit
+        });
 
-        if (store_id) {
-            storeFilter = 'AND o.store_id = :storeId';
-            replacements.storeId = parseInt(store_id);
-        } else if (allowedStoreIds !== null) {
-            storeFilter = 'AND o.store_id IN (:allowedStoreIds)';
-            replacements.allowedStoreIds = allowedStoreIds;
-        }
+        const labelsSummary = {
+            SKYROCKETING: 0,
+            RISING: 0,
+            STABLE: 0,
+            COOLING: 0
+        };
 
-        // Determine sort field based on sort_by parameter
-        const sortField = sort_by === 'revenue' ? 'revenue' : '"totalSold"';
+        const products = momentumRows.map(row => {
+            const label = row.label || 'STABLE';
+            if (labelsSummary[label] !== undefined) {
+                labelsSummary[label] += 1;
+            }
 
-        const results = await sequelize.query(`
-            SELECT 
-                oi.product_id AS "productId",
-                p.title,
-                SUM(oi.quantity) AS "totalSold",
-                SUM(oi.total_price) AS revenue
-            FROM order_items oi
-            INNER JOIN orders o ON oi.order_id = o.id
-            INNER JOIN products p ON oi.product_id = p.id
-            WHERE o.status = 'delivered'
-              AND o.payment_status = 'paid'
-              AND o.deleted_at IS NULL
-              AND p.deleted_at IS NULL
-                            AND o.created_at >= :startDate::date
-                            AND o.created_at < (:endDate::date + INTERVAL '1 day')
-              ${storeFilter}
-            GROUP BY oi.product_id, p.title
-            ORDER BY ${sortField} DESC
-            LIMIT :limit
-        `, {
-            replacements,
-            type: QueryTypes.SELECT
+            return {
+                productId: row.product_id,
+                title: row.product?.title || '',
+                thumbnail: row.product?.thumbnail || null,
+                storeId: row.store_id,
+                storeCode: row.store?.code || null,
+                storeName: row.store?.name || null,
+                currentQty: parseInt(row.current_qty, 10) || 0,
+                prevQty: parseInt(row.prev_qty, 10) || 0,
+                momentumScore: parseFloat(row.momentum_score) || 0,
+                label,
+                calculatedAt: row.calculated_at
+            };
         });
 
         const data = {
-            sortBy: sort_by,
+            sortBy: normalizedSortBy,
             limit: normalizedLimit,
-            products: results.map(r => ({
-                productId: r.productId,
-                title: r.title,
-                totalSold: parseInt(r.totalSold) || 0,
-                revenue: parseFloat(r.revenue) || 0
-            }))
+            labelsSummary,
+            products
         };
 
         await redisSet(cacheKey, JSON.stringify(data), 1800);

@@ -38,7 +38,7 @@ const RevenueBestSellers = () => {
     });
 
     // Best Sellers Sort Criteria
-    const [bestSellersSortBy, setBestSellersSortBy] = useState('quantity');
+    const [bestSellersSortBy, setBestSellersSortBy] = useState('momentum');
     const [bestSellersTopLimit, setBestSellersTopLimit] = useState(10);
 
     // Fetch data on mount and filter change
@@ -275,8 +275,8 @@ const RevenueBestSellers = () => {
                                     onChange={(e) => setBestSellersSortBy(e.target.value)}
                                     className="dash-sort-select"
                                 >
-                                    <option value="quantity">Số lượng</option>
-                                    <option value="revenue">Doanh thu</option>
+                                    <option value="momentum">Momentum score</option>
+                                    <option value="quantity">Số lượng hiện tại (7 ngày)</option>
                                 </select>
                             </div>
                         </div>
@@ -291,25 +291,31 @@ const RevenueBestSellers = () => {
                                             type="number"
                                             stroke="#6b7280"
                                             fontSize={12}
-                                            tickFormatter={bestSellersSortBy === 'revenue' ? formatVND : undefined}
+                                            tickFormatter={bestSellersSortBy === 'momentum' ? (v) => `${v}%` : undefined}
                                         />
                                         <YAxis
                                             type="category"
                                             dataKey="title"
-                                            width={150}
+                                            width={220}
+                                            interval={0}
                                             stroke="#6b7280"
                                             fontSize={11}
                                             tickFormatter={v => v.length > 20 ? v.slice(0, 20) + '...' : v}
                                         />
                                         <Tooltip
                                             formatter={(value, name) =>
-                                                name === 'Số lượng bán' ? `${value} SP` : formatFullVND(value)
+                                                name === 'Momentum score' ? `${parseFloat(value).toFixed(2)}%` : `${value} SP`
                                             }
+                                            labelFormatter={(label) => {
+                                                const row = bestSellers.products.find(p => p.title === label);
+                                                if (!row) return label;
+                                                return `${label} (${row.label})`;
+                                            }}
                                         />
                                         <Bar
-                                            dataKey={bestSellersSortBy === 'revenue' ? 'revenue' : 'totalSold'}
-                                            name={bestSellersSortBy === 'revenue' ? 'Doanh thu' : 'Số lượng bán'}
-                                            fill={bestSellersSortBy === 'revenue' ? '#0ea5e9' : '#1DB56C'}
+                                            dataKey={bestSellersSortBy === 'momentum' ? 'momentumScore' : 'currentQty'}
+                                            name={bestSellersSortBy === 'momentum' ? 'Momentum score' : 'Số lượng bán'}
+                                            fill={bestSellersSortBy === 'momentum' ? '#0ea5e9' : '#1DB56C'}
                                             radius={[0, 6, 6, 0]}
                                         />
                                     </BarChart>
