@@ -99,9 +99,9 @@ export const updateMomentumReports = async () => {
 };
 
 export const startMomentumAggregator = () => {
-    // Dev/test schedule: every 30 seconds.
+    // Dev/test schedule: every 10 minutes.
     // For production, use something like: '0 3 * * *' (daily at 03:00).
-    cron.schedule('*/30 * * * * *', async () => {
+    cron.schedule('*/10 * * * *', async () => {
         try {
             const records = await updateMomentumReports();
             console.log(`\uD83D\uDCC8 [Cron Momentum] Upserted ${records.length} records`);

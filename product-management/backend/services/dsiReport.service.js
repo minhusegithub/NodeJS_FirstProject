@@ -183,8 +183,8 @@ const getDateLabel = () => {
 };
 
 export const startDSIAggregator = () => {
-    // Recalculate every 30 minutes (for development, can be set to every 6-12 hours in production)
-    cron.schedule('*/30 * * * *', async () => {
+    // Recalculate every 1 hour (for development, set to every 6-12 hours in production)
+    cron.schedule('0 * * * *', async () => {
         try {
             console.log(`⏰ [Cron DSI] Recalculating DSI at ${getDateLabel()}`);
             const rows = await calculateAndSaveDSI();

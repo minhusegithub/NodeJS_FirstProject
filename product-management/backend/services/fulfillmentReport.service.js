@@ -106,9 +106,9 @@ export const generateDailyFulfillmentReport = async () => {
 };
 
 export const startFulfillmentAggregator = () => {
-    // Test schedule: every 1 minute.
+    // Test schedule: every 5 minute.
     // Production recommendation: 0 1 * * * (01:00 everyday).
-    cron.schedule('* * * * *', async () => {
+    cron.schedule('*/5 * * * *', async () => {
         try {
             const reports = await generateDailyFulfillmentReport();
             console.log(` [Cron Fulfillment] Upserted ${reports.length} records`);
