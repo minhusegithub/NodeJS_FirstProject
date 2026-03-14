@@ -51,6 +51,9 @@ const AdminLayout = () => {
                                 <NavLink to="/admin/dashboard/revenue" className={({ isActive }) => `admin-nav-subitem${isActive ? ' active' : ''}`}>
                                     <span className="subnav-label">Doanh thu - Bán chạy</span>
                                 </NavLink>
+                                <NavLink to="/admin/dashboard/fulfillment" className={({ isActive }) => `admin-nav-subitem${isActive ? ' active' : ''}`}>
+                                    <span className="subnav-label">Phân tích vận hành</span>
+                                </NavLink>
                                 <NavLink to="/admin/dashboard/dead-stock" className={({ isActive }) => `admin-nav-subitem${isActive ? ' active' : ''}`}>
                                     <span className="subnav-label">Tồn kho chết</span>
                                 </NavLink>

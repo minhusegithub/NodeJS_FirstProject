@@ -42,19 +42,18 @@ const DeadStock = () => {
 
     // Filters
     const [filters, setFilters] = useState({
-        store_id: '',
-        deadStockDays: 30
+        store_id: ''
     });
 
     // Fetch data on mount and filter change
     useEffect(() => {
-        getDeadStock({ store_id: filters.store_id, days: filters.deadStockDays });
+        getDeadStock({ store_id: filters.store_id });
 
         if (isSystemAdmin && !storePerformance) {
             // Fetch store list for filter dropdown
             getStorePerformance({});
         }
-    }, [filters.store_id, filters.deadStockDays, isSystemAdmin]);
+    }, [filters.store_id, isSystemAdmin]);
 
     const handleFilterChange = (key, value) => {
         setFilters(prev => ({ ...prev, [key]: value }));
@@ -137,22 +136,11 @@ const DeadStock = () => {
                             </select>
                         </div>
                     )}
-                    <div className="dash-filter-item">
-                        <label>Không bán trong</label>
-                        <select
-                            value={filters.deadStockDays}
-                            onChange={e => handleFilterChange('deadStockDays', e.target.value)}
-                        >
-                            <option value={30}>30 ngày</option>
-                            <option value={60}>60 ngày</option>
-                            <option value={90}>90 ngày</option>
-                        </select>
-                    </div>
                 </div>
 
                 {/* Dead Stock Table */}
                 <div className="dash-chart-section">
-                    <h3>📋 Danh sách chôn vốn (không bán trong {filters.deadStockDays} ngày)</h3>
+                    <h3>📋 Danh sách chôn vốn (Trong 30 ngày)</h3>
                     {deadStock?.items?.[0]?.calculatedAt && (
                         <p className="dash-dsi-note">
                             Dữ liệu DSI tính lúc: {moment(deadStock.items[0].calculatedAt).format('DD/MM/YYYY HH:mm')}

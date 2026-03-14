@@ -25,6 +25,7 @@ import VNPayReturn from './pages/client/VNPayReturn';
 // Admin pages
 import RevenueBestSellers from './pages/admin/dashboard/RevenueBestSellers';
 import DeadStock from './pages/admin/dashboard/DeadStock';
+import FulfillmentAnalytics from './pages/admin/dashboard/FulfillmentAnalytics';
 import AdminProducts from './pages/admin/Products';
 import AdminOrders from './pages/admin/Orders';
 import AdminStores from './pages/admin/Stores';
@@ -97,6 +98,7 @@ function App() {
                     }>
                         <Route index element={<Navigate to="/admin/dashboard/revenue" replace />} />
                         <Route path="dashboard/revenue" element={<RevenueBestSellers />} />
+                        <Route path="dashboard/fulfillment" element={<FulfillmentAnalytics />} />
                         <Route path="dashboard/dead-stock" element={<DeadStock />} />
                         <Route path="products" element={<AdminProducts />} />
                         <Route path="products/import" element={<ImportProducts />} />

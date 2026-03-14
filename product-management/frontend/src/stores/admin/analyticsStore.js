@@ -7,11 +7,15 @@ export const useAdminAnalyticsStore = create((set) => ({
     storePerformance: null,
     bestSellers: null,
     deadStock: null,
+    fulfillmentReports: null,
+    simulatedFulfillment: null,
     loading: {
         revenue: false,
         storePerformance: false,
         bestSellers: false,
-        deadStock: false
+        deadStock: false,
+        fulfillment: false,
+        fulfillmentSimulation: false
     },
 
     getRevenueOverview: async (params = {}) => {
@@ -58,6 +62,28 @@ export const useAdminAnalyticsStore = create((set) => ({
         } catch (error) {
             set(s => ({ loading: { ...s.loading, deadStock: false } }));
             toast.error(error.response?.data?.message || 'Lỗi khi tải dữ liệu tồn kho');
+        }
+    },
+
+    getFulfillmentReports: async (params = {}) => {
+        set(s => ({ loading: { ...s.loading, fulfillment: true } }));
+        try {
+            const { data } = await api.get('/admin/analytics/fulfillment', { params });
+            set(s => ({ fulfillmentReports: data.data, loading: { ...s.loading, fulfillment: false } }));
+        } catch (error) {
+            set(s => ({ loading: { ...s.loading, fulfillment: false } }));
+            toast.error(error.response?.data?.message || 'Lỗi khi tải báo cáo vận hành');
+        }
+    },
+
+    simulateFulfillmentSla: async (params = {}) => {
+        set(s => ({ loading: { ...s.loading, fulfillmentSimulation: true } }));
+        try {
+            const { data } = await api.get('/admin/analytics/fulfillment/simulate', { params });
+            set(s => ({ simulatedFulfillment: data.data, loading: { ...s.loading, fulfillmentSimulation: false } }));
+        } catch (error) {
+            set(s => ({ loading: { ...s.loading, fulfillmentSimulation: false } }));
+            toast.error(error.response?.data?.message || 'Lỗi khi mô phỏng SLA');
         }
     }
 }));

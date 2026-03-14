@@ -16,6 +16,7 @@ import BlacklistedToken from './blacklisted-token.model.js';
 import StoreRevenueStat from './store-revenue-stat.model.js';
 import DsiReport from './dsi-report.model.js';
 import MomentumReport from './momentum-report.model.js';
+import FulfillmentReport from './fulfillment-report.model.js';
 
 // Define model associations
 const setupAssociations = () => {
@@ -269,6 +270,17 @@ const setupAssociations = () => {
         foreignKey: 'product_id',
         as: 'product'
     });
+
+    // FulfillmentReport associations
+    Store.hasMany(FulfillmentReport, {
+        foreignKey: 'store_id',
+        as: 'fulfillmentReports'
+    });
+
+    FulfillmentReport.belongsTo(Store, {
+        foreignKey: 'store_id',
+        as: 'store'
+    });
 };
 
 // Initialize associations
@@ -293,7 +305,8 @@ export {
     BlacklistedToken,
     StoreRevenueStat,
     DsiReport,
-    MomentumReport
+    MomentumReport,
+    FulfillmentReport
 };
 
 export default {
@@ -314,5 +327,6 @@ export default {
     BlacklistedToken,
     StoreRevenueStat,
     DsiReport,
-    MomentumReport
+    MomentumReport,
+    FulfillmentReport
 };

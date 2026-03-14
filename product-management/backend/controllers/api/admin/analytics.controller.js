@@ -1,6 +1,7 @@
 import {
     StoreRevenueStat,
     MomentumReport,
+    FulfillmentReport,
     DsiReport,
     Product,
     Store,
@@ -467,5 +468,187 @@ export const getDeadStock = async (req, res) => {
     } catch (error) {
         console.error('Dead Stock Error:', error);
         res.status(500).json({ code: 500, message: 'Internal Server Error', error: error.message });
+    }
+};
+
+// [GET] /api/v1/admin/analytics/fulfillment
+// Read official fulfillment reports (pre-aggregated table)
+export const getFulfillmentReports = async (req, res) => {
+    try {
+        const { store_id, start_date, end_date } = req.query;
+        const allowedStoreIds = getAllowedStoreIds(req.user);
+
+        if (allowedStoreIds !== null && allowedStoreIds.length === 0) {
+            return res.json({ code: 200, message: 'Success', data: { reports: [] } });
+        }
+
+        const where = {};
+        if (store_id) {
+            where.store_id = parseInt(store_id, 10);
+        } else if (allowedStoreIds !== null) {
+            where.store_id = { [Op.in]: allowedStoreIds };
+        }
+
+        if (start_date && end_date) {
+            where.report_date = { [Op.between]: [start_date, end_date] };
+        }
+
+        const latestCalculatedAt = await FulfillmentReport.max('calculated_at', { where });
+        const cacheKey = hashQueryKey('analytics:fulfillment:v1', {
+            store_id,
+            start_date,
+            end_date,
+            allowedStoreIds,
+            latestCalculatedAt
+        });
+
+        const cached = await redisGet(cacheKey);
+        if (cached) {
+            return res.json({ code: 200, message: 'Success (cached)', data: JSON.parse(cached) });
+        }
+
+        const reports = await FulfillmentReport.findAll({
+            where,
+            order: [['report_date', 'ASC']],
+            include: [
+                {
+                    model: Store,
+                    as: 'store',
+                    attributes: ['id', 'code', 'name'],
+                    required: false
+                }
+            ]
+        });
+
+        const data = {
+            reports: reports.map(r => ({
+                id: r.id,
+                storeId: r.store_id,
+                storeCode: r.store?.code || null,
+                storeName: r.store?.name || null,
+                reportDate: r.report_date,
+                totalOrders: parseInt(r.total_orders, 10) || 0,
+                avgLeadTimeMins: parseInt(r.avg_lead_time_mins, 10) || 0,
+                avgFulfillmentTimeMins: parseInt(r.avg_fulfillment_time_mins, 10) || 0,
+                avgDeliveryTimeMins: parseInt(r.avg_delivery_time_mins, 10) || 0,
+                slaTargetMins: parseInt(r.sla_target_mins, 10) || 0,
+                slaCompliantOrders: parseInt(r.sla_compliant_orders, 10) || 0,
+                slaComplianceRate: parseFloat(r.sla_compliance_rate) || 0,
+                bottleneckStage: r.bottleneck_stage,
+                calculatedAt: r.calculated_at
+            }))
+        };
+
+        await redisSet(cacheKey, JSON.stringify(data), 1800);
+        return res.json({ code: 200, message: 'Success', data });
+    } catch (error) {
+        console.error('Fulfillment Reports Error:', error);
+        return res.status(500).json({ code: 500, message: 'Internal Server Error', error: error.message });
+    }
+};
+
+// [GET] /api/v1/admin/analytics/fulfillment/simulate
+// SLA what-if simulation based on raw orders data
+export const simulateSlaCompliance = async (req, res) => {
+    try {
+        const { store_id, start_date, end_date, simulated_sla_mins } = req.query;
+        const allowedStoreIds = getAllowedStoreIds(req.user);
+
+        const simulatedSla = parseInt(simulated_sla_mins, 10);
+        if (!Number.isInteger(simulatedSla) || simulatedSla <= 0) {
+            return res.status(400).json({ code: 400, message: 'simulated_sla_mins must be a positive integer' });
+        }
+
+        if (!start_date || !end_date) {
+            return res.status(400).json({ code: 400, message: 'start_date and end_date are required' });
+        }
+
+        if (allowedStoreIds !== null && allowedStoreIds.length === 0) {
+            return res.json({ code: 200, message: 'Success', data: { simulated: [] } });
+        }
+
+        let storeFilter = '';
+        const replacements = {
+            startDate: start_date,
+            endDate: end_date,
+            simulatedSla
+        };
+
+        if (store_id) {
+            storeFilter = 'AND o.store_id = :storeId';
+            replacements.storeId = parseInt(store_id, 10);
+        } else if (allowedStoreIds !== null) {
+            storeFilter = 'AND o.store_id IN (:allowedStoreIds)';
+            replacements.allowedStoreIds = allowedStoreIds;
+        }
+
+        const latestOrderUpdate = await sequelize.query(`
+            SELECT MAX(o.updated_at) AS latest_order_update
+            FROM orders o
+            WHERE o.status = 'delivered'
+              AND o.deleted_at IS NULL
+              AND DATE(o.created_at) BETWEEN :startDate AND :endDate
+              ${storeFilter}
+        `, {
+            replacements,
+            type: QueryTypes.SELECT
+        });
+
+        const cacheKey = hashQueryKey('analytics:fulfillment-sla-sim:v1', {
+            store_id,
+            start_date,
+            end_date,
+            simulated_sla_mins: simulatedSla,
+            allowedStoreIds,
+            latestOrderUpdate: latestOrderUpdate[0]?.latest_order_update || null
+        });
+
+        const cached = await redisGet(cacheKey);
+        if (cached) {
+            return res.json({ code: 200, message: 'Success (cached)', data: JSON.parse(cached) });
+        }
+
+        const rawData = await sequelize.query(`
+            SELECT
+                DATE(o.created_at) AS report_date,
+                COUNT(o.id)::INT AS total_orders,
+                SUM(
+                    CASE
+                        WHEN (EXTRACT(EPOCH FROM (o.shipped_at - o.created_at)) / 60) <= :simulatedSla
+                        THEN 1
+                        ELSE 0
+                    END
+                )::INT AS simulated_compliant_orders
+            FROM orders o
+            WHERE o.status = 'delivered'
+              AND o.deleted_at IS NULL
+              AND o.shipped_at IS NOT NULL
+              AND DATE(o.created_at) BETWEEN :startDate AND :endDate
+              ${storeFilter}
+            GROUP BY DATE(o.created_at)
+            ORDER BY report_date ASC
+        `, {
+            replacements,
+            type: QueryTypes.SELECT
+        });
+
+        const data = {
+            simulated: rawData.map(row => {
+                const total = parseInt(row.total_orders, 10) || 0;
+                const compliant = parseInt(row.simulated_compliant_orders, 10) || 0;
+                return {
+                    reportDate: row.report_date,
+                    totalOrders: total,
+                    simulatedCompliantOrders: compliant,
+                    simulatedRate: total > 0 ? Number(((compliant / total) * 100).toFixed(2)) : 0
+                };
+            })
+        };
+
+        await redisSet(cacheKey, JSON.stringify(data), 900);
+        return res.json({ code: 200, message: 'Success', data });
+    } catch (error) {
+        console.error('Simulate SLA Compliance Error:', error);
+        return res.status(500).json({ code: 500, message: 'Internal Server Error', error: error.message });
     }
 };

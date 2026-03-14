@@ -16,4 +16,10 @@ router.get('/best-sellers', requireRole(['SystemAdmin', 'storeManager']), analyt
 // Dead stock analysis (SystemAdmin & storeManager)
 router.get('/dead-stock', requireRole(['SystemAdmin', 'storeManager']), analyticsController.getDeadStock);
 
+// Fulfillment official reports (SystemAdmin & storeManager)
+router.get('/fulfillment', requireRole(['SystemAdmin', 'storeManager']), analyticsController.getFulfillmentReports);
+
+// Fulfillment SLA what-if simulation (SystemAdmin & storeManager)
+router.get('/fulfillment/simulate', requireRole(['SystemAdmin', 'storeManager']), analyticsController.simulateSlaCompliance);
+
 export default router;
