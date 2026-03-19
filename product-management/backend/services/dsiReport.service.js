@@ -3,8 +3,8 @@ import { QueryTypes } from 'sequelize';
 import { sequelize, DsiReport } from '../models/sequelize/index.js';
 
 const DSI_MIN_DAYS_STALE = 30;   // Điều kiện cần: phải ế ít nhất N ngày
-const DSI_MAX_VELOCITY   = 5;    // Điều kiện cần: tốc độ bán dưới N sp/30d
-const DSI_CRITICAL_PCT   = 0.10; // Top N% tệ nhất → CRITICAL
+const DSI_MAX_VELOCITY = 5;    // Điều kiện cần: tốc độ bán dưới N sp/30d
+const DSI_CRITICAL_PCT = 0.10; // Top N% tệ nhất → CRITICAL
 
 const buildStoreFilter = (storeId, allowedStoreIds) => {
     if (storeId) {
@@ -120,8 +120,8 @@ export const calculateAndSaveDSI = async ({ storeId = null, allowedStoreIds = nu
             replacements: {
                 ...replacements,
                 minDaysStale: DSI_MIN_DAYS_STALE,
-                maxVelocity:  DSI_MAX_VELOCITY,
-                criticalPct:  DSI_CRITICAL_PCT
+                maxVelocity: DSI_MAX_VELOCITY,
+                criticalPct: DSI_CRITICAL_PCT
             },
             type: QueryTypes.SELECT,
             transaction

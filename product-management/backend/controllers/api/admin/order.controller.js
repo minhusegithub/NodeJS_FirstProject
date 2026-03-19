@@ -28,7 +28,7 @@ const getAllowedStoreIds = (user) => {
 // Get orders for stores managed by current user
 export const getOrders = async (req, res) => {
     try {
-        const { page = 1, limit = 20, status, keyword } = req.query;
+        const { page = 1, limit = 6, status, keyword } = req.query;
         const offset = (page - 1) * limit;
 
         const allowedStoreIds = await getAllowedStoreIds(req.user);
@@ -173,9 +173,9 @@ export const updateOrderStatus = async (req, res) => {
         // Prevent editing if order is already delivered or cancelled
         if (order.status === 'delivered' || order.status === 'cancelled_no_refund' || order.status === 'cancelled_refund') {
             await t.rollback();
-            return res.status(400).json({ 
-                code: 400, 
-                message: 'Không thể chỉnh sửa đơn hàng ở trạng thái này' 
+            return res.status(400).json({
+                code: 400,
+                message: 'Không thể chỉnh sửa đơn hàng ở trạng thái này'
             });
         }
 
@@ -196,7 +196,7 @@ export const updateOrderStatus = async (req, res) => {
         }
 
         // If cancelling: restore stock for each item
-        if ((status === 'cancelled_no_refund' || status === 'cancelled_refund') && 
+        if ((status === 'cancelled_no_refund' || status === 'cancelled_refund') &&
             order.status !== 'cancelled_no_refund' && order.status !== 'cancelled_refund') {
             for (const item of order.items) {
                 const inventory = await ProductStoreInventory.findOne({

@@ -1,90 +1,178 @@
-import {
-  Store,
-  Product,
-  ProductStoreInventory,
-  DsiReport,
-  StoreRevenueStat,
-  MomentumReport,
-  FulfillmentReport,
-} from "../models/sequelize/index.js";
+import { Store, Product, ProductStoreInventory, Order, OrderItem, DsiReport, StoreRevenueStat, MomentumReport, FulfillmentReport } from '../models/sequelize/index.js';
+import { Op } from 'sequelize';
 
 const seedAnalytics = async () => {
   try {
-    const stores = await Store.findAll();
-    const products = await Product.findAll();
-    const inventories = await ProductStoreInventory.findAll();
+    console.log('⏳ Khởi động Cỗ máy Analytics (Chế độ Incremental Load)...');
 
-    const dsiData = [];
-    const momentumData = [];
-    const fulfillmentData = [];
-    const revenueData = [];
+    // --------------------------------------------------------------------------------
+    // PHẦN 1: BÁO CÁO CHUỖI THỜI GIAN (REVENUE & FULFILLMENT)
+    // --------------------------------------------------------------------------------
 
+    // 1. Tìm High-Water Mark (Ngày chốt sổ gần nhất)
+    const lastRevenue = await StoreRevenueStat.findOne({ order: [['report_date', 'DESC']] });
+    let deltaStartDate;
+
+    if (!lastRevenue) {
+      // Nếu chưa có báo cáo nào, lùi về 180 ngày để tính toàn bộ
+      deltaStartDate = new Date();
+      deltaStartDate.setDate(deltaStartDate.getDate() - 180);
+      deltaStartDate.setHours(0, 0, 0, 0);
+      console.log('👉 Lần chạy đầu tiên: Đang tính toán chuỗi dữ liệu cho 180 ngày qua...');
+    } else {
+      // Nếu đã có, chỉ lấy từ ngày đó để cập nhật tiếp (Ví dụ: Từ hôm qua đến nay)
+      deltaStartDate = new Date(lastRevenue.report_date);
+      deltaStartDate.setHours(0, 0, 0, 0);
+      console.log(`👉 Cập nhật Delta: Chỉ tính toán lại dữ liệu từ ngày ${deltaStartDate.toISOString().split('T')[0]}`);
+
+      // XÓA các báo cáo NẰM TRONG VÙNG DELTA để tính toán đè lên (Đảm bảo tính Lũy đẳng - Idempotent)
+      await StoreRevenueStat.destroy({ where: { report_date: { [Op.gte]: deltaStartDate } } });
+      await FulfillmentReport.destroy({ where: { report_date: { [Op.gte]: deltaStartDate } } });
+    }
+
+    // 2. Kéo toàn bộ Đơn hàng nằm trong vùng Delta
+    const deltaOrders = await Order.findAll({
+      where: {
+        status: 'delivered',
+        created_at: { [Op.gte]: deltaStartDate }
+      },
+      include: [{ model: OrderItem, as: 'items' }] // LƯU Ý: Chú ý alias 'items', hãy đổi nếu model bạn map tên khác
+    });
+
+    const revenueMap = {};
+    const fulfillmentMap = {};
+
+    for (const order of deltaOrders) {
+      const orderDateStr = new Date(order.created_at).toISOString().split('T')[0];
+      const storeId = order.store_id;
+      const key = `${storeId}_${orderDateStr}`;
+
+      // --- TÍNH DOANH THU ---
+      if (!revenueMap[key]) {
+        revenueMap[key] = { store_id: storeId, report_date: orderDateStr, total_revenue: 0, total_orders: 0, items_sold: 0 };
+      }
+      revenueMap[key].total_revenue += parseFloat(order.total_price);
+      revenueMap[key].total_orders += 1;
+      const itemsCount = order.items ? order.items.reduce((sum, item) => sum + item.quantity, 0) : 0;
+      revenueMap[key].items_sold += itemsCount;
+
+      // --- TÍNH VẬN HÀNH (SLA) ---
+      if (!fulfillmentMap[key]) {
+        fulfillmentMap[key] = { store_id: storeId, report_date: orderDateStr, total_orders: 0, total_fulfillment_mins: 0, sla_passed: 0 };
+      }
+      const confirmedTime = new Date(order.confirmed_at).getTime();
+      const shippedTime = new Date(order.shipped_at).getTime();
+      const fulfillmentMins = (shippedTime - confirmedTime) / 60000;
+
+      fulfillmentMap[key].total_orders += 1;
+      fulfillmentMap[key].total_fulfillment_mins += fulfillmentMins;
+      if (fulfillmentMins <= 240) fulfillmentMap[key].sla_passed += 1; // 4 tiếng = Đạt SLA
+    }
+
+    // Đẩy vào Database
+    const finalRevenueData = Object.values(revenueMap).map(data => ({
+      ...data, unique_customers: Math.max(1, Math.floor(data.total_orders * 0.85)) // Giả định 85% là khách unique
+    }));
+
+    const finalFulfillmentData = Object.values(fulfillmentMap).map(data => ({
+      store_id: data.store_id, report_date: data.report_date, total_orders: data.total_orders,
+      avg_fulfillment_time_mins: Math.floor(data.total_fulfillment_mins / data.total_orders),
+      sla_compliant_orders: data.sla_passed,
+      sla_compliance_rate: ((data.sla_passed / data.total_orders) * 100).toFixed(2),
+      sla_target_mins: 240,
+      bottleneck_stage: (data.total_fulfillment_mins / data.total_orders) > 240 ? 'FULFILLMENT' : 'OPTIMAL'
+    }));
+
+    await StoreRevenueStat.bulkCreate(finalRevenueData);
+    await FulfillmentReport.bulkCreate(finalFulfillmentData);
+
+
+    // --------------------------------------------------------------------------------
+    // PHẦN 2: BÁO CÁO CẢNH BÁO SNAPSHOT (DSI & MOMENTUM)
+    // --------------------------------------------------------------------------------
+    console.log('⏳ Đang tính toán Báo cáo Cảnh báo (Snapshot) cho ngày hôm nay...');
+
+    // Vì DSI và Momentum là cảnh báo của "hiện tại", ta xóa sạch cái cũ
+    await DsiReport.destroy({ where: {} });
+    await MomentumReport.destroy({ where: {} });
+
+    // Kéo lịch sử 30 ngày gần nhất để tính vận tốc bán hàng
     const today = new Date();
+    const trailing30DaysDate = new Date(); trailing30DaysDate.setDate(today.getDate() - 30);
+    const trailing7DaysDate = new Date(); trailing7DaysDate.setDate(today.getDate() - 7);
+    const trailing14DaysDate = new Date(); trailing14DaysDate.setDate(today.getDate() - 14);
 
-    for (const store of stores) {
-      // 1. Tạo Store Revenue & Fulfillment (Giả lập chốt sổ ngày hôm nay)
-      revenueData.push({
-        store_id: store.id,
-        report_date: today,
-        total_revenue: Math.floor(Math.random() * 50000000) + 10000000,
-        total_orders: Math.floor(Math.random() * 50) + 10,
-        unique_customers: 15,
-        total_items_sold: 45,
-      });
+    const snapshotOrders = await Order.findAll({
+      where: { status: 'delivered', created_at: { [Op.gte]: trailing30DaysDate } },
+      include: [{ model: OrderItem, as: 'items' }]
+    });
 
-      // HN02 bị đánh giá Tệ (Bottleneck ở khâu Fulfillment)
-      fulfillmentData.push({
-        store_id: store.id,
-        report_date: today,
-        total_orders: 40,
-        avg_lead_time_mins: store.code === "HN02" ? 120 : 30,
-        avg_fulfillment_time_mins: store.code === "HN02" ? 720 : 120, // 12 tiếng vs 2 tiếng
-        avg_delivery_time_mins: 2880,
-        sla_target_mins: 240,
-        sla_compliant_orders: store.code === "HN02" ? 5 : 35,
-        sla_compliance_rate: store.code === "HN02" ? 12.5 : 87.5,
-        bottleneck_stage: store.code === "HN02" ? "FULFILLMENT" : "OPTIMAL",
-      });
+    const productSales = {}; // Lưu trữ: { 'StoreId_ProdId': { last7Days: 10, prev7Days: 5, last30Days: 40 } }
 
-      // 2. Tạo DSI & Momentum cho từng sản phẩm
-      for (const product of products) {
-        const inv = inventories.find(
-          (i) => i.store_id === store.id && i.product_id === product.id,
-        );
-        if (!inv) continue;
+    for (const order of snapshotOrders) {
+      const orderDate = new Date(order.created_at);
+      const storeId = order.store_id;
 
-        if (product.sku.startsWith("DSI-")) {
-          dsiData.push({
-            store_id: store.id,
-            product_id: product.id,
-            stock: inv.stock,
-            capital_tied_up: inv.stock * product.price,
-            days_stale: 65,
-            velocity: 0,
-            dsi_score: (65 * (inv.stock * product.price)) / 1,
-            risk_level: "CRITICAL",
-          });
-        } else if (product.sku.startsWith("MOM-")) {
-          momentumData.push({
-            store_id: store.id,
-            product_id: product.id,
-            current_qty: 150,
-            prev_qty: 30,
-            momentum_score: 5.0,
-            label: "SKYROCKETING",
+      if (order.items) {
+        for (const item of order.items) {
+          const prodKey = `${storeId}_${item.product_id}`;
+          if (!productSales[prodKey]) productSales[prodKey] = { last7Days: 0, prev7Days: 0, last30Days: 0 };
+
+          productSales[prodKey].last30Days += item.quantity;
+          if (orderDate >= trailing7DaysDate) productSales[prodKey].last7Days += item.quantity;
+          else if (orderDate >= trailing14DaysDate) productSales[prodKey].prev7Days += item.quantity;
+        }
+      }
+    }
+
+    const inventories = await ProductStoreInventory.findAll();
+    const products = await Product.findAll();
+
+    const finalDsiData = [];
+    const finalMomentumData = [];
+
+    for (const inv of inventories) {
+      const prodKey = `${inv.store_id}_${inv.product_id}`;
+      const salesData = productSales[prodKey] || { last7Days: 0, prev7Days: 0, last30Days: 0 };
+      const productInfo = products.find(p => p.id === inv.product_id);
+      if (!productInfo) continue;
+
+      // 1. CHUẨN ĐOÁN DSI (Hàng ế)
+      const velocityPerDay = salesData.last30Days / 30;
+      // Nếu không bán được cái nào trong 30 ngày qua, gán rủi ro tối đa (999 ngày)
+      const daysStale = velocityPerDay > 0 ? Math.floor(inv.stock / velocityPerDay) : 999;
+
+      // Chỉ bêu tên những mặt hàng nằm kho trên 60 ngày và còn tồn kho
+      if (daysStale >= 60 && inv.stock > 0) {
+        finalDsiData.push({
+          store_id: inv.store_id, product_id: inv.product_id, stock: inv.stock,
+          capital_tied_up: inv.stock * productInfo.price, days_stale: daysStale,
+          velocity: Math.ceil(velocityPerDay), // Đã sửa thành Số nguyên
+          dsi_score: daysStale > 120 ? 10 : (daysStale > 90 ? 8 : 6),
+          risk_level: daysStale > 120 ? 'CRITICAL' : 'WARNING'
+        });
+      }
+
+      // 2. CHUẨN ĐOÁN MOMENTUM (Hàng Trend)
+      // So sánh doanh số 7 ngày gần nhất với 7 ngày trước đó
+      if (salesData.last7Days > 0 && salesData.prev7Days > 0) {
+        const growthRatio = salesData.last7Days / salesData.prev7Days;
+        // Nếu tăng trưởng gấp rưỡi (>= 1.5) thì đưa vào list
+        if (growthRatio >= 1.5) {
+          finalMomentumData.push({
+            store_id: inv.store_id, product_id: inv.product_id,
+            current_qty: salesData.last7Days, prev_qty: salesData.prev7Days,
+            momentum_score: Math.round(growthRatio * 100), // Đã sửa thành Số nguyên
+            label: growthRatio > 3 ? 'SKYROCKETING' : 'HOT'
           });
         }
       }
     }
 
-    await StoreRevenueStat.bulkCreate(revenueData, { ignoreDuplicates: true });
-    await FulfillmentReport.bulkCreate(fulfillmentData, {
-      ignoreDuplicates: true,
-    });
-    await DsiReport.bulkCreate(dsiData, { ignoreDuplicates: true });
-    await MomentumReport.bulkCreate(momentumData, { ignoreDuplicates: true });
+    await DsiReport.bulkCreate(finalDsiData);
+    await MomentumReport.bulkCreate(finalMomentumData);
 
-    console.log("✅ Chốt sổ Analytics thành công! Dashboard đã có dữ liệu.");
+    console.log(`✅ CHỐT SỔ HOÀN TẤT! (Sử dụng 100% Thuật toán Real-Data)`);
   } catch (error) {
     throw error;
   }

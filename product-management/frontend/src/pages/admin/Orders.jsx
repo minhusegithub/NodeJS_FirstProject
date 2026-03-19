@@ -10,27 +10,39 @@ const AdminOrders = () => {
     const [filters, setFilters] = useState({
         keyword: '',
         status: '',
-        page: 1
+        page: 1,
+        limit: 6
     });
     const debounceTimerRef = useRef(null);
+    const prevSearchRef = useRef({ keyword: '', status: '' });
 
-    // Debounce keyword - wait 1 seconds before making API call
+    // Debounce chỉ cho keyword và status (tìm kiếm / lọc)
     useEffect(() => {
-        if (debounceTimerRef.current) {
-            clearTimeout(debounceTimerRef.current);
+        const prevSearch = prevSearchRef.current;
+        const searchChanged = filters.keyword !== prevSearch.keyword || filters.status !== prevSearch.status;
+
+        if (searchChanged) {
+            // Cập nhật ref
+            prevSearchRef.current = { keyword: filters.keyword, status: filters.status };
+
+            // Debounce 1 giây khi tìm kiếm/lọc
+            if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
+            debounceTimerRef.current = setTimeout(() => {
+                getOrders(filters);
+            }, 1000);
+
+            return () => {
+                if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
+            };
         }
+    }, [filters.keyword, filters.status]);
 
-        debounceTimerRef.current = setTimeout(() => {
-            getOrders(filters);
-        }, 1000);
-
-        // Cleanup
-        return () => {
-            if (debounceTimerRef.current) {
-                clearTimeout(debounceTimerRef.current);
-            }
-        };
-    }, [filters, getOrders]);
+    // Gọi ngay khi chuyển trang (không debounce)
+    useEffect(() => {
+        // Hủy debounce đang chờ (nếu có) để tránh gọi API 2 lần
+        if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
+        getOrders(filters);
+    }, [filters.page]);
 
     const handleUpdateStatus = async (id, newStatus) => {
         try {
@@ -75,7 +87,7 @@ const AdminOrders = () => {
     return (
         <div className="admin-orders">
             <div className="container">
-                
+
 
                 {/* Filters */}
                 <div className="admin-filters">
@@ -191,19 +203,80 @@ const AdminOrders = () => {
                         </div>
 
                         {/* Pagination */}
-                        {pagination && pagination.totalPages > 1 && (
-                            <div className="pagination">
-                                {Array.from({ length: pagination.totalPages }, (_, i) => i + 1).map((page) => (
+                        {pagination && pagination.totalPages > 1 && (() => {
+                            const currentPage = pagination.page;
+                            const totalPages = pagination.totalPages;
+
+                            // Tính 3 nút số: [prev, current, next]
+                            let pageNumbers = [];
+                            if (totalPages <= 3) {
+                                // Ít hơn hoặc bằng 3 trang thì hiện hết
+                                pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1);
+                            } else if (currentPage === 1) {
+                                pageNumbers = [1, 2, 3];
+                            } else if (currentPage === totalPages) {
+                                pageNumbers = [totalPages - 2, totalPages - 1, totalPages];
+                            } else {
+                                pageNumbers = [currentPage - 1, currentPage, currentPage + 1];
+                            }
+
+                            const goToPage = (p) => setFilters({ ...filters, page: p });
+
+                            return (
+                                <div className="pagination">
+                                    {/* Nút về trang đầu */}
                                     <button
-                                        key={page}
-                                        className={`page-btn ${page === pagination.page ? 'active' : ''}`}
-                                        onClick={() => setFilters({ ...filters, page })}
+                                        className="page-btn page-nav"
+                                        onClick={() => goToPage(1)}
+                                        disabled={currentPage === 1}
+                                        title="Trang đầu"
                                     >
-                                        {page}
+                                        &laquo;
                                     </button>
-                                ))}
-                            </div>
-                        )}
+
+                                    {/* Nút về trang trước */}
+                                    <button
+                                        className="page-btn page-nav"
+                                        onClick={() => goToPage(currentPage - 1)}
+                                        disabled={currentPage === 1}
+                                        title="Trang trước"
+                                    >
+                                        &lsaquo;
+                                    </button>
+
+                                    {/* 3 nút số trang */}
+                                    {pageNumbers.map((p) => (
+                                        <button
+                                            key={p}
+                                            className={`page-btn ${p === currentPage ? 'active' : ''}`}
+                                            onClick={() => goToPage(p)}
+                                        >
+                                            {p}
+                                        </button>
+                                    ))}
+
+                                    {/* Nút đến trang tiếp theo */}
+                                    <button
+                                        className="page-btn page-nav"
+                                        onClick={() => goToPage(currentPage + 1)}
+                                        disabled={currentPage === totalPages}
+                                        title="Trang tiếp"
+                                    >
+                                        &rsaquo;
+                                    </button>
+
+                                    {/* Nút về trang cuối */}
+                                    <button
+                                        className="page-btn page-nav"
+                                        onClick={() => goToPage(totalPages)}
+                                        disabled={currentPage === totalPages}
+                                        title="Trang cuối"
+                                    >
+                                        &raquo;
+                                    </button>
+                                </div>
+                            );
+                        })()}
                     </>
                 )}
             </div>

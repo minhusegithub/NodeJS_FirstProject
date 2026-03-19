@@ -9,8 +9,6 @@ export const getProfile = async (req, res) => {
         const userId = req.user.id;
 
         // Fetch user with store roles and permissions
-        // Fetch user with store roles and permissions
-        // Simplify includes to avoid attribute mapping errors
         const user = await User.findByPk(userId, {
             // Only exclude password, allow all other fields
             attributes: { exclude: ['password'] },

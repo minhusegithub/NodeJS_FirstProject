@@ -388,6 +388,28 @@
     box-shadow: 0 2px 8px rgba(29, 181, 108, 0.2);
 }
 
+.admin-orders .page-btn.page-nav {
+    color: #374151;
+    font-size: 1rem;
+    min-width: 40px;
+}
+
+.admin-orders .page-btn.page-nav:hover:not(:disabled) {
+    border-color: #1DB56C;
+    background: #f0f9f7;
+    color: #1DB56C;
+    transform: translateY(-1px);
+}
+
+.admin-orders .page-btn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+    transform: none;
+    border-color: #e5e7eb;
+    background: #f9fafb;
+    color: #9ca3af;
+}
+
 /* Responsive */
 @media (max-width: 1200px) {
     .admin-orders .admin-table td {

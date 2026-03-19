@@ -58,8 +58,8 @@ const FulfillmentAnalytics = () => {
 
     const [filters, setFilters] = useState(() => ({
         store_id: '',
-        start_date: toDateInputValue(moment().subtract(6, 'days')),
-        end_date: toDateInputValue(new Date())
+        start_date: '',
+        end_date: ''
     }));
     const [simulatedSlaMins, setSimulatedSlaMins] = useState(240);
     const [debouncedSlaMins, setDebouncedSlaMins] = useState(240);
@@ -73,6 +73,14 @@ const FulfillmentAnalytics = () => {
     }, [simulatedSlaMins]);
 
     useEffect(() => {
+        // Chỉ tải dữ liệu khi cả 2 ngày đã được chọn
+        if (!filters.start_date || !filters.end_date) {
+            if (isSystemAdmin && !storePerformance) {
+                getStorePerformance({});
+            }
+            return;
+        }
+
         const params = {
             start_date: filters.start_date,
             end_date: filters.end_date
@@ -89,6 +97,9 @@ const FulfillmentAnalytics = () => {
     }, [filters.start_date, filters.end_date, filters.store_id, isSystemAdmin]);
 
     useEffect(() => {
+        // Chỉ mô phỏng khi cả 2 ngày đã được chọn
+        if (!filters.start_date || !filters.end_date) return;
+
         const params = {
             start_date: filters.start_date,
             end_date: filters.end_date,
@@ -225,7 +236,7 @@ const FulfillmentAnalytics = () => {
         <div className="admin-page">
             <div className="ap-container">
                 <div className="dash-header">
-                    <h2> Phân tích vận hành</h2>
+                    <h2> Phân tích vận hành đơn hàng</h2>
                     <span className="dash-updated">
                         Cập nhật lần cuối: {moment().format('DD/MM/YYYY HH:mm')}
                     </span>
@@ -264,6 +275,13 @@ const FulfillmentAnalytics = () => {
                     )}
                 </div>
 
+                {/* Thông báo khi chưa chọn ngày */}
+                {(!filters.start_date || !filters.end_date) && (
+                    <div className="dash-empty" style={{ margin: '2rem 0', fontSize: '1rem' }}>
+                        📅 Vui lòng chọn <strong>Từ ngày</strong> và <strong>Đến ngày</strong> để xem dữ liệu phân tích.
+                    </div>
+                )}
+
                 <div className="ops-kpi-grid">
                     <div className={`ops-kpi-card ${getSlaTone(overallStats.slaRate)}`}>
                         <span className="ops-kpi-eyebrow">Tỷ lệ SLA toàn hệ thống</span>
@@ -287,7 +305,7 @@ const FulfillmentAnalytics = () => {
 
                 <div className="dash-chart-section">
                     <div className="dash-chart-header">
-                        <h3>⛓️ Phễu thời gian vận hành</h3>
+                        <h3>⛓️ Thời gian vận hành</h3>
                         <span className="ops-chart-caption">
                             {isSingleStoreView ? 'Trục X theo ngày' : 'Trục X theo cửa hàng'}
                         </span>

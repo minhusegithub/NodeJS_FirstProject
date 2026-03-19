@@ -76,8 +76,8 @@ const getDateRange = () => {
  * Start scheduled revenue aggregation cron jobs.
  */
 export const startRevenueAggregator = () => {
-    // TEST: Every  1 minute  (change back to '*/30 * * * *' for production)
-    cron.schedule('*/1 * * * *', async () => {
+    // TEST: Every 30 minutes (change back to 1 hour for production)
+    cron.schedule('*/30 * * * *', async () => {
         const { today, yesterday } = getDateRange();
         console.log(`⏰ [Cron] Running revenue aggregation for ${yesterday} → ${today}`);
         await aggregateRevenue(yesterday, today);
