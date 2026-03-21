@@ -23,16 +23,17 @@ jobs:
             set -e
             echo "📥 Pulling latest code..."
             cd /opt/NodeJS_FirstProject
-            git pull origin main
+            sudo git config --global --add safe.directory /opt/NodeJS_FirstProject
+            sudo git pull origin main
 
             echo "🏗️ Building frontend..."
             cd product-management/frontend
-            npm install --production=false
-            npm run build
+            sudo npm install --production=false
+            sudo npm run build
             cd ..
 
             echo "🐳 Rebuilding Docker containers..."
-            docker compose up -d --build --remove-orphans
+            sudo docker compose up -d --build --remove-orphans
 
             echo "🔄 Reloading Nginx..."
             sudo nginx -t && sudo systemctl reload nginx
