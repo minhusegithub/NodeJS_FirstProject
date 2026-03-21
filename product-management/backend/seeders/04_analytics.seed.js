@@ -83,8 +83,16 @@ const seedAnalytics = async () => {
       bottleneck_stage: (data.total_fulfillment_mins / data.total_orders) > 240 ? 'FULFILLMENT' : 'OPTIMAL'
     }));
 
-    await StoreRevenueStat.bulkCreate(finalRevenueData);
-    await FulfillmentReport.bulkCreate(finalFulfillmentData);
+    if (finalRevenueData.length > 0) {
+      await StoreRevenueStat.bulkCreate(finalRevenueData, {
+        updateOnDuplicate: ['total_revenue', 'total_orders', 'unique_customers', 'total_items_sold', 'updated_at']
+      });
+    }
+    if (finalFulfillmentData.length > 0) {
+      await FulfillmentReport.bulkCreate(finalFulfillmentData, {
+        updateOnDuplicate: ['total_orders', 'avg_fulfillment_time_mins', 'sla_compliant_orders', 'sla_compliance_rate', 'sla_target_mins', 'bottleneck_stage', 'updated_at']
+      });
+    }
 
 
     // --------------------------------------------------------------------------------
