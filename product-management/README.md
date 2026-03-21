@@ -1,409 +1,185 @@
-# 🛍️ Product Management - E-commerce System
+# 🛍️ Product Management - E-commerce System Architecture
 
-Modern full-stack e-commerce application with React frontend, featuring JWT authentication, Redis caching, shopping cart, checkout, and comprehensive admin panel.
+Báo cáo Kiến trúc Hệ thống / System Architecture Documentation cho ứng dụng E-commerce (React + Node.js + PostgreSQL + Redis).
 
-## 📋 Table of Contents
-- [Tech Stack](#tech-stack)
-- [Features](#features)
-- [Installation](#installation)
-  - [Standard Installation](#standard-installation)
-  - [Docker Installation](#docker-installation-recommended)
-- [Project Structure](#project-structure)
-- [API Documentation](#api-documentation)
-- [Migration Progress](#migration-progress)
-- [Screenshots](#screenshots)
-- [Testing](#testing)
+## 📋 Mục lục / Table of Contents
+- [Kiến trúc Tổng thể (High-level Architecture)](#-kiến-trúc-tổng-thể-high-level-architecture)
+- [Kiến trúc Frontend (Client-side)](#-kiến-trúc-frontend-client-side)
+- [Kiến trúc Backend (Server-side)](#-kiến-trúc-backend-server-side)
+- [Kiến trúc Cơ sở dữ liệu & Caching (Data Layer)](#-kiến-trúc-cơ-sở-dữ-liệu--caching-data-layer)
+- [Luồng Dữ liệu (Data Flow)](#-luồng-dữ-liệu-data-flow)
+- [Cấu trúc Thư mục (Directory Structure)](#-cấu-trúc-thư-mục-directory-structure)
+- [Hướng dẫn Cài đặt & Triển khai](#-hướng-dẫn-cài-đặt--triển-khai)
+- [Bảo mật Hệ thống (Security Architecture)](#-bảo-mật-hệ-thống-security-architecture)
 
 ---
 
-## 🚀 Tech Stack
+## 🏗 Kiến trúc Tổng thể (High-level Architecture)
 
-### Backend
-- **Runtime**: Node.js 20
-- **Framework**: Express.js
-- **Database**: PostgreSQL 15 (Sequelize ORM)
-- **Cache**: Redis 7 (ioredis client)
-- **Authentication**: JWT (Access Token + Refresh Token)
-- **Rate Limiting**: rate-limiter-flexible
-- **File Upload**: Multer + Cloudinary
-- **Payment**: VNPay Integration
-- **Module System**: ES6 Modules
-- **Security**: CORS, HttpOnly Cookies, Token Blacklist
+Hệ thống được thiết kế theo mô hình **Client-Server Architecture** với việc tách biệt hoàn toàn giữa Frontend (SPA) và Backend (RESTful API). Hệ thống sử dụng **Redis** làm lớp Caching để tối ưu hiệu suất truy xuất dữ liệu từ **PostgreSQL**.
 
-### Frontend
-- **Framework**: React 18
-- **Build Tool**: Vite
-- **State Management**: Zustand
-- **Routing**: React Router v6
-- **HTTP Client**: Axios (with interceptors)
-- **Notifications**: React Toastify
-- **Date Handling**: Moment.js
-- **Styling**: Custom CSS (Modern, Responsive)
-
-### Infrastructure
-- **Containerization**: Docker + Docker Compose
-- **Deployment**: Docker-ready (VPS/Cloud compatible)
-- **Monitoring**: Health checks built-in
-
----
-
-## ✨ Features
-
-### 🛒 Customer Features
-- ✅ User Authentication (Register, Login, Logout)
-- ✅ JWT with Auto Token Refresh
-- ✅ Browse Products (Grid, Pagination, Search)
-- ✅ Product Details (Images, Description, Stock)
-- ✅ Shopping Cart (Add, Update, Remove)
-- ✅ Checkout Process (Shipping Info, Payment Method)
-- ✅ Order Management (View, Track, Cancel)
-- ✅ Order History with Status Tracking
-- ✅ Responsive Design (Mobile-friendly)
-
-### 👨‍💼 Admin Features
-- ✅ Admin Dashboard (Statistics, Charts)
-- ✅ Product Management (CRUD, Bulk Actions)
-- ✅ Order Management (Status Updates)
-- ✅ Real-time Statistics
-- ✅ Revenue Analytics
-- ✅ Top Products Tracking
-- ✅ Stock Monitoring
-- ✅ Beautiful Admin UI
-
-### 🔐 Security Features
-- ✅ JWT Authentication with Blacklist
-- ✅ Access Token (15 min) + Refresh Token (7 days)
-- ✅ HttpOnly Cookies for Refresh Token
-- ✅ Instant Token Revocation (Redis-backed)
-- ✅ Protected Routes (Client & Admin)
-- ✅ Rate Limiting (Login, Register)
-- ✅ CORS Configuration
-- ✅ Password Hashing
-- ✅ Automatic Token Refresh
-
-### ⚡ Performance Features
-- ✅ Redis Caching Layer
-  - Product List Cache (5min TTL)
-  - Product Detail Cache (10min TTL)
-  - Category Tree Cache (1hr TTL)
-  - Shopping Cart Cache (1hr TTL)
-  - User Session Cache (15min TTL)
-- ✅ Graceful Degradation (Redis down = fallback to DB)
-- ✅ Cache Invalidation on Mutations
-- ✅ 20-60x Faster Response Times (cached)
-
----
-
-## 📦 Installation
-
-### Docker Installation (Recommended)
-
-**Cách nhanh nhất để chạy toàn bộ hệ thống:**
-
-```bash
-# 1. Clone repository
-git clone <your-repo-url>
-cd product-management
-
-# 2. Copy và cấu hình environment
-cp .env.docker .env
-# Chỉnh sửa .env với thông tin của bạn
-
-# 3. Chạy toàn bộ stack (PostgreSQL + Redis + Backend)
-docker-compose up -d
-
-# 4. Xem logs
-docker-compose logs -f backend
-
-# 5. Truy cập
-# Backend: http://localhost:3000
-# PostgreSQL: localhost:5432
-# Redis: localhost:6379
+```text
+    ┌────────────────┐                       ┌────────────────────────────────────────┐
+    │                │                       │           BACKEND (Node.js/Express)    │
+    │  CLIENT LAYER  │    HTTP(S) / REST     │                                        │
+    │  (React.js)    │ ────────────────────▶ │  ┌─────────────┐       ┌────────────┐  │
+    │                │ ◀──────────────────── │  │ Controllers │ ────▶ │  Services  │  │
+    └────────────────┘    JSON Responses     │  └─────────────┘       └────────────┘  │
+            │                                │         │                    │         │
+            │                                │         │              ┌─────▼─────┐   │
+            │                                │         │              │ Repos/ORM │   │
+            ▼                                │         ▼              └─────┬─────┘   │
+  ┌──────────────────┐                       │  ┌─────────────┐             │         │
+  │ Web Browser / UI │                       │  │ Middlewares │             │         │
+  └──────────────────┘                       │  └─────────────┘             │         │
+                                             └──────────────────────────────┼─────────┘
+                                                                            │
+                                                     ┌──────────────────────┴────────┐
+                                                     │        DATA LAYER             │   
+                                                     │                               │
+                                                     ▼                               ▼
+                                              ┌────────────┐                   ┌────────────────┐
+                                              │   REDIS    │  ◀── Cache ────── │   POSTGRESQL   │
+                                              │ (In-memory │ ─────── DB ─────▶ │  (Persistent   │
+                                              │   Cache)   │                   │    Storage)    │
+                                              └────────────┘                   └────────────────┘
 ```
 
-📖 **Chi tiết**: Xem [DOCKER_DEPLOYMENT.md](./DOCKER_DEPLOYMENT.md)
+---
+
+## 🌐 Kiến trúc Frontend (Client-side)
+
+Frontend được xây dựng dưới dạng **Single Page Application (SPA)**, sử dụng React và Vite.
+
+### Các thành phần chính (Core Components):
+1. **View/UI Layer (React 18)**: Quản lý giao diện, được chia thành các function components. Sử dụng React Router v6 để xử lý định tuyến (Routing) ở phía client. Tách biệt rõ ràng giữa Client UI và Admin Panel.
+2. **State Management (Zustand)**: Quản lý Global State một cách nhẹ nhàng (như Auth State, Cart State, Product State).
+3. **Data Fetching & API Client (Axios)**: Giao tiếp với Backend API qua Axios, được cấu hình với Interceptors để tự động đính kèm JWT tokens (Access Token) và xử lý việc **Auto Token Refresh** khi token hết hạn.
+4. **Styling (CSS/Tailwind)**: Sử dụng các biến CSS custom/Tailwind, đảm bảo giao diện responsive (Mobile-first) và có UX tốt.
 
 ---
 
-### Standard Installation
+## ⚙️ Kiến trúc Backend (Server-side)
 
-**Prerequisites:**
-- Node.js 20+
-- PostgreSQL 15+
-- Redis 7+
-- npm or yarn
+Backend áp dụng kiến trúc **N-Tier (Layered Architecture)** tập trung vào API, tách biệt giữa xử lý request, logic nghiệp vụ, và truy xuất dữ liệu.
 
-### Backend Setup
-```bash
-# 1. Cài đặt PostgreSQL và Redis
-# Windows: Download từ postgresql.org và redis.io
-# Linux: sudo apt install postgresql redis-server
-# Mac: brew install postgresql redis
-
-# 2. Tạo database
-psql -U postgres
-CREATE DATABASE product_management;
-\q
-
-# 3. Start Redis
-redis-server
-
-# 4. Navigate to backend directory
-cd backend
-
-# 5. Install dependencies
-npm install
-
-# 6. Configure .env file
-cp .env.example .env
-# Điền thông tin: PG_*, REDIS_URL, JWT_*, etc.
-
-# 7. Start backend server
-npm start
-# Server chạy tại: http://localhost:3000
-```
-
-### Frontend Setup
-```bash
-# Navigate to frontend directory
-cd frontend
-
-# Install dependencies
-npm install
-
-# Configure environment variables
-# Create .env file with:
-VITE_API_URL=http://localhost:3000/api/v1
-
-# Start development server
-npm run dev
-```
-
-### Access Application
-- **Frontend**: http://localhost:5173
-- **Backend API**: http://localhost:3000/api/v1
-- **Admin Panel**: http://localhost:5173/admin
+### Các tầng (Layers):
+1. **Routing Layer (`/routes`)**: Định nghĩa các API endpoints (GET, POST, PUT, DELETE) và điều phối request tới các Controllers.
+2. **Middleware Layer (`/middlewares`)**: Xử lý các tác vụ trung gian trước khi tới controller:
+   - `jwt.middleware.js`: Kiểm tra, xác thực Access Token/Refresh Token.
+   - `cors.middleware.js`: Quản lý Cross-Origin Resource Sharing.
+   - `error.middleware.js`: Catch và format các exception theo chuẩn JSON (Global Error Handler).
+3. **Controller Layer (`/controllers`)**: Nhận HTTP request, validate dữ liệu đầu vào (Input), gọi Data/Service layer để xử lý, và trả về HTTP response (JSON).
+4. **Service/Helper Layer (`/services`, `/helpers`)**: Chứa logic nghiệp vụ phức tạp (Business Logic). Ví dụ: tính toán thống kê (Momentum Report), xử lý file, sinh JWT token.
+5. **Model/Data Layer (`/models`)**: Quản lý schema dữ liệu thông qua **Sequelize ORM**, mapping các objects trong Node.js xuống các tables trong PostgreSQL.
 
 ---
 
-## 📁 Project Structure
+## 💾 Kiến trúc Cơ sở dữ liệu & Caching (Data Layer)
 
-```
+### 1. Primary Database (PostgreSQL)
+Lưu trữ toàn bộ dữ liệu bền vững của hệ thống (Persisted Data). Các module data chính:
+- **Users & Accounts**: Thông敏 tin tài khoản, mật khẩu (đã hash), phân quyền (Admin/User).
+- **Products**: Thông tin sản phẩm.
+- **Orders & Cart**: Quản lý giỏ hàng và trạng thái đơn hàng.
+
+### 2. Caching Layer (Redis)
+Tối ưu hóa hiệu năng hệ thống (giảm thiểu số lần query vào DB).
+- **Session/Token Blacklist**: Lưu trữ danh sách các JWT tokens đã bị thu hồi (Revoked).
+- **Data Caching**: Caching danh sách sản phẩm, chi tiết sản phẩm, báo cáo thống kê quản trị viên (Admin Dashboard cache).
+- **Chiến lược Cache**: Sử dụng Time-To-Live (TTL) từ 5-60 phút tùy loại dữ liệu, và có cơ chế Cache Invalidation khi thực hiện các API mutations (POST/PATCH/DELETE). Fallback tự động về PostgreSQL nếu Redis sập.
+
+---
+
+## 🔄 Luồng Dữ liệu (Data Flow) - Ví dụ: Get Product List
+
+1. **Client** gửi `GET /api/v1/products` qua Axios.
+2. **Backend Router** nhận request, đẩy qua Product Controller.
+3. Controller gọi Redis Client để kiểm tra cache key `products:list`.
+   - *Cache Hit*: Trả ngay data từ RAM (Redis) về cho Client (~5ms-10ms).
+   - *Cache Miss*: 
+     a. Dùng Sequelize ORM query lấy sách/sản phầm từ PostgreSQL.
+     b. Lưu kết quả mới lấy vào Redis với TTL quy định.
+     c. Xử lý logic và trả response (JSON) về Client.
+
+---
+
+## 📂 Cấu trúc Thư mục (Directory Structure)
+
+Kiến trúc thư mục phản ánh sự tách biệt rõ ràng giữa các phân hệ:
+
+```text
 product-management/
-├── backend/
-│   ├── config/  
-│   │   ├── jwt.js               # JWT utilities
-│   │   └── system.js            # System config
-│   ├── controllers/
-│   │   ├── api/
-│   │   │   ├── auth.controller.js
-│   │   │   ├── product.controller.js
-│   │   │   ├── cart.controller.js
-│   │   │   ├── order.controller.js
-│   │   │   └── admin/
-│   │   │       ├── dashboard.controller.js
-│   │   │       ├── product.controller.js
-│   │   │       └── order.controller.js
-│   ├── middlewares/
-│   │   ├── jwt.middleware.js    # Auth middleware
-│   │   ├── cors.middleware.js   # CORS config
-│   │   └── error.middleware.js  # Error handler
-│   ├── models/
-│   │   ├── user.model.js
-│   │   ├── account.model.js
-│   │   ├── product.model.js
-│   │   ├── cart.model.js
-│   │   └── order.model.js
-│   ├── routes/
-│   │   └── api/v1/
-│   │       ├── auth.route.js
-│   │       ├── product.route.js
-│   │       ├── cart.route.js
-│   │       ├── order.route.js
-│   │       └── admin/
-│   ├── helpers/
-│   │   └── generate.js
-│   ├── index.js                 # Main server
-│   ├── package.json
-│   └── .env
+├── backend/                       # N-Tier RESTful API Architecture
+│   ├── config/                    # Cấu hình system, DB, Redis, JWT
+│   ├── controllers/               # Xử lý Request/Response logic
+│   ├── middlewares/               # JWT Auth, Errors, CORS
+│   ├── models/                    # ORM Models (Sequelize/PostgreSQL)
+│   ├── routes/                    # API v1 end-points router
+│   ├── services/                  # Business Logic (VD: Analytics, Thống kê)
+│   ├── index.js                   # Application Entry-point
+│   └── package.json
 │
-└── frontend/
-    ├── src/
-    │   ├── assets/styles/
-    │   │   ├── index.css        # Main styles
-    │   │   ├── orders.css       # Order styles
-    │   │   └── admin.css        # Admin styles
-    │   ├── components/
-    │   │   ├── common/
-    │   │   │   ├── Header.jsx
-    │   │   │   └── ProtectedRoute.jsx
-    │   │   └── admin/
-    │   │       └── AdminLayout.jsx
-    │   ├── pages/
-    │   │   ├── client/
-    │   │   │   ├── Home.jsx
-    │   │   │   ├── Login.jsx
-    │   │   │   ├── Register.jsx
-    │   │   │   ├── Products.jsx
-    │   │   │   ├── ProductDetail.jsx
-    │   │   │   ├── Cart.jsx
-    │   │   │   ├── Checkout.jsx
-    │   │   │   ├── Orders.jsxs
-    │   │   └── admin/
-    │   │       ├── Dashboard.jsx
-    │   │       ├── Products.jsx
-    │   │       └── Orders.jsx
-    │   ├── services/
-    │   │   └── axios.js         # API client
-    │   ├── stores/
-    │   │   ├── authStore.js
-    │   │   ├── productStore.js
-    │   │   ├── cartStore.js
-    │   │   ├── orderStore.js
-    │   │   └── admin/
-    │   │       ├── dashboardStore.js
-    │   │       ├── productStore.js
-    │   │       └── orderStore.js
-    │   ├── App.jsx
-    │   └── main.jsx
-    ├── package.json
-    ├── vite.config.js
-    └── .env
+├── frontend/                      # Client-Side Rendering Architecture
+│   ├── src/
+│   │   ├── assets/                # Styles (CSS), Images
+│   │   ├── components/            # Reusable UI Components
+│   │   ├── pages/                 # Route/View components (Client & Admin)
+│   │   ├── services/              # API Clients (Axios setup)
+│   │   ├── stores/                # Global State (Zustand stores)
+│   │   └── App.jsx                # Root Component & Routes Config
+│   ├── vite.config.js             # Build system config
+│   └── package.json
+│
+├── docker-compose.yml             # Cấu trúc Containerization cho toàn hệ thống
+└── vercel.json                    # Cấu hình deploy Frontend
 ```
 
 ---
 
-## 📡 API Documentation
+## 🚀 Hướng dẫn Cài đặt & Triển khai
 
-### Authentication
-```
-POST   /api/v1/auth/register      # Register new user
-POST   /api/v1/auth/login         # Login user
-POST   /api/v1/auth/refresh       # Refresh access token
-POST   /api/v1/auth/logout        # Logout user
-GET    /api/v1/auth/profile       # Get user profile (Protected)
-PATCH  /api/v1/user/info          # Update user profile (Protected)
-```
+### Môi trường Triển khai & Containerization
+Dự án ứng dụng **Docker** cho môi trường deployment để đảm bảo tính nhất quán (Consistency) và dễ dàng scale.
 
-### Products
-```
-GET    /api/v1/products           # List products
-GET    /api/v1/products/featured  # Featured products
-GET    /api/v1/products/:slug     # Product detail
-```
+### Chạy hệ thống bằng Docker (Khuyến nghị)
+1. Clone dự án và cấu hình biến môi trường (Environment Variables):
+   ```bash
+   cp .env.docker .env
+   ```
+2. Build và khởi động các containers (Postgres, Redis, Backend):
+   ```bash
+   docker-compose up -d --build
+   ```
+   *Hệ thống Backend sẽ chạy ở cổng `:3000`, Postgres tại `:5432`, và Redis tại `:6379`.*
 
-### Cart (Protected)
-```
-GET    /api/v1/cart               # Get cart
-POST   /api/v1/cart/add           # Add to cart
-PATCH  /api/v1/cart/update        # Update quantity
-DELETE /api/v1/cart/delete/:id    # Remove item
-```
+### Cài đặt chạy Local (Không dùng Docker)
+**1. Backend**
+   ```bash
+   cd backend
+   npm install
+   # Yêu cầu cài sẵn PostgreSQL và Redis chạy background
+   cp .env.example .env # Điền thông tin kết nối DB và Redis URI
+   npm start
+   ```
 
-### Orders (Protected)
-```
-POST   /api/v1/orders/checkout    # Place order
-GET    /api/v1/orders             # List orders
-GET    /api/v1/orders/:id         # Order detail
-PATCH  /api/v1/orders/:id/cancel  # Cancel order
-```
-
-### Admin (Protected - Admin Only)
-```
-GET    /api/v1/admin/dashboard              # Dashboard stats
-GET    /api/v1/admin/products               # List products
-POST   /api/v1/admin/products               # Create product
-PATCH  /api/v1/admin/products/:id           # Update product
-DELETE /api/v1/admin/products/:id           # Delete product
-GET    /api/v1/admin/orders                 # List orders
-PATCH  /api/v1/admin/orders/:id/status      # Update order status
-GET    /api/v1/admin/orders/statistics      # Order statistics
-```
+**2. Frontend**
+   ```bash
+   cd frontend
+   npm install
+   # Đảm bảo VITE_API_URL trỏ đúng về backend (vd: http://localhost:3000/api/v1)
+   npm run dev
+   ```
 
 ---
 
+## 🛡️ Bảo mật hệ thống (Security Architecture)
 
-
-
-## 🎨 Design Features
-
-### Modern UI/UX
-- ✅ Gradient backgrounds
-- ✅ Smooth animations
-- ✅ Hover effects
-- ✅ Loading states
-- ✅ Toast notifications
-- ✅ Responsive design
-- ✅ Color-coded status badges
-- ✅ Clean typography
-
-### Color Palette
-- **Primary**: #6366f1 (Indigo)
-- **Secondary**: #ec4899 (Pink)
-- **Success**: #10b981 (Green)
-- **Warning**: #f59e0b (Amber)
-- **Error**: #ef4444 (Red)
+- **Authentication**: JWT với mô hình Access Token (ngắn hạn, 15m) và Refresh Token (dài hạn, 7 ngày).
+- **Token Storage**: Refresh Token có thể lưu trữ ở `HttpOnly Cookie` để chống tấn công XSS, trong khi Access token nằm ở Client's memory/state.
+- **Revocation**: Sử dụng **Redis Blacklist** để vô hiệu hóa ngay lập tức các token khi User Logout hoặc bị khóa tải khoản.
+- **Rate Limiting**: Hạn chế số lượng request để chống brute-force vào các endpoint nhạy cảm (Đăng nhập, Đăng ký).
 
 ---
 
-## 🧪 Testing
-
-See [TESTING_GUIDE.md](./TESTING_GUIDE.md) for detailed testing instructions.
-
-### Quick Test Flow
-1. **Register** → Create new account
-2. **Login** → Authenticate
-3. **Browse Products** → View product catalog
-4. **Add to Cart** → Add items
-5. **Checkout** → Place order
-6. **Track Order** → View order status
-7. **Admin Panel** → Manage system
-
----
-
-## 📊 Key Statistics
-
-- **Total API Endpoints**: 25+
-- **Frontend Pages**: 15+
-- **Zustand Stores**: 7
-- **React Components**: 20+
-- **CSS Files**: 3 (1800+ lines)
-- **Models**: 5 (ES6)
-- **Controllers**: 8
-- **Middlewares**: 3
-
----
-
-
-
-## 📝 Documentation Files
-
-- `README.md` - This file
-
-
----
-
-
-
-## 📄 License
-
-This project is for educational purposes.
-
----
-
-## 👨‍💻 Author
-
-Migrated from SSR to CSR (SPA) architecture
-- **Original**: Server-Side Rendering with Pug
-- **Migrated**: Client-Side Rendering with React
-
----
-
-## 🎉 Acknowledgments
-
-- React Team for React 18
-- Vite Team for blazing fast build tool
-- Zustand for simple state management
-- Express.js for robust backend framework
-
-
+*(Tài liệu Kiến trúc này được soạn thảo nhằm phục vụ việc đánh giá và trình bày báo cáo Đồ án)*
