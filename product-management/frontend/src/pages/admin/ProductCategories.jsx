@@ -234,9 +234,9 @@ const AdminProductCategories = () => {
 
     return (
         <div className="admin-page">
-            <div className="admin-page-header">
+            <div className="admin-page-header" style={{ marginTop: '20px' }}>
                 <div>
-                    
+                    <h1 className="ap-page-title">Quản lý Danh Mục Sản Phẩm</h1>
                     <p className="text-muted">
                         Tổng số: {categories.length} danh mục
                     </p>
@@ -252,7 +252,7 @@ const AdminProductCategories = () => {
                     <table className="admin-table category-tree-table">
                         <thead>
                             <tr>
-                               
+
                                 <th>Tên danh mục</th>
                                 <th>Ngày cập nhật</th>
                             </tr>
@@ -264,7 +264,7 @@ const AdminProductCategories = () => {
                                     onClick={() => handleRowClick(category)}
                                     className={`clickable-row ${category.level > 0 ? 'child-category' : 'parent-category'}`}
                                 >
-                                    
+
                                     <td className="category-name-cell">
                                         {renderCategoryName(category)}
                                     </td>
@@ -286,7 +286,7 @@ const AdminProductCategories = () => {
                             <button type="button" className="btn-close" onClick={handleCloseModal}>
                                 ×
                             </button>
-                            
+
                         </div>
 
                         <form onSubmit={handleSubmit}>
@@ -331,10 +331,10 @@ const AdminProductCategories = () => {
                                     disabled={submitting}
                                     className="store-btn store-btn-danger"
                                 >
-                                    <i className="fa-solid fa-trash"></i>                                    
+                                    <i className="fa-solid fa-trash"></i>
                                 </button>
 
-                                
+
                                 <button
                                     type="submit"
                                     className="btn-category-submit"
