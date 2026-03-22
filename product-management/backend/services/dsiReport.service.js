@@ -201,9 +201,16 @@ export const startDSIAggregator = () => {
         await calculateAndSaveDSI(yesterday);
     });
 
-    // Startup run
-    calculateAndSaveDSI()
-        .then(rows => console.log(`📦 [Cron DSI] Initial upsert ${rows.length} records`))
+    // Startup run — skip gracefully if table not yet created (fresh DB / production first boot)
+    sequelize.query(`SELECT to_regclass('public.dsi_reports')`, { type: QueryTypes.SELECT })
+        .then(([result]) => {
+            if (!result.to_regclass) {
+                console.warn('⚠️  [Cron DSI] Table dsi_reports not found, skipping startup run. Run migrations or sync first.');
+                return;
+            }
+            return calculateAndSaveDSI()
+                .then(rows => console.log(`📦 [Cron DSI] Initial upsert ${rows.length} records`));
+        })
         .catch(error => console.error('❌ [Cron DSI] Initial run failed:', error.message));
 
     console.log('📊 DSI cron job started');

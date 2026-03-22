@@ -36,6 +36,7 @@ jobs:
             sudo docker compose up -d --build --remove-orphans
 
             echo "🔄 Reloading Nginx..."
+            sudo cp /opt/NodeJS_FirstProject/product-management/nginx/default.conf /etc/nginx/sites-available/mvnstore
             sudo nginx -t && sudo systemctl reload nginx
 
             echo "✅ Deployment completed successfully!"
