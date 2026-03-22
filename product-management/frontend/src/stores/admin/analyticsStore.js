@@ -18,6 +18,17 @@ export const useAdminAnalyticsStore = create((set) => ({
         fulfillmentSimulation: false
     },
 
+    // Persisted filter state for RevenueBestSellers
+    revenueFilters: {
+        from: '',
+        to: '',
+        store_id: '',
+        bestSellersSortBy: 'momentum',
+        bestSellersTopLimit: 10
+    },
+    setRevenueFilters: (updates) =>
+        set((s) => ({ revenueFilters: { ...s.revenueFilters, ...updates } })),
+
     getRevenueOverview: async (params = {}) => {
         set(s => ({ loading: { ...s.loading, revenue: true } }));
         try {

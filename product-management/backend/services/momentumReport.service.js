@@ -99,15 +99,23 @@ export const updateMomentumReports = async () => {
 };
 
 export const startMomentumAggregator = () => {
-    // Dev/test schedule: every 1 hour.
+    // Dev/test schedule: every 12 hour.
     // For production, use something like: '0 3 * * *' (daily at 03:00).
-    cron.schedule('0 * * * *', async () => {
+    cron.schedule('0 */12 * * *', async () => {
         try {
             const records = await updateMomentumReports();
             console.log(`\uD83D\uDCC8 [Cron Momentum] Upserted ${records.length} records`);
         } catch (error) {
             console.error('\u274C [Cron Momentum] Update failed:', error.message);
         }
+    });
+
+    // Daily at 2:00 AM (UTC+7): full recompute for yesterday
+    cron.schedule('0 2 * * *', async () => {
+        // 18:05 UTC = 01:05 UTC+7
+        const { yesterday } = getDateRange();
+        console.log(`⏰ [Cron Daily] Full recompute for ${yesterday}`);
+        await updateMomentumReports(yesterday, yesterday);
     });
 
     updateMomentumReports()

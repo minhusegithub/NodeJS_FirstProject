@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useAdminAnalyticsStore } from '../../../stores/admin/analyticsStore';
 import { useAuthStore } from '../../../stores/authStore';
 import {
@@ -24,40 +24,33 @@ const RevenueBestSellers = () => {
     const { user } = useAuthStore();
     const {
         revenue, storePerformance, bestSellers,
-        loading, getRevenueOverview, getStorePerformance, getBestSellers
+        loading, getRevenueOverview, getStorePerformance, getBestSellers,
+        revenueFilters, setRevenueFilters
     } = useAdminAnalyticsStore();
 
     const isSystemAdmin = useMemo(() =>
         user?.roles?.some(r => r.roleName === 'SystemAdmin'), [user]);
 
-    // Filters
-    const [filters, setFilters] = useState({
-        from: '',
-        to: '',
-        store_id: ''
-    });
-
-    // Best Sellers Sort Criteria
-    const [bestSellersSortBy, setBestSellersSortBy] = useState('momentum');
-    const [bestSellersTopLimit, setBestSellersTopLimit] = useState(10);
+    // Destructure persisted filters from Zustand store
+    const { from, to, store_id, bestSellersSortBy, bestSellersTopLimit } = revenueFilters;
 
     // Fetch data on mount and filter change
     useEffect(() => {
-        if (!filters.from || !filters.to) return;
+        if (!from || !to) return;
 
-        const params = { from: filters.from, to: filters.to };
-        if (filters.store_id) params.store_id = filters.store_id;
+        const params = { from, to };
+        if (store_id) params.store_id = store_id;
 
         getRevenueOverview(params);
         getBestSellers({ ...params, sort_by: bestSellersSortBy, limit: bestSellersTopLimit });
 
         if (isSystemAdmin) {
-            getStorePerformance({ from: filters.from, to: filters.to });
+            getStorePerformance({ from, to });
         }
-    }, [filters.from, filters.to, filters.store_id, bestSellersSortBy, bestSellersTopLimit, isSystemAdmin]);
+    }, [from, to, store_id, bestSellersSortBy, bestSellersTopLimit, isSystemAdmin]);
 
     const handleFilterChange = (key, value) => {
-        setFilters(prev => ({ ...prev, [key]: value }));
+        setRevenueFilters({ [key]: value });
     };
 
     // Get stores list from storePerformance for dropdown
@@ -103,7 +96,7 @@ const RevenueBestSellers = () => {
                         <label>Từ ngày</label>
                         <input
                             type="date"
-                            value={filters.from}
+                            value={from}
                             onChange={e => handleFilterChange('from', e.target.value)}
                         />
                     </div>
@@ -111,7 +104,7 @@ const RevenueBestSellers = () => {
                         <label>Đến ngày</label>
                         <input
                             type="date"
-                            value={filters.to}
+                            value={to}
                             onChange={e => handleFilterChange('to', e.target.value)}
                         />
                     </div>
@@ -119,7 +112,7 @@ const RevenueBestSellers = () => {
                         <div className="dash-filter-item">
                             <label>Cửa hàng</label>
                             <select
-                                value={filters.store_id}
+                                value={store_id}
                                 onChange={e => handleFilterChange('store_id', e.target.value)}
                             >
                                 <option value="">Tất cả cửa hàng</option>
@@ -261,7 +254,7 @@ const RevenueBestSellers = () => {
                                 
                                 <select
                                     value={bestSellersTopLimit}
-                                    onChange={(e) => setBestSellersTopLimit(parseInt(e.target.value, 10))}
+                                    onChange={(e) => setRevenueFilters({ bestSellersTopLimit: parseInt(e.target.value, 10) })}
                                     className="dash-sort-select"
                                 >
                                     <option value={5}>5</option>
@@ -272,7 +265,7 @@ const RevenueBestSellers = () => {
                                 
                                 <select
                                     value={bestSellersSortBy}
-                                    onChange={(e) => setBestSellersSortBy(e.target.value)}
+                                    onChange={(e) => setRevenueFilters({ bestSellersSortBy: e.target.value })}
                                     className="dash-sort-select"
                                 >
                                     <option value="momentum">Momentum score</option>

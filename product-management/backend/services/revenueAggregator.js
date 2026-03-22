@@ -76,16 +76,15 @@ const getDateRange = () => {
  * Start scheduled revenue aggregation cron jobs.
  */
 export const startRevenueAggregator = () => {
-    // TEST: Every 30 minutes (change back to 1 hour for production)
-    cron.schedule('*/30 * * * *', async () => {
+    // TEST: Every 6 hour (change back to 12 hour for production)
+    cron.schedule('0 */6 * * *', async () => {
         const { today, yesterday } = getDateRange();
         console.log(`⏰ [Cron] Running revenue aggregation for ${yesterday} → ${today}`);
         await aggregateRevenue(yesterday, today);
     });
 
-    // Daily at 1:05 AM (UTC+7): full recompute for yesterday
-    cron.schedule('5 1 * * *', async () => {
-        // 18:05 UTC = 01:05 UTC+7
+    // Daily at 1:00 AM (UTC+7): full recompute for yesterday
+    cron.schedule('0 1 * * *', async () => {
         const { yesterday } = getDateRange();
         console.log(`⏰ [Cron Daily] Full recompute for ${yesterday}`);
         await aggregateRevenue(yesterday, yesterday);

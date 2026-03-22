@@ -106,9 +106,9 @@ export const generateDailyFulfillmentReport = async () => {
 };
 
 export const startFulfillmentAggregator = () => {
-    // Test schedule: every 30 minutes.
-    // Production recommendation: 0 1 * * * (01:00 everyday).
-    cron.schedule('*/30 * * * *', async () => {
+    // Test schedule: every 12 hours.
+    // Production recommendation: 0 2 * * * (02:00 everyday).
+    cron.schedule('0 */12 * * *', async () => {
         try {
             const reports = await generateDailyFulfillmentReport();
             console.log(` [Cron Fulfillment] Upserted ${reports.length} records`);
@@ -116,6 +116,15 @@ export const startFulfillmentAggregator = () => {
             console.error('\u274C [Cron Fulfillment] Generate failed:', error.message);
         }
     });
+
+    // Daily at 3:00 AM (UTC+7): full recompute for yesterday
+    cron.schedule('0 3 * * *', async () => {
+        const { yesterday } = getDateRange();
+        console.log(`⏰ [Cron Daily] Full recompute for ${yesterday}`);
+        await generateDailyFulfillmentReport(yesterday);
+    });
+
+
 
     console.log(' Fulfillment cron job started');
 };

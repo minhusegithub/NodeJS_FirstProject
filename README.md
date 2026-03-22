@@ -18,12 +18,12 @@ Một website thời trang với chức năng quản lí sản phẩm , quản l
   - Xem thông tin chi tiết sản phẩm
   - Thêm /cập nhật số lượng sản phẩm trong giỏ hàng  
   - Đặt hàng , thanh toán
-  - Trò chuyện / Tạo phòng chat với các khách khác của cửa hàng
+
     
 ## Công nghệ  
-- Frontend: HTML, CSS, JavaScript , Bootstrap4
-- Backend: Node.js, Express
-- Cơ sở dữ liệu: MongoDB
+- Frontend: HTML, CSS, JavaScript , React, Zustand, Bootstrap4
+- Backend: Node.js, Express , Redis
+- Cơ sở dữ liệu: PostgreSQL , ORM Sequelize
 - Cloud : Cloudinary
  
 
@@ -32,12 +32,6 @@ Một website thời trang với chức năng quản lí sản phẩm , quản l
 ### Yêu cầu:
 - Node.js >= 16
 
-### Cách chạy:
-- git clone https://github.com/minhusegithub/NodeJS_FirstProject.git
-- cd product-management
-- npm install
-- add file .env (liên hệ tác giả)
-- npm start
 
 ## Tác giả
 - Vũ Ngọc Minh

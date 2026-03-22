@@ -183,8 +183,8 @@ const getDateLabel = () => {
 };
 
 export const startDSIAggregator = () => {
-    // Recalculate every 1 hour (for development, set to every 6-12 hours in production)
-    cron.schedule('0 * * * *', async () => {
+    // Recalculate every 12 hour (for development, set to every 6-12 hours in production)
+    cron.schedule('0 */12 * * *', async () => {
         try {
             console.log(`⏰ [Cron DSI] Recalculating DSI at ${getDateLabel()}`);
             const rows = await calculateAndSaveDSI();
@@ -192,6 +192,13 @@ export const startDSIAggregator = () => {
         } catch (error) {
             console.error('❌ [Cron DSI] Recalculation failed:', error.message);
         }
+    });
+
+    // Daily at 4:00 AM (UTC+7): full recompute for yesterday
+    cron.schedule('0 4 * * *', async () => {
+        const { yesterday } = getDateRange();
+        console.log(`⏰ [Cron Daily] Full recompute for ${yesterday}`);
+        await calculateAndSaveDSI(yesterday);
     });
 
     // Startup run
