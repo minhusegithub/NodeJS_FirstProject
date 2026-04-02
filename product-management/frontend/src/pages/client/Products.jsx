@@ -238,8 +238,8 @@ const Products = () => {
                                         className="btn btn-outline-secondary w-100"
                                         onClick={handleClearFilters}
                                     >
-                                        <i className="fa-solid fa-times me-2"></i>
-                                        Xóa bộ lọc
+                                        
+                                        Xóa
                                     </button>
                                 )}
                             </div>

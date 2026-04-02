@@ -232,21 +232,6 @@ export const getProductDetail = async (req, res) => {
 // [GET] /api/products/categories/tree
 export const getCategoryTree = async (req, res) => {
     try {
-        const cacheKey = 'categories:tree';
-
-        // 1. Thử cache trước
-        if (isRedisReady()) {
-            const cached = await redisGet(cacheKey);
-            if (cached) {
-                return res.json({
-                    code: 200,
-                    message: "Success (cached)",
-                    data: JSON.parse(cached)
-                });
-            }
-        }
-
-        // 2. Cache miss → query DB
         const categories = await ProductCategory.findAll({
             where: { status: 'active' },
             order: [['title', 'ASC']],
@@ -267,9 +252,6 @@ export const getCategoryTree = async (req, res) => {
         };
 
         const tree = buildTree(null);
-
-        // 3. Lưu vào cache (TTL 1 giờ)
-        await redisSet(cacheKey, JSON.stringify(tree), 3600);
 
         res.json({
             code: 200,

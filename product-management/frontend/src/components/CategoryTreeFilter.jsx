@@ -4,32 +4,51 @@ import api from '../services/axios';
 const CategoryTreeFilter = ({ onSelect, selectedCategory }) => {
     const [categories, setCategories] = useState([]);
     const [expandedCategories, setExpandedCategories] = useState(new Set());
+    const [isLoading, setIsLoading] = useState(true);
+    const [errorMessage, setErrorMessage] = useState('');
 
     useEffect(() => {
         fetchCategories();
     }, []);
 
     const fetchCategories = async () => {
+        setIsLoading(true);
+        setErrorMessage('');
+
         try {
             const response = await api.get('/products/categories/tree');
-            const data = response.data;
-            if (data.code === 200) {
-                setCategories(data.data);
-                // Auto-expand all categories to show tree structure
-                const allIds = new Set();
-                const collectIds = (cats) => {
-                    cats.forEach(cat => {
-                        if (cat.children && cat.children.length > 0) {
-                            allIds.add(cat.id);
-                            collectIds(cat.children);
-                        }
-                    });
-                };
-                collectIds(data.data);
-                setExpandedCategories(allIds);
+            const payload = response?.data;
+
+            if (payload?.code && payload.code !== 200) {
+                throw new Error(payload?.message || 'Failed to load categories');
             }
+
+            const tree = Array.isArray(payload?.data)
+                ? payload.data
+                : Array.isArray(payload)
+                    ? payload
+                    : [];
+
+            setCategories(tree);
+
+            // Auto-expand all categories to show tree structure
+            const allIds = new Set();
+            const collectIds = (cats) => {
+                cats.forEach(cat => {
+                    if (cat.children && cat.children.length > 0) {
+                        allIds.add(cat.id);
+                        collectIds(cat.children);
+                    }
+                });
+            };
+            collectIds(tree);
+            setExpandedCategories(allIds);
         } catch (error) {
             console.error('Error fetching categories:', error);
+            setCategories([]);
+            setErrorMessage('Không thể tải danh mục');
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -80,10 +99,14 @@ const CategoryTreeFilter = ({ onSelect, selectedCategory }) => {
         <div className="category-tree-filter">
             <h4>Danh mục</h4>
             <div className="category-list">
-                {categories.length > 0 ? (
+                {isLoading ? (
+                    <p className="text-muted">Đang tải...</p>
+                ) : errorMessage ? (
+                    <p className="text-danger">{errorMessage}</p>
+                ) : categories.length > 0 ? (
                     renderCategoryTree(categories)
                 ) : (
-                    <p className="text-muted">Đang tải...</p>
+                    <p className="text-muted">Chưa có danh mục</p>
                 )}
             </div>
         </div>
