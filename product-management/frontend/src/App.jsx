@@ -13,6 +13,7 @@ import AdminLayout from './components/admin/AdminLayout';
 import Home from './pages/client/Home';
 import Login from './pages/client/Login';
 import Register from './pages/client/Register';
+import ForgotPassword from './pages/client/ForgotPassword';
 import Products from './pages/client/Products';
 import ProductDetail from './pages/client/ProductDetail';
 import Cart from './pages/client/Cart';
@@ -50,6 +51,7 @@ function App() {
                     <Route path="/" element={<><Header /><Home /></>} />
                     <Route path="/login" element={<Login />} />
                     <Route path="/register" element={<Register />} />
+                    <Route path="/forgot-password" element={<ForgotPassword />} />
                     <Route path="/products" element={<><Header /><Products /></>} />
                     <Route path="/products/:slug" element={<><Header /><ProductDetail /></>} />
 

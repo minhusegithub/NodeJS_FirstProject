@@ -55,6 +55,19 @@ const User = sequelize.define('User', {
         type: DataTypes.JSONB,
         defaultValue: []
     },
+    // Forgot Password OTP
+    reset_password_otp: {
+        type: DataTypes.STRING(6),
+        allowNull: true
+    },
+    otp_expire: {
+        type: DataTypes.DATE,
+        allowNull: true
+    },
+    reset_password_token: {
+        type: DataTypes.STRING(500),
+        allowNull: true
+    },
     // Migration helper
     original_id: {
         type: DataTypes.STRING(50),

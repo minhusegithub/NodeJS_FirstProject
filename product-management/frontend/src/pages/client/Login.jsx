@@ -96,9 +96,9 @@ const Login = () => {
                                     </button>
 
                                     <div className="text-center mb-3">
-                                        <a href="#" className="text-decoration-none text-primary">
+                                        <Link to="/forgot-password" className="text-decoration-none text-primary">
                                             Quên mật khẩu?
-                                        </a>
+                                        </Link>
                                     </div>
 
                                     <div className="text-center">

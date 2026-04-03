@@ -52,3 +52,14 @@ export const registerRateLimiter = createLimiter({
     duration: 60 * 60, // 1 giờ
     blockDuration: 60 * 60
 });
+
+/**
+ * Rate limiter cho /auth/forgot-password: 3 lần / giờ
+ * Ngăn kẻ xấu spam email OTP
+ */
+export const forgotPasswordRateLimiter = createLimiter({
+    keyPrefix: 'rl:forgot-password',
+    points: 3,
+    duration: 60 * 60, // 1 giờ
+    blockDuration: 60 * 60
+});

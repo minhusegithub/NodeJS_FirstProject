@@ -113,3 +113,58 @@
     box-shadow: 0 5px 20px rgba(30, 74, 123, 0.4);
     background: #163a63;
 }
+
+/* Forgot Password Page */
+.forgot-password-page {
+    background: linear-gradient(135deg, #163a63 0%, #ffffff 100%);
+    min-height: 100vh;
+}
+
+.forgot-password-page .card {
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2) !important;
+}
+
+.step-icon {
+    font-size: 2.5rem;
+}
+
+.step-circle {
+    width: 32px;
+    height: 32px;
+    font-size: 14px;
+    background-color: #e9ecef;
+    color: #adb5bd;
+    transition: all 0.3s ease;
+}
+
+.step-circle.active {
+    background-color: #4F46E5;
+    color: #fff;
+}
+
+.step-line {
+    width: 40px;
+    height: 2px;
+    background-color: #e9ecef;
+    transition: all 0.3s ease;
+}
+
+.step-line.active {
+    background-color: #4F46E5;
+}
+
+.otp-input {
+    width: 52px;
+    height: 56px;
+    font-size: 22px;
+    transition: box-shadow 0.2s;
+    box-shadow: none;
+}
+
+.otp-input.filled {
+    box-shadow: 0 0 0 2px #4F46E5;
+}
+
+.show-password-btn {
+    border-radius: 0 12px 12px 0;
+}

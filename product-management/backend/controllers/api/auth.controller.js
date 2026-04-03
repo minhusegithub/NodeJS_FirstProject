@@ -1,8 +1,11 @@
 import md5 from 'md5';
+import crypto from 'crypto';
+import jwt from 'jsonwebtoken';
 import { User, Store, StoreStaff, Role, sequelize } from '../../models/sequelize/index.js'; // Sequelize models
 import * as jwtHelper from '../../config/jwt.js';
 import * as generateHelper from '../../helpers/generate.js';
 import { redisDel } from '../../config/redis.js';
+import { sendMail } from '../../helpers/sendMailESM.js';
 
 // Helper: fetch user with roles (reused in login & refresh)
 const fetchUserWithRoles = (userId) => User.findByPk(userId, {
@@ -322,5 +325,168 @@ export const profile = async (req, res) => {
             success: false,
             message: error.message
         });
+    }
+};
+
+// [POST] /api/v1/auth/forgot-password
+// Bước 1: Nhận email, sinh OTP 6 số, gửi email
+export const forgotPassword = async (req, res) => {
+    try {
+        const { email } = req.body;
+
+        if (!email) {
+            return res.status(400).json({ success: false, message: 'Email là bắt buộc!' });
+        }
+
+        // Luôn trả về thành công dù email không tồn tại (tránh lộ thông tin user)
+        const user = await User.findOne({ where: { email }, paranoid: true });
+
+        if (user) {
+            // Sinh OTP 6 số ngẫu nhiên bảo mật
+            const otp = crypto.randomInt(100000, 999999).toString();
+            const otpExpire = new Date(Date.now() + 5 * 60 * 1000); // Hết hạn sau 5 phút
+
+            // Lưu OTP vào DB
+            user.reset_password_otp = otp;
+            user.otp_expire = otpExpire;
+            user.reset_password_token = null; // Xóa token cũ nếu có
+            await user.save();
+
+            // Template email HTML
+            const html = `
+                <div style="font-family: Arial, sans-serif; max-width: 480px; margin: auto; padding: 24px; border: 1px solid #e0e0e0; border-radius: 12px;">
+                    <h2 style="color: #4F46E5; text-align: center;">🔐 Đặt lại mật khẩu</h2>
+                    <p style="color: #333;">Chúng tôi nhận được yêu cầu đặt lại mật khẩu cho tài khoản của bạn.</p>
+                    <p style="color: #333;">Mã xác thực OTP của bạn là:</p>
+                    <div style="text-align: center; margin: 24px 0;">
+                        <span style="font-size: 40px; font-weight: bold; letter-spacing: 12px; color: #4F46E5;">${otp}</span>
+                    </div>
+                    <p style="color: #666; font-size: 14px;">⏱ Mã này sẽ hết hạn sau <strong>5 phút</strong>.</p>
+                    <p style="color: #666; font-size: 14px;">Nếu bạn không yêu cầu điều này, hãy bỏ qua email này.</p>
+                    <hr style="border: none; border-top: 1px solid #e0e0e0; margin-top: 24px;"/>
+                    <p style="color: #aaa; font-size: 12px; text-align: center;">© 2025 MVN Shop Management</p>
+                </div>
+            `;
+
+            await sendMail(
+                email,
+                '🔑 Mã OTP đặt lại mật khẩu',
+                html
+            );
+        }
+
+        // Trả về thành công bất kể email có tồn tại hay không (security best practice)
+        return res.json({
+            success: true,
+            message: 'Nếu email hợp lệ, mã OTP đã được gửi. Vui lòng kiểm tra hộp thư của bạn.'
+        });
+    } catch (error) {
+        console.error('Forgot Password Error:', error);
+        res.status(500).json({ success: false, message: 'Lỗi máy chủ, vui lòng thử lại sau.' });
+    }
+};
+
+// [POST] /api/v1/auth/verify-otp
+// Bước 2: Xác thực OTP, trả về resetToken (JWT ngắn hạn) để cho phép đổi mật khẩu
+export const verifyOtp = async (req, res) => {
+    try {
+        const { email, otp } = req.body;
+
+        if (!email || !otp) {
+            return res.status(400).json({ success: false, message: 'Email và mã OTP là bắt buộc!' });
+        }
+
+        const user = await User.findOne({
+            where: { email },
+            paranoid: true
+        });
+
+        // Kiểm tra user, OTP có tồn tại, có khớp, và còn hạn
+        if (
+            !user ||
+            !user.reset_password_otp ||
+            !user.otp_expire ||
+            user.reset_password_otp !== otp.toString() ||
+            new Date() > new Date(user.otp_expire)
+        ) {
+            return res.status(400).json({
+                success: false,
+                message: 'Mã OTP không hợp lệ hoặc đã hết hạn!'
+            });
+        }
+
+        // OTP hợp lệ → xóa OTP cũ, sinh resetToken (JWT ngắn hạn 5 phút)
+        const resetToken = jwt.sign(
+            { userId: user.id, purpose: 'reset_password' },
+            process.env.JWT_ACCESS_SECRET,
+            { expiresIn: '5m' }
+        );
+
+        // Lưu resetToken vào DB và xóa OTP
+        user.reset_password_otp = null;
+        user.otp_expire = null;
+        user.reset_password_token = resetToken;
+        await user.save();
+
+        return res.json({
+            success: true,
+            message: 'Xác thực OTP thành công!',
+            data: { resetToken }
+        });
+    } catch (error) {
+        console.error('Verify OTP Error:', error);
+        res.status(500).json({ success: false, message: 'Lỗi máy chủ, vui lòng thử lại sau.' });
+    }
+};
+
+// [POST] /api/v1/auth/reset-password
+// Bước 3: Nhận resetToken + mật khẩu mới, cập nhật DB
+export const resetPassword = async (req, res) => {
+    try {
+        const { resetToken, newPassword } = req.body;
+
+        if (!resetToken || !newPassword) {
+            return res.status(400).json({ success: false, message: 'Token và mật khẩu mới là bắt buộc!' });
+        }
+
+        if (newPassword.length < 6) {
+            return res.status(400).json({ success: false, message: 'Mật khẩu tối thiểu 6 ký tự!' });
+        }
+
+        // Xác thực JWT resetToken
+        let decoded;
+        try {
+            decoded = jwt.verify(resetToken, process.env.JWT_ACCESS_SECRET);
+        } catch {
+            return res.status(400).json({ success: false, message: 'Token không hợp lệ hoặc đã hết hạn!' });
+        }
+
+        // Kiểm tra purpose đúng mục đích reset password
+        if (decoded.purpose !== 'reset_password') {
+            return res.status(400).json({ success: false, message: 'Token không hợp lệ!' });
+        }
+
+        // Tìm user và kiểm tra token khớp trong DB (chống replay attack)
+        const user = await User.findOne({
+            where: { id: decoded.userId, reset_password_token: resetToken },
+            paranoid: true
+        });
+
+        if (!user) {
+            return res.status(400).json({ success: false, message: 'Token không hợp lệ hoặc đã được sử dụng!' });
+        }
+
+        // Cập nhật mật khẩu mới và xóa resetToken
+        user.password = md5(newPassword);
+        user.reset_password_token = null;
+        await user.save();
+
+        return res.json({
+            success: true,
+            message: 'Đặt lại mật khẩu thành công! Vui lòng đăng nhập lại.'
+        });
+    } catch (error) {
+        console.error('Reset Password Error:', error);
+        res.status(500).json({ success: false, message: 'Lỗi máy chủ, vui lòng thử lại sau.' });
     }
 };
