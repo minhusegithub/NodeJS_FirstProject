@@ -33,7 +33,7 @@ const AdminLayout = () => {
                         <span className="logo-mark" aria-hidden="true">
                             <i className="fa-solid fa-gauge-high"></i>
                         </span>
-                        <span className="logo-text">Admin Panel</span>
+                        <span className="logo-text">MVN Admin</span>
                     </h2>
                 </div>
 

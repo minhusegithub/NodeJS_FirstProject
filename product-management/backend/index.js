@@ -52,6 +52,13 @@ getRedisClient(); // Khởi tạo client + bắt đầu kết nối
 const app = express();
 const port = process.env.PORT || 3000;
 
+// ─── Trust Proxy (QUAN TRỌNG khi chạy sau Nginx/Cloudflare) ──────────────────
+// Nếu không có dòng này, req.ip sẽ luôn là "127.0.0.1" (IP của Nginx)
+// thay vì IP thật của người dùng → Rate limiter chặn nhầm mọi người!
+// Số 1 = tin tưởng 1 lớp proxy phía trước (Nginx → Node.js)
+app.set('trust proxy', 1);
+// ─────────────────────────────────────────────────────────────────────────────
+
 // CORS middleware (must be before routes)
 app.use(corsMiddleware);
 
