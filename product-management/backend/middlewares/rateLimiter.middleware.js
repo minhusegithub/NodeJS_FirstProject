@@ -6,13 +6,16 @@ import getRedisClient, { isRedisReady } from '../config/redis.js';
  * @param {object} opts - options cho rate-limiter-flexible
  */
 const createLimiter = (opts) => {
-    const redisSide = new RateLimiterRedis({
-        storeClient: getRedisClient(),
-        ...opts
-    });
-
     // In-memory fallback (giới hạn per-process, đủ để chặn abuse khi Redis down)
     const memorySide = new RateLimiterMemory(opts);
+
+    const redisSide = new RateLimiterRedis({
+        storeClient: getRedisClient(),
+        // Khi Redis throw Error (timeout, disconnect...), tự động dùng memory
+        // thay vì throw Error lên catch block → tránh 429 nhầm!
+        insuranceLimiter: memorySide,
+        ...opts
+    });
 
     return async (req, res, next) => {
         const limiter = isRedisReady() ? redisSide : memorySide;
@@ -23,7 +26,21 @@ const createLimiter = (opts) => {
             await limiter.consume(key);
             next();
         } catch (rejRes) {
-            const secs = Math.ceil(rejRes.msBeforeNext / 1000) || 1;
+            // ── Phân biệt 2 loại lỗi ──────────────────────────────────────────
+            // 1. Error kỹ thuật: Redis timeout/fail → rejRes là Error instance
+            //    → msBeforeNext = undefined → "|| 1" kích hoạt → 429 SAI!
+            //    Giải pháp: fail open (cho request đi tiếp, không chặn nhầm)
+            //
+            // 2. Vượt rate limit thật: rejRes là RateLimiterRes instance
+            //    → có msBeforeNext hợp lệ → trả về 429 đúng
+            // ──────────────────────────────────────────────────────────────────
+            if (rejRes instanceof Error) {
+                console.error('[RateLimiter] Technical error (fail open):', rejRes.message);
+                return next(); // Fail open: không chặn khi Redis gặp lỗi kỹ thuật
+            }
+
+            // Thực sự vượt rate limit
+            const secs = Math.ceil(rejRes.msBeforeNext / 1000) || 60;
             res.set('Retry-After', secs);
             res.status(429).json({
                 success: false,
