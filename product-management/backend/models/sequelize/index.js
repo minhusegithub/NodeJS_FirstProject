@@ -17,6 +17,9 @@ import StoreRevenueStat from './store-revenue-stat.model.js';
 import DsiReport from './dsi-report.model.js';
 import MomentumReport from './momentum-report.model.js';
 import FulfillmentReport from './fulfillment-report.model.js';
+import TransferSuggestion from './transfer-suggestion.model.js';
+import InventoryTransferRequest from './inventory-transfer-request.model.js';
+import InventoryTransferItem from './inventory-transfer-item.model.js';
 
 // Define model associations
 const setupAssociations = () => {
@@ -281,6 +284,104 @@ const setupAssociations = () => {
         foreignKey: 'store_id',
         as: 'store'
     });
+
+    // ===== Transfer Suggestion associations =====
+    TransferSuggestion.belongsTo(Store, {
+        foreignKey: 'source_store_id',
+        as: 'sourceStore'
+    });
+
+    TransferSuggestion.belongsTo(Store, {
+        foreignKey: 'dest_store_id',
+        as: 'destStore'
+    });
+
+    TransferSuggestion.belongsTo(Product, {
+        foreignKey: 'product_id',
+        as: 'product'
+    });
+
+    TransferSuggestion.belongsTo(User, {
+        foreignKey: 'reviewed_by',
+        as: 'reviewer'
+    });
+
+    Store.hasMany(TransferSuggestion, {
+        foreignKey: 'source_store_id',
+        as: 'outgoingSuggestions'
+    });
+
+    Store.hasMany(TransferSuggestion, {
+        foreignKey: 'dest_store_id',
+        as: 'incomingSuggestions'
+    });
+
+    Product.hasMany(TransferSuggestion, {
+        foreignKey: 'product_id',
+        as: 'transferSuggestions'
+    });
+
+    // ===== Inventory Transfer Request associations =====
+    InventoryTransferRequest.belongsTo(Store, {
+        foreignKey: 'source_store_id',
+        as: 'sourceStore'
+    });
+
+    InventoryTransferRequest.belongsTo(Store, {
+        foreignKey: 'dest_store_id',
+        as: 'destStore'
+    });
+
+    InventoryTransferRequest.belongsTo(User, {
+        foreignKey: 'created_by',
+        as: 'creator'
+    });
+
+    InventoryTransferRequest.belongsTo(User, {
+        foreignKey: 'approved_by',
+        as: 'approver'
+    });
+
+    InventoryTransferRequest.belongsTo(TransferSuggestion, {
+        foreignKey: 'suggestion_id',
+        as: 'suggestion'
+    });
+
+    TransferSuggestion.hasOne(InventoryTransferRequest, {
+        foreignKey: 'suggestion_id',
+        as: 'transferRequest'
+    });
+
+    InventoryTransferRequest.hasMany(InventoryTransferItem, {
+        foreignKey: 'transfer_request_id',
+        as: 'items'
+    });
+
+    Store.hasMany(InventoryTransferRequest, {
+        foreignKey: 'source_store_id',
+        as: 'outgoingTransfers'
+    });
+
+    Store.hasMany(InventoryTransferRequest, {
+        foreignKey: 'dest_store_id',
+        as: 'incomingTransfers'
+    });
+
+    // ===== Inventory Transfer Item associations =====
+    InventoryTransferItem.belongsTo(InventoryTransferRequest, {
+        foreignKey: 'transfer_request_id',
+        as: 'transferRequest'
+    });
+
+    InventoryTransferItem.belongsTo(Product, {
+        foreignKey: 'product_id',
+        as: 'product'
+    });
+
+    Product.hasMany(InventoryTransferItem, {
+        foreignKey: 'product_id',
+        as: 'transferItems'
+    });
 };
 
 // Initialize associations
@@ -306,7 +407,10 @@ export {
     StoreRevenueStat,
     DsiReport,
     MomentumReport,
-    FulfillmentReport
+    FulfillmentReport,
+    TransferSuggestion,
+    InventoryTransferRequest,
+    InventoryTransferItem
 };
 
 export default {
@@ -328,5 +432,8 @@ export default {
     StoreRevenueStat,
     DsiReport,
     MomentumReport,
-    FulfillmentReport
+    FulfillmentReport,
+    TransferSuggestion,
+    InventoryTransferRequest,
+    InventoryTransferItem
 };
