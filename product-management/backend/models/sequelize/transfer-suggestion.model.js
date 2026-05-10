@@ -101,26 +101,54 @@ const TransferSuggestion = sequelize.define('TransferSuggestion', {
         allowNull: false,
         defaultValue: 'pending',
         validate: {
-            isIn: [['pending', 'approved', 'rejected', 'expired']]
+            isIn: [[
+                'pending',
+                'source_approved',  // Nguồn đã duyệt, chờ đích
+                'dest_approved',    // Đích đã duyệt, chờ nguồn
+                'approved',         // Cả 2 đồng ý → tạo phiếu
+                'rejected',
+                'expired'
+            ]]
         }
     },
     reviewed_by: {
         type: DataTypes.INTEGER,
         allowNull: true,
-        references: {
-            model: 'users',
-            key: 'id'
-        },
-        comment: 'User who reviewed this suggestion'
+        references: { model: 'users', key: 'id' },
+        comment: 'User who completed the final approval (both sides)'
     },
     reviewed_at: {
         type: DataTypes.DATE,
         allowNull: true
     },
+
+    // ── Two-sided approval tracking ─────────────────────────────────
+    source_approved_by: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        references: { model: 'users', key: 'id' },
+        comment: 'Source store manager who approved sending'
+    },
+    source_approved_at: {
+        type: DataTypes.DATE,
+        allowNull: true,
+        comment: 'When source store approved'
+    },
+    dest_approved_by: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        references: { model: 'users', key: 'id' },
+        comment: 'Dest store manager who approved receiving'
+    },
+    dest_approved_at: {
+        type: DataTypes.DATE,
+        allowNull: true,
+        comment: 'When dest store approved'
+    },
     transfer_request_id: {
         type: DataTypes.INTEGER,
         allowNull: true,
-        comment: 'Created transfer request ID (after approval)'
+        comment: 'Created transfer request ID (after both sides approved)'
     },
     expires_at: {
         type: DataTypes.DATE,

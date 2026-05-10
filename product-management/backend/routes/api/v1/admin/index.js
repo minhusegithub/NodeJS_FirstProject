@@ -6,6 +6,7 @@ import storeUserRoutes from './store-user.route.js';
 import productCategoryRoutes from './product-category.route.js';
 import { storeRoutes } from "./store.route.js";
 import analyticsRoutes from './analytics.route.js';
+import transferRoutes from './transfer.route.js';
 
 const router = express.Router();
 
@@ -18,5 +19,7 @@ router.use('/stores', storeRoutes);
 router.use('/store-users', storeUserRoutes);
 router.use('/product-categories', productCategoryRoutes);
 router.use('/analytics', analyticsRoutes);
+router.use('/transfer', transferRoutes);
 
 export default router;
+

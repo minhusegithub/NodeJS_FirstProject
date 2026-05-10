@@ -1,0 +1,498 @@
+/* ===== Smart Inventory Transfer ===== */
+
+/* ── Tabs ───────────────────────────────────────────────────────────── */
+.trf-tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 24px;
+    border-bottom: 2px solid #e5e7eb;
+    padding-bottom: 0;
+}
+
+.trf-tab {
+    padding: 10px 22px;
+    border: none;
+    background: transparent;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: #6b7280;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    transition: color 0.18s, border-color 0.18s;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+}
+
+.trf-tab:hover { color: #1DB56C; }
+
+.trf-tab--active {
+    color: #1DB56C;
+    border-bottom-color: #1DB56C;
+}
+
+/* ── KPI Row ────────────────────────────────────────────────────────── */
+.trf-kpi-row {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 22px;
+    flex-wrap: wrap;
+    align-items: stretch;
+}
+
+.trf-kpi-card {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: #fff;
+    border-radius: 12px;
+    padding: 18px 22px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.07);
+    min-width: 160px;
+    flex: 1;
+}
+
+.trf-kpi-card i {
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.trf-kpi--blue  i { color: #0ea5e9; }
+.trf-kpi--orange i { color: #f59e0b; }
+.trf-kpi--green  i { color: #1DB56C; }
+
+.trf-kpi-value {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: #0F1A18;
+    line-height: 1;
+}
+
+.trf-kpi-desc {
+    font-size: 0.76rem;
+    color: #6b7280;
+    margin-top: 3px;
+}
+
+/* ── Scan Button ────────────────────────────────────────────────────── */
+.trf-scan-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 22px;
+    height: auto;
+    min-height: 60px;
+    background: linear-gradient(135deg, #0f7b49 0%, #1DB56C 100%);
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: opacity 0.18s, transform 0.18s;
+    box-shadow: 0 4px 14px rgba(29,181,108,0.28);
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.trf-scan-btn:hover:not(:disabled) {
+    opacity: 0.9;
+    transform: translateY(-1px);
+}
+
+.trf-scan-btn:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+}
+
+/* ── Refresh Button ─────────────────────────────────────────────────── */
+.trf-refresh-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #374151;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.trf-refresh-btn:hover { background: #f3f4f6; }
+
+/* ── Route (store → store) ──────────────────────────────────────────── */
+.trf-route {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+}
+
+.trf-store {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 0.78rem;
+    font-weight: 700;
+}
+
+.trf-store--source {
+    background: rgba(14, 165, 233, 0.1);
+    color: #0ea5e9;
+}
+
+.trf-store--dest {
+    background: rgba(29, 181, 108, 0.1);
+    color: #1DB56C;
+}
+
+.trf-arrow {
+    font-size: 0.65rem;
+    color: #9ca3af;
+}
+
+/* ── MFTS Score Bar ─────────────────────────────────────────────────── */
+.trf-score-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.trf-score-bar {
+    flex: 1;
+    height: 6px;
+    background: #f3f4f6;
+    border-radius: 999px;
+    overflow: hidden;
+    min-width: 60px;
+}
+
+.trf-score-fill {
+    height: 100%;
+    border-radius: 999px;
+    transition: width 0.3s ease;
+}
+
+.trf-score-fill--high { background: #1DB56C; }
+.trf-score-fill--mid  { background: #f59e0b; }
+.trf-score-fill--low  { background: #ef4444; }
+
+.trf-score-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #374151;
+    white-space: nowrap;
+}
+
+/* ── Status Badges ──────────────────────────────────────────────────── */
+.trf-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 0.73rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.trf-badge--pending         { background: #fffbeb; color: #b45309; }
+.trf-badge--source-approved { background: #eff6ff; color: #1d4ed8; }
+.trf-badge--dest-approved   { background: #f5f3ff; color: #6d28d9; }
+.trf-badge--approved        { background: #f0fdf4; color: #15803d; }
+.trf-badge--rejected        { background: #fef2f2; color: #b91c1c; }
+.trf-badge--expired         { background: #f3f4f6; color: #6b7280; }
+.trf-badge--draft           { background: #f3f4f6; color: #6b7280; }
+.trf-badge--in-transit      { background: rgba(14,165,233,0.1); color: #0369a1; }
+.trf-badge--received        { background: rgba(139,92,246,0.1);  color: #6d28d9; }
+.trf-badge--completed       { background: #f0fdf4; color: #15803d; }
+.trf-badge--cancelled       { background: #fef2f2; color: #b91c1c; }
+
+/* ── Approval Progress (2-sided) ─────────────────────────────────── */
+.trf-approval-progress {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-bottom: 6px;
+    font-size: 0.72rem;
+    font-weight: 600;
+}
+
+.trf-approval-dot {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    border-radius: 20px;
+    white-space: nowrap;
+}
+
+.trf-approval-dot.done {
+    background: #f0fdf4;
+    color: #15803d;
+}
+
+.trf-approval-dot.wait {
+    background: #f3f4f6;
+    color: #9ca3af;
+}
+
+.trf-approval-line {
+    flex: 1;
+    height: 1px;
+    background: #e5e7eb;
+    min-width: 12px;
+}
+
+/* ── Product cell ───────────────────────────────────────────────────── */
+.trf-product-title {
+    font-size: 0.83rem;
+    font-weight: 600;
+    color: #111827;
+    max-width: 200px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.trf-product-sku {
+    font-size: 0.72rem;
+    color: #9ca3af;
+    margin-top: 1px;
+}
+
+.trf-expired-text { color: #ef4444; }
+
+/* ── Action Buttons ─────────────────────────────────────────────────── */
+.trf-action-row {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    align-items: stretch;
+}
+
+.trf-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 12px;
+    border: none;
+    border-radius: 7px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.15s;
+    white-space: nowrap;
+}
+
+.trf-btn:disabled { opacity: 0.55; cursor: not-allowed; }
+.trf-btn:hover:not(:disabled) { opacity: 0.85; }
+
+.trf-btn--approve   { background: #f0fdf4; color: #15803d; }
+.trf-btn--reject    { background: #fef2f2; color: #b91c1c; }
+.trf-btn--primary   { background: #1DB56C; color: #fff; }
+.trf-btn--secondary { background: #f3f4f6; color: #374151; }
+
+/* ── Transfer Code ──────────────────────────────────────────────────── */
+.trf-code {
+    font-family: 'Courier New', monospace;
+    font-size: 0.8rem;
+    background: #f3f4f6;
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: #374151;
+}
+
+.trf-code--lg {
+    font-size: 0.92rem;
+    padding: 4px 10px;
+    display: inline-block;
+    margin-top: 4px;
+}
+
+/* ── Selected row ───────────────────────────────────────────────────── */
+.trf-row--selected td {
+    background: rgba(29, 181, 108, 0.06) !important;
+}
+
+/* ── Căn giữa toàn bộ cột bảng đề xuất ─────────────────────────────── */
+.dash-table th,
+.dash-table td {
+    text-align: center;
+    vertical-align: middle;
+}
+
+/* Cột sản phẩm căn trái để dễ đọc */
+.dash-table td:first-child,
+.dash-table th:first-child {
+    text-align: left;
+}
+
+/* ── Split Layout (list + detail) ───────────────────────────────────── */
+.trf-split-layout {
+    display: grid;
+    grid-template-columns: 1fr 420px;
+    gap: 20px;
+    align-items: start;
+}
+
+.trf-list-panel,
+.trf-detail-panel {
+    margin-bottom: 0;
+}
+
+/* ── Detail Panel ───────────────────────────────────────────────────── */
+.trf-detail-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 18px;
+}
+
+.trf-detail-header h3 {
+    margin-bottom: 2px !important;
+}
+
+.trf-detail-meta {
+    background: #f9fafb;
+    border-radius: 8px;
+    padding: 14px 16px;
+    margin-bottom: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.trf-meta-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.83rem;
+    gap: 12px;
+}
+
+.trf-meta-label {
+    color: #6b7280;
+    font-weight: 500;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.trf-note {
+    color: #374151;
+    font-style: italic;
+    font-size: 0.8rem;
+}
+
+.trf-items-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #0F1A18;
+    margin: 0 0 10px;
+}
+
+.trf-items-table {
+    font-size: 0.82rem;
+    margin-bottom: 18px;
+}
+
+.trf-detail-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+/* ── Modal (Reject) ─────────────────────────────────────────────────── */
+.trf-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.trf-modal {
+    background: #fff;
+    border-radius: 14px;
+    padding: 28px 32px;
+    width: 420px;
+    max-width: 90vw;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.18);
+}
+
+.trf-modal h3 {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #0F1A18;
+    margin: 0 0 16px;
+}
+
+.trf-modal label {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #374151;
+    display: block;
+    margin-bottom: 6px;
+}
+
+.trf-textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    resize: vertical;
+    box-sizing: border-box;
+    margin-bottom: 16px;
+}
+
+.trf-textarea:focus {
+    outline: none;
+    border-color: #1DB56C;
+    box-shadow: 0 0 0 3px rgba(29,181,108,0.12);
+}
+
+.trf-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+/* ── Responsive ─────────────────────────────────────────────────────── */
+@media (max-width: 1024px) {
+    .trf-split-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .trf-kpi-row {
+        flex-wrap: wrap;
+    }
+
+    .trf-kpi-card {
+        min-width: 130px;
+    }
+}
+
+@media (max-width: 640px) {
+    .trf-tabs {
+        overflow-x: auto;
+    }
+
+    .trf-tab {
+        white-space: nowrap;
+        padding: 10px 16px;
+    }
+
+    .trf-scan-btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .trf-action-row {
+        flex-direction: column;
+    }
+}

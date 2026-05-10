@@ -57,8 +57,19 @@ const AdminLayout = () => {
                                 <NavLink to="/admin/dashboard/dead-stock" className={({ isActive }) => `admin-nav-subitem${isActive ? ' active' : ''}`}>
                                     <span className="subnav-label">Tồn kho chết</span>
                                 </NavLink>
+
                             </div>
                         </div>
+                    )}
+
+                    {/* Transfer - also accessible by InventoryStaff */}
+                    {(userRoles.isInventoryStaff || userRoles.isStoreManager) && (
+                        <NavLink to="/admin/dashboard/transfer" end className={({ isActive }) => `admin-nav-item${isActive ? ' active' : ''}`}>
+                            <span className="nav-icon" aria-hidden="true">
+                                <i className="fa-solid fa-truck-fast"></i>
+                            </span>
+                            <span className="nav-label">Luân chuyển tồn kho</span>
+                        </NavLink>
                     )}
 
                     {/* Products menu - only for storeManager and InventoryStaff */}
