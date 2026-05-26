@@ -2,6 +2,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../stores/authStore';
 import { useCartStore } from '../../stores/cartStore';
 import { useEffect } from 'react';
+import logoImg from '../../assets/logo.png';
 
 const Header = () => {
     const navigate = useNavigate();
@@ -25,7 +26,8 @@ const Header = () => {
             <div className="container">
                 <div className="header-content">
                     <Link to="/" className="logo">
-                        🛍️ MVN Shop
+                        <img src={logoImg} alt="MVN Shop" className="logo-img" />
+                        <span className="logo-text">MVN Shop</span>
                     </Link>
 
                     <nav className="nav">
@@ -35,7 +37,7 @@ const Header = () => {
                             <>
                                 <Link to="/orders">Đơn hàng</Link>
                                 <Link to="/cart" className="cart-link">
-                                    🛒 Giỏ hàng
+                                    Giỏ hàng
                                     {cartCount > 0 && <span className="cart-badge">{cartCount}</span>}
                                 </Link>
                             </>

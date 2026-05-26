@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuthStore } from '../../stores/authStore';
 import { toast } from 'react-toastify';
+import logoImg from '../../assets/logo.png';
+import heroBg from '../../assets/hero-bg.png';
 
 const Register = () => {
     const navigate = useNavigate();
@@ -13,30 +15,23 @@ const Register = () => {
         phone: ''
     });
     const [loading, setLoading] = useState(false);
+    const [showPwd, setShowPwd] = useState(false);
 
     useEffect(() => {
-        if (user) {
-            navigate('/');
-        }
+        if (user) navigate('/');
     }, [user, navigate]);
 
     const handleChange = (e) => {
-        setFormData({
-            ...formData,
-            [e.target.name]: e.target.value
-        });
+        setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-
         if (formData.password.length < 6) {
             toast.error('Mật khẩu phải có ít nhất 6 ký tự!');
             return;
         }
-
         setLoading(true);
-
         try {
             await register(formData);
             toast.success('Đăng ký thành công!');
@@ -49,91 +44,111 @@ const Register = () => {
     };
 
     return (
-        <div className="register-page">
-            <div className="container">
-                <div className="row justify-content-center align-items-center min-vh-100">
-                    <div className="col-11 col-sm-6 col-md-5 col-lg-4">
-                        <div className="card border-0 shadow rounded-4">
-                            <div className="card-body p-4">
-                                <div className="text-center mb-4">
-                                    <h2 className="fw-bold register-css">Đăng Ký</h2>
-                                </div>
+        <div className="auth-split">
+            {/* LEFT — Hero panel */}
+            <div className="auth-panel-left" style={{ backgroundImage: `url(${heroBg})` }}>
+                <Link to="/" className="auth-panel-left-logo">
+                    <img src={logoImg} alt="MVN Shop" />
+                    <span>MVN Shop</span>
+                </Link>
+                <div className="auth-panel-left-content">
+                    <p className="auth-panel-quote">
+                        Tham gia cùng<br />
+                        <span>10.000+ khách hàng</span>
+                    </p>
+                    <p className="auth-panel-sub">
+                        Đăng ký ngay để trải nghiệm mua sắm hiện đại, theo dõi đơn hàng và nhận ưu đãi độc quyền từ MVN Shop.
+                    </p>
+                </div>
+            </div>
 
-                                <form onSubmit={handleSubmit} autoComplete="off">
-                                    <div className="form-group mb-3">
-                                        <input
-                                            type="text"
-                                            className="form-control form-control-lg rounded-3 border-0 bg-light"
-                                            id="fullName"
-                                            name="fullName"
-                                            placeholder="Họ và tên"
-                                            value={formData.fullName}
-                                            onChange={handleChange}
-                                            required
-                                            autoComplete="name"
-                                        />
-                                    </div>
+            {/* RIGHT — Form panel */}
+            <div className="auth-panel-right">
+                <div className="auth-form-header">
+                    <h1 className="auth-form-title">Tạo tài khoản</h1>
 
-                                    <div className="form-group mb-3">
-                                        <input
-                                            type="email"
-                                            className="form-control form-control-lg rounded-3 border-0 bg-light"
-                                            id="email"
-                                            name="email"
-                                            placeholder="Email"
-                                            value={formData.email}
-                                            onChange={handleChange}
-                                            required
-                                            autoComplete="email"
-                                        />
-                                    </div>
+                </div>
 
-                                    <div className="form-group mb-3">
-                                        <input
-                                            type="tel"
-                                            className="form-control form-control-lg rounded-3 border-0 bg-light"
-                                            id="phone"
-                                            name="phone"
-                                            placeholder="Số điện thoại"
-                                            value={formData.phone}
-                                            onChange={handleChange}
-                                            required
-                                            autoComplete="tel"
-                                        />
-                                    </div>
+                <form onSubmit={handleSubmit} autoComplete="off">
+                    <div className="auth-field">
+                        <label htmlFor="fullName">Họ và tên</label>
+                        <input
+                            id="fullName"
+                            type="text"
+                            name="fullName"
+                            className="auth-input"
+                            placeholder="Nguyễn Văn A"
+                            value={formData.fullName}
+                            onChange={handleChange}
+                            required
+                            autoComplete="name"
+                        />
+                    </div>
 
-                                    <div className="form-group mb-3">
-                                        <input
-                                            type="password"
-                                            className="form-control form-control-lg rounded-3 border-0 bg-light"
-                                            id="password"
-                                            name="password"
-                                            placeholder="Mật khẩu"
-                                            value={formData.password}
-                                            onChange={handleChange}
-                                            required
-                                            minLength="6"
-                                            autoComplete="new-password"
-                                        />
-                                    </div>
+                    <div className="auth-field">
+                        <label htmlFor="email">Email</label>
+                        <input
+                            id="email"
+                            type="email"
+                            name="email"
+                            className="auth-input"
+                            placeholder="example@gmail.com"
+                            value={formData.email}
+                            onChange={handleChange}
+                            required
+                            autoComplete="email"
+                        />
+                    </div>
 
-                                    <button
-                                        type="submit"
-                                        className="btn btn-success btn-lg w-100 rounded-3 mb-3"
-                                        disabled={loading}
-                                    >
-                                        {loading ? 'Đang đăng ký...' : 'Tạo tài khoản mới'}
-                                    </button>
+                    <div className="auth-field">
+                        <label htmlFor="phone">Số điện thoại</label>
+                        <input
+                            id="phone"
+                            type="tel"
+                            name="phone"
+                            className="auth-input"
+                            placeholder="0901 234 567"
+                            value={formData.phone}
+                            onChange={handleChange}
+                            required
+                            autoComplete="tel"
+                        />
+                    </div>
 
-                                    <div className="text-center">
-                                        <Link to="/login" className="btn btn-primary btn-lg w-100 rounded-3">
-                                            Đăng nhập
-                                        </Link>
-                                    </div>
-                                </form>
-                            </div>
+                    <div className="auth-field">
+                        <label htmlFor="password">Mật khẩu</label>
+                        <div className="auth-input-wrapper">
+                            <input
+                                id="password"
+                                type={showPwd ? 'text' : 'password'}
+                                name="password"
+                                className="auth-input"
+                                placeholder="Tối thiểu 6 ký tự"
+                                value={formData.password}
+                                onChange={handleChange}
+                                required
+                                minLength="6"
+                                autoComplete="new-password"
+                            />
+                            <button
+                                type="button"
+                                className="auth-eye-btn"
+                                onClick={() => setShowPwd(!showPwd)}
+                                tabIndex={-1}
+                            >
+                                {showPwd ? '🙈' : '👁️'}
+                            </button>
                         </div>
                     </div>
+
+                    <button type="submit" className="auth-btn-primary" disabled={loading}>
+                        {loading ? 'Đang tạo tài khoản...' : 'Tạo tài khoản mới'}
+                    </button>
+                </form>
+
+                <div className="auth-link-row">
+                    Đã có tài khoản?{' '}
+                    <Link to="/login" className="auth-link">Đăng nhập ngay</Link>
                 </div>
             </div>
         </div>

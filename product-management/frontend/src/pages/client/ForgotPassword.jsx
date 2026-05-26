@@ -2,12 +2,13 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import api from '../../services/axios';
-import '../../assets/styles/auth.css';
+import logoImg from '../../assets/logo.png';
+import heroBg from '../../assets/hero-bg.png';
 
 // ─── Step constants ─────────────────────────────────────────────────────────
-const STEP_EMAIL = 1;   // Nhập email
-const STEP_OTP = 2;   // Nhập mã OTP 6 số
-const STEP_RESET = 3;   // Nhập mật khẩu mới
+const STEP_EMAIL = 1;
+const STEP_OTP = 2;
+const STEP_RESET = 3;
 
 const ForgotPassword = () => {
     const navigate = useNavigate();
@@ -15,13 +16,10 @@ const ForgotPassword = () => {
     const [step, setStep] = useState(STEP_EMAIL);
     const [loading, setLoading] = useState(false);
 
-    // Form data
     const [email, setEmail] = useState('');
     const [otp, setOtp] = useState(['', '', '', '', '', '']);
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
-
-    // Giữ resetToken trả về từ bước 2 để dùng ở bước 3
     const [resetToken, setResetToken] = useState('');
     const [showPassword, setShowPassword] = useState(false);
 
@@ -40,27 +38,23 @@ const ForgotPassword = () => {
         }
     };
 
-    // ── OTP input: tự động nhảy sang ô kế tiếp ───────────────────────────
+    // ── OTP input handlers ────────────────────────────────────────────────
     const handleOtpChange = (index, value) => {
-        if (!/^\d*$/.test(value)) return; // Chỉ cho nhập số
+        if (!/^\d*$/.test(value)) return;
         const newOtp = [...otp];
-        newOtp[index] = value.slice(-1); // Chỉ lấy ký tự cuối cùng
+        newOtp[index] = value.slice(-1);
         setOtp(newOtp);
-
-        // Auto-focus sang ô tiếp theo
         if (value && index < 5) {
             document.getElementById(`otp-${index + 1}`)?.focus();
         }
     };
 
     const handleOtpKeyDown = (index, e) => {
-        // Khi bấm Backspace ở ô trống → focus về ô trước
         if (e.key === 'Backspace' && !otp[index] && index > 0) {
             document.getElementById(`otp-${index - 1}`)?.focus();
         }
     };
 
-    // Xử lý paste OTP
     const handleOtpPaste = (e) => {
         const pasted = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
         if (pasted.length === 6) {
@@ -74,10 +68,7 @@ const ForgotPassword = () => {
     const handleVerifyOtp = async (e) => {
         e.preventDefault();
         const otpValue = otp.join('');
-        if (otpValue.length < 6) {
-            toast.warning('Vui lòng nhập đủ 6 số OTP!');
-            return;
-        }
+        if (otpValue.length < 6) { toast.warning('Vui lòng nhập đủ 6 số OTP!'); return; }
         setLoading(true);
         try {
             const res = await api.post('/auth/verify-otp', { email, otp: otpValue });
@@ -86,7 +77,6 @@ const ForgotPassword = () => {
             setStep(STEP_RESET);
         } catch (error) {
             toast.error(error.response?.data?.message || 'Mã OTP không đúng hoặc đã hết hạn!');
-            // Reset ô OTP nếu sai
             setOtp(['', '', '', '', '', '']);
             document.getElementById('otp-0')?.focus();
         } finally {
@@ -97,14 +87,8 @@ const ForgotPassword = () => {
     // ── Bước 3: Đặt lại mật khẩu ─────────────────────────────────────────
     const handleResetPassword = async (e) => {
         e.preventDefault();
-        if (newPassword.length < 6) {
-            toast.warning('Mật khẩu tối thiểu 6 ký tự!');
-            return;
-        }
-        if (newPassword !== confirmPassword) {
-            toast.warning('Mật khẩu xác nhận không khớp!');
-            return;
-        }
+        if (newPassword.length < 6) { toast.warning('Mật khẩu tối thiểu 6 ký tự!'); return; }
+        if (newPassword !== confirmPassword) { toast.warning('Mật khẩu xác nhận không khớp!'); return; }
         setLoading(true);
         try {
             await api.post('/auth/reset-password', { resetToken, newPassword });
@@ -117,204 +101,169 @@ const ForgotPassword = () => {
         }
     };
 
-    // ── Progress indicator ────────────────────────────────────────────────
-    const steps = [
-        { id: 1, label: 'Nhập Email' },
-        { id: 2, label: 'Xác thực OTP' },
-        { id: 3, label: 'Mật khẩu mới' }
+    const STEPS_META = [
+        { id: 1 }, { id: 2 }, { id: 3 }
     ];
 
+    const stepTitle = step === STEP_EMAIL ? 'Quên mật khẩu' : step === STEP_OTP ? 'Xác thực OTP' : 'Đặt mật khẩu mới';
+    const stepSub = step === STEP_EMAIL
+        ? 'Nhập email để nhận mã xác thực'
+        : step === STEP_OTP
+            ? `Nhập mã 6 số đã gửi đến ${email}`
+            : 'Nhập mật khẩu mới của bạn';
+
     return (
-        <div className="forgot-password-page">
-            <div className="container">
-                <div className="row justify-content-center align-items-center min-vh-100">
-                    <div className="col-12 col-sm-7 col-md-6 col-lg-5">
-                        <div className="card border-0 shadow-lg rounded-4">
-                            <div className="card-body p-4 p-md-5">
+        <div className="auth-split">
+            {/* LEFT — Hero panel */}
+            <div className="auth-panel-left" style={{ backgroundImage: `url(${heroBg})` }}>
+                <Link to="/" className="auth-panel-left-logo">
+                    <img src={logoImg} alt="MVN Shop" />
+                    <span>MVN Shop</span>
+                </Link>
+                <div className="auth-panel-left-content">
+                    <p className="auth-panel-quote">
+                        Lấy lại quyền<br />
+                        <span>truy cập tài khoản</span>
+                    </p>
+                    <p className="auth-panel-sub">
+                        Đừng lo lắng! Chúng tôi sẽ giúp bạn khôi phục mật khẩu một cách nhanh chóng và an toàn.
+                    </p>
+                </div>
+            </div>
 
-                                {/* Header */}
-                                <div className="text-center mb-4">
-                                    <div className="mb-3">
-                                        <span className="step-icon">
-                                            {step === STEP_EMAIL ? '🔑' : step === STEP_OTP ? '📨' : '🔐'}
-                                        </span>
-                                    </div>
-                                    <h2 className="fw-bold text-primary">Quên mật khẩu</h2>
-                                    <p className="text-muted small">
-                                        {step === STEP_EMAIL && 'Nhập email để nhận mã xác thực'}
-                                        {step === STEP_OTP && `Nhập mã 6 số đã gửi đến ${email}`}
-                                        {step === STEP_RESET && 'Nhập mật khẩu mới của bạn'}
-                                    </p>
-                                </div>
+            {/* RIGHT — Form panel */}
+            <div className="auth-panel-right">
+                <div className="auth-form-header">
+                    <h1 className="auth-form-title">{stepTitle}</h1>
+                    <p className="auth-form-subtitle">{stepSub}</p>
+                </div>
 
-                                {/* Step indicator */}
-                                <div className="d-flex justify-content-center align-items-center mb-4 gap-2">
-                                    {steps.map((s, idx) => (
-                                        <div key={s.id} className="d-flex align-items-center">
-                                            <div
-                                                className={`step-circle ${step >= s.id ? 'active' : ''} d-flex align-items-center justify-content-center rounded-circle fw-bold`}
-                                            >
-                                                {step > s.id ? '✓' : s.id}
-                                            </div>
-                                            {idx < steps.length - 1 && (
-                                                <div className={`step-line ${step > s.id ? 'active' : ''}`} />
-                                            )}
-                                        </div>
-                                    ))}
-                                </div>
+                {/* Step indicator */}
+                <div className="auth-step-bar">
+                    {STEPS_META.map((s, idx) => (
+                        <div key={s.id} style={{ display: 'flex', alignItems: 'center' }}>
+                            <div className={`auth-step-dot ${step > s.id ? 'done' : step === s.id ? 'active' : ''}`}>
+                                {step > s.id ? '✓' : s.id}
+                            </div>
+                            {idx < STEPS_META.length - 1 && (
+                                <div className={`auth-step-line ${step > s.id ? 'done' : ''}`} />
+                            )}
+                        </div>
+                    ))}
+                </div>
 
-                                {/* ── STEP 1: Nhập Email ──────────────────────── */}
-                                {step === STEP_EMAIL && (
-                                    <form onSubmit={handleSendOtp}>
-                                        <div className="form-group mb-3">
-                                            <label className="form-label fw-medium text-secondary small">
-                                                Địa chỉ Email
-                                            </label>
-                                            <input
-                                                type="email"
-                                                id="forgot-email"
-                                                className="form-control form-control-lg rounded-3 border-0 bg-light"
-                                                placeholder="example@gmail.com"
-                                                value={email}
-                                                onChange={e => setEmail(e.target.value)}
-                                                required
-                                                autoFocus
-                                            />
-                                        </div>
-                                        <button
-                                            type="submit"
-                                            id="btn-send-otp"
-                                            className="btn btn-primary btn-lg w-100 rounded-3 mb-3"
-                                            disabled={loading}
-                                        >
-                                            {loading ? (
-                                                <><span className="spinner-border spinner-border-sm me-2" />Đang gửi...</>
-                                            ) : 'Gửi mã OTP'}
-                                        </button>
-                                        <div className="text-center">
-                                            <Link to="/login" className="text-decoration-none text-secondary small">
-                                                ← Quay lại đăng nhập
-                                            </Link>
-                                        </div>
-                                    </form>
-                                )}
+                {/* ── STEP 1: Nhập Email ── */}
+                {step === STEP_EMAIL && (
+                    <form onSubmit={handleSendOtp}>
+                        <div className="auth-field">
+                            <label htmlFor="forgot-email">Địa chỉ Email</label>
+                            <input
+                                id="forgot-email"
+                                type="email"
+                                className="auth-input"
+                                placeholder="example@gmail.com"
+                                value={email}
+                                onChange={e => setEmail(e.target.value)}
+                                required
+                                autoFocus
+                            />
+                        </div>
+                        <button type="submit" id="btn-send-otp" className="auth-btn-primary" disabled={loading}>
+                            {loading ? 'Đang gửi...' : 'Gửi mã OTP'}
+                        </button>
+                        <div className="auth-link-row">
+                            <Link to="/login" className="auth-link">← Quay lại đăng nhập</Link>
+                        </div>
+                    </form>
+                )}
 
-                                {/* ── STEP 2: Nhập OTP ────────────────────────── */}
-                                {step === STEP_OTP && (
-                                    <form onSubmit={handleVerifyOtp}>
-                                        <div className="form-group mb-4">
-                                            <label className="form-label fw-medium text-secondary small d-block text-center mb-3">
-                                                Nhập mã 6 số từ email của bạn
-                                            </label>
-                                            {/* 6 OTP Boxes */}
-                                            <div className="d-flex justify-content-center gap-2" onPaste={handleOtpPaste}>
-                                                {otp.map((digit, index) => (
-                                                    <input
-                                                        key={index}
-                                                        id={`otp-${index}`}
-                                                        type="text"
-                                                        inputMode="numeric"
-                                                        maxLength={1}
-                                                        className={`otp-input form-control text-center fw-bold rounded-3 border-0 bg-light ${digit ? 'filled' : ''}`}
-                                                        value={digit}
-                                                        onChange={e => handleOtpChange(index, e.target.value)}
-                                                        onKeyDown={e => handleOtpKeyDown(index, e)}
-                                                        autoFocus={index === 0}
-                                                    />
-                                                ))}
-                                            </div>
-                                        </div>
+                {/* ── STEP 2: Nhập OTP ── */}
+                {step === STEP_OTP && (
+                    <form onSubmit={handleVerifyOtp}>
+                        <div className="otp-boxes" onPaste={handleOtpPaste}>
+                            {otp.map((digit, index) => (
+                                <input
+                                    key={index}
+                                    id={`otp-${index}`}
+                                    type="text"
+                                    inputMode="numeric"
+                                    maxLength={1}
+                                    className={`otp-box ${digit ? 'filled' : ''}`}
+                                    value={digit}
+                                    onChange={e => handleOtpChange(index, e.target.value)}
+                                    onKeyDown={e => handleOtpKeyDown(index, e)}
+                                    autoFocus={index === 0}
+                                />
+                            ))}
+                        </div>
+                        <button
+                            type="submit"
+                            id="btn-verify-otp"
+                            className="auth-btn-primary"
+                            disabled={loading || otp.join('').length < 6}
+                        >
+                            {loading ? 'Đang xác thực...' : 'Xác nhận mã OTP'}
+                        </button>
+                        <div className="auth-link-row">
+                            <button
+                                type="button"
+                                className="auth-link"
+                                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, font: 'inherit' }}
+                                onClick={() => { setStep(STEP_EMAIL); setOtp(['', '', '', '', '', '']); }}
+                            >
+                                ← Thay đổi email
+                            </button>
+                        </div>
+                    </form>
+                )}
 
-                                        <button
-                                            type="submit"
-                                            id="btn-verify-otp"
-                                            className="btn btn-primary btn-lg w-100 rounded-3 mb-3"
-                                            disabled={loading || otp.join('').length < 6}
-                                        >
-                                            {loading ? (
-                                                <><span className="spinner-border spinner-border-sm me-2" />Đang xác thực...</>
-                                            ) : 'Xác nhận mã OTP'}
-                                        </button>
-
-                                        <div className="text-center">
-                                            <button
-                                                type="button"
-                                                className="btn btn-link text-secondary small p-0 text-decoration-none"
-                                                onClick={() => {
-                                                    setStep(STEP_EMAIL);
-                                                    setOtp(['', '', '', '', '', '']);
-                                                }}
-                                            >
-                                                ← Thay đổi email
-                                            </button>
-                                        </div>
-                                    </form>
-                                )}
-
-                                {/* ── STEP 3: Mật khẩu mới ────────────────────── */}
-                                {step === STEP_RESET && (
-                                    <form onSubmit={handleResetPassword}>
-                                        <div className="form-group mb-3">
-                                            <label className="form-label fw-medium text-secondary small">
-                                                Mật khẩu mới
-                                            </label>
-                                            <div className="input-group">
-                                                <input
-                                                    type={showPassword ? 'text' : 'password'}
-                                                    id="new-password"
-                                                    className="form-control form-control-lg rounded-start-3 border-0 bg-light"
-                                                    placeholder="Tối thiểu 6 ký tự"
-                                                    value={newPassword}
-                                                    onChange={e => setNewPassword(e.target.value)}
-                                                    required
-                                                    autoFocus
-                                                />
-                                                <button
-                                                    type="button"
-                                                    className="btn bg-light border-0 show-password-btn"
-                                                    onClick={() => setShowPassword(!showPassword)}
-                                                >
-                                                    {showPassword ? '🙈' : '👁️'}
-                                                </button>
-                                            </div>
-                                        </div>
-
-                                        <div className="form-group mb-4">
-                                            <label className="form-label fw-medium text-secondary small">
-                                                Xác nhận mật khẩu
-                                            </label>
-                                            <input
-                                                type={showPassword ? 'text' : 'password'}
-                                                id="confirm-password"
-                                                className={`form-control form-control-lg rounded-3 border-0 bg-light ${confirmPassword && newPassword !== confirmPassword ? 'border border-danger' : ''
-                                                    }`}
-                                                placeholder="Nhập lại mật khẩu"
-                                                value={confirmPassword}
-                                                onChange={e => setConfirmPassword(e.target.value)}
-                                                required
-                                            />
-                                            {confirmPassword && newPassword !== confirmPassword && (
-                                                <small className="text-danger">Mật khẩu không khớp!</small>
-                                            )}
-                                        </div>
-
-                                        <button
-                                            type="submit"
-                                            id="btn-reset-password"
-                                            className="btn btn-primary btn-lg w-100 rounded-3 mb-3"
-                                            disabled={loading || (confirmPassword && newPassword !== confirmPassword)}
-                                        >
-                                            {loading ? (
-                                                <><span className="spinner-border spinner-border-sm me-2" />Đang cập nhật...</>
-                                            ) : 'Đặt lại mật khẩu'}
-                                        </button>
-                                    </form>
-                                )}
-
+                {/* ── STEP 3: Mật khẩu mới ── */}
+                {step === STEP_RESET && (
+                    <form onSubmit={handleResetPassword}>
+                        <div className="auth-field">
+                            <label htmlFor="new-password">Mật khẩu mới</label>
+                            <div className="auth-input-wrapper">
+                                <input
+                                    id="new-password"
+                                    type={showPassword ? 'text' : 'password'}
+                                    className="auth-input"
+                                    placeholder="Tối thiểu 6 ký tự"
+                                    value={newPassword}
+                                    onChange={e => setNewPassword(e.target.value)}
+                                    required
+                                    autoFocus
+                                />
+                                <button type="button" className="auth-eye-btn" onClick={() => setShowPassword(!showPassword)} tabIndex={-1}>
+                                    {showPassword ? '🙈' : '👁️'}
+                                </button>
                             </div>
                         </div>
-                    </div>
-                </div>
+                        <div className="auth-field">
+                            <label htmlFor="confirm-password">Xác nhận mật khẩu</label>
+                            <input
+                                id="confirm-password"
+                                type={showPassword ? 'text' : 'password'}
+                                className="auth-input"
+                                style={confirmPassword && newPassword !== confirmPassword ? { borderColor: '#e74c3c' } : {}}
+                                placeholder="Nhập lại mật khẩu"
+                                value={confirmPassword}
+                                onChange={e => setConfirmPassword(e.target.value)}
+                                required
+                            />
+                            {confirmPassword && newPassword !== confirmPassword && (
+                                <small style={{ color: '#e74c3c', fontSize: '0.8rem' }}>Mật khẩu không khớp!</small>
+                            )}
+                        </div>
+                        <button
+                            type="submit"
+                            id="btn-reset-password"
+                            className="auth-btn-primary"
+                            disabled={loading || Boolean(confirmPassword && newPassword !== confirmPassword)}
+                        >
+                            {loading ? 'Đang cập nhật...' : 'Đặt lại mật khẩu'}
+                        </button>
+                    </form>
+                )}
             </div>
         </div>
     );

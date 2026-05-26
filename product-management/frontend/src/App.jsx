@@ -6,6 +6,7 @@ import { useAuthStore } from './stores/authStore';
 
 // Components
 import Header from './components/common/Header';
+import Footer from './components/common/Footer';
 import ProtectedRoute from './components/common/ProtectedRoute';
 import AdminLayout from './components/admin/AdminLayout';
 
@@ -49,48 +50,54 @@ function App() {
             <BrowserRouter>
                 <Routes>
                     {/* Client Routes */}
-                    <Route path="/" element={<><Header /><Home /></>} />
+                    <Route path="/" element={<><Header /><Home /><Footer /></>} />
                     <Route path="/login" element={<Login />} />
                     <Route path="/register" element={<Register />} />
                     <Route path="/forgot-password" element={<ForgotPassword />} />
-                    <Route path="/products" element={<><Header /><Products /></>} />
-                    <Route path="/products/:slug" element={<><Header /><ProductDetail /></>} />
+                    <Route path="/products" element={<><Header /><Products /><Footer /></>} />
+                    <Route path="/products/:slug" element={<><Header /><ProductDetail /><Footer /></>} />
 
                     {/* Protected Client Routes */}
                     <Route path="/cart" element={
                         <ProtectedRoute>
                             <Header />
                             <Cart />
+                            <Footer />
                         </ProtectedRoute>
                     } />
                     <Route path="/profile" element={
                         <ProtectedRoute>
                             <Header />
                             <Profile />
+                            <Footer />
                         </ProtectedRoute>
                     } />
                     <Route path="/user/edit" element={
                         <ProtectedRoute>
                             <Header />
                             <EditProfile />
+                            <Footer />
                         </ProtectedRoute>
                     } />
                     <Route path="/checkout" element={
                         <ProtectedRoute>
                             <Header />
                             <Checkout />
+                            <Footer />
                         </ProtectedRoute>
                     } />
                     <Route path="/vnpay-return" element={
                         <ProtectedRoute>
                             <Header />
                             <VNPayReturn />
+                            <Footer />
                         </ProtectedRoute>
                     } />
                     <Route path="/orders" element={
                         <ProtectedRoute>
                             <Header />
                             <Orders />
+                            <Footer />
                         </ProtectedRoute>
                     } />
                     {/* Admin Routes */}

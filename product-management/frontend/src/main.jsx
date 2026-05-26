@@ -12,6 +12,7 @@ import './assets/styles/products.css'
 import './assets/styles/product-detail.css'
 import './assets/styles/checkout.css'
 import './assets/styles/order-detail.css'
+import './assets/styles/home.css'
 import App from './App.jsx'
 
 createRoot(document.getElementById('root')).render(
