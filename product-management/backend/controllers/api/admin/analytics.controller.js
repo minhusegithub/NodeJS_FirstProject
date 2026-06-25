@@ -491,6 +491,11 @@ export const getFulfillmentReports = async (req, res) => {
 
         if (start_date && end_date) {
             where.report_date = { [Op.between]: [start_date, end_date] };
+        } else {
+            // Default: last 30 days to avoid returning the entire 180-day history
+            const defaultEnd = new Date().toISOString().split('T')[0];
+            const defaultStart = (() => { const d = new Date(); d.setDate(d.getDate() - 30); return d.toISOString().split('T')[0]; })();
+            where.report_date = { [Op.between]: [defaultStart, defaultEnd] };
         }
 
         const latestCalculatedAt = await FulfillmentReport.max('calculated_at', { where });
@@ -534,7 +539,6 @@ export const getFulfillmentReports = async (req, res) => {
                 slaTargetMins: parseInt(r.sla_target_mins, 10) || 0,
                 slaCompliantOrders: parseInt(r.sla_compliant_orders, 10) || 0,
                 slaComplianceRate: parseFloat(r.sla_compliance_rate) || 0,
-                bottleneckStage: r.bottleneck_stage,
                 calculatedAt: r.calculated_at
             }))
         };

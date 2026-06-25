@@ -32,12 +32,7 @@ const getSlaTone = (rate) => {
     return 'bad';
 };
 
-const BOTTLENECK_LABELS = {
-    LEAD_TIME: 'Khâu xác nhận đơn',
-    FULFILLMENT: 'Khâu đóng gói',
-    DELIVERY: 'Khâu vận chuyển',
-    OPTIMAL: 'Hệ thống đang vận hành ổn định'
-};
+
 
 const toDateInputValue = (date) => moment(date).format('YYYY-MM-DD');
 
@@ -135,9 +130,7 @@ const FulfillmentAnalytics = () => {
                 label: moment(item.reportDate).format('DD/MM'),
                 avgLeadTimeMins: item.avgLeadTimeMins,
                 avgFulfillmentTimeMins: item.avgFulfillmentTimeMins,
-                avgDeliveryTimeMins: item.avgDeliveryTimeMins,
-                storeName: item.storeName,
-                bottleneckStage: item.bottleneckStage
+                storeName: item.storeName
             }));
         }
 
@@ -150,15 +143,13 @@ const FulfillmentAnalytics = () => {
                     storeName: item.storeName,
                     totalOrders: 0,
                     leadWeighted: 0,
-                    fulfillmentWeighted: 0,
-                    deliveryWeighted: 0
+                    fulfillmentWeighted: 0
                 };
             }
 
             acc[key].totalOrders += item.totalOrders;
             acc[key].leadWeighted += item.avgLeadTimeMins * item.totalOrders;
             acc[key].fulfillmentWeighted += item.avgFulfillmentTimeMins * item.totalOrders;
-            acc[key].deliveryWeighted += item.avgDeliveryTimeMins * item.totalOrders;
             return acc;
         }, {});
 
@@ -167,43 +158,29 @@ const FulfillmentAnalytics = () => {
             label: item.label,
             storeName: item.storeName,
             avgLeadTimeMins: item.totalOrders > 0 ? Math.round(item.leadWeighted / item.totalOrders) : 0,
-            avgFulfillmentTimeMins: item.totalOrders > 0 ? Math.round(item.fulfillmentWeighted / item.totalOrders) : 0,
-            avgDeliveryTimeMins: item.totalOrders > 0 ? Math.round(item.deliveryWeighted / item.totalOrders) : 0
+            avgFulfillmentTimeMins: item.totalOrders > 0 ? Math.round(item.fulfillmentWeighted / item.totalOrders) : 0
         }));
     }, [reports, isSingleStoreView, isSystemAdmin, filters.store_id]);
 
     const overallStats = useMemo(() => {
         if (reports.length === 0) {
-            return {
-                totalOrders: 0,
-                avgInternalMins: 0,
-                slaRate: 0,
-                bottleneckStage: 'OPTIMAL'
-            };
+            return { totalOrders: 0, avgLeadMins: 0, avgFulfillmentMins: 0, avgInternalMins: 0, slaRate: 0 };
         }
 
         const totalOrders = reports.reduce((sum, item) => sum + item.totalOrders, 0);
         const totalCompliant = reports.reduce((sum, item) => sum + item.slaCompliantOrders, 0);
         const leadWeighted = reports.reduce((sum, item) => sum + (item.avgLeadTimeMins * item.totalOrders), 0);
         const fulfillmentWeighted = reports.reduce((sum, item) => sum + (item.avgFulfillmentTimeMins * item.totalOrders), 0);
-        const deliveryWeighted = reports.reduce((sum, item) => sum + (item.avgDeliveryTimeMins * item.totalOrders), 0);
 
-        const avgLead = totalOrders > 0 ? leadWeighted / totalOrders : 0;
-        const avgFulfillment = totalOrders > 0 ? fulfillmentWeighted / totalOrders : 0;
-        const avgDelivery = totalOrders > 0 ? deliveryWeighted / totalOrders : 0;
-        const bottleneckStage = (() => {
-            const maxTime = Math.max(avgLead, avgFulfillment, avgDelivery);
-            if (maxTime <= 60) return 'OPTIMAL';
-            if (maxTime === avgLead) return 'LEAD_TIME';
-            if (maxTime === avgFulfillment) return 'FULFILLMENT';
-            return 'DELIVERY';
-        })();
+        const avgLead = totalOrders > 0 ? Math.round(leadWeighted / totalOrders) : 0;
+        const avgFulfillment = totalOrders > 0 ? Math.round(fulfillmentWeighted / totalOrders) : 0;
 
         return {
             totalOrders,
-            avgInternalMins: Math.round(avgLead + avgFulfillment),
-            slaRate: totalOrders > 0 ? (totalCompliant / totalOrders) * 100 : 0,
-            bottleneckStage
+            avgLeadMins: avgLead,
+            avgFulfillmentMins: avgFulfillment,
+            avgInternalMins: avgLead + avgFulfillment,
+            slaRate: totalOrders > 0 ? (totalCompliant / totalOrders) * 100 : 0
         };
     }, [reports]);
 
@@ -228,9 +205,7 @@ const FulfillmentAnalytics = () => {
             });
     }, [reports, simulatedFulfillment]);
 
-    const bottleneckText = overallStats.bottleneckStage === 'OPTIMAL'
-        ? 'Không có khâu nào vượt ngưỡng cảnh báo trong giai đoạn đã chọn.'
-        : `${BOTTLENECK_LABELS[overallStats.bottleneckStage]} đang làm chậm hệ thống nhất.`;
+
 
     return (
         <div className="admin-page">
@@ -240,6 +215,10 @@ const FulfillmentAnalytics = () => {
                     <span className="dash-updated">
                         Cập nhật lần cuối: {moment().format('DD/MM/YYYY HH:mm')}
                     </span>
+                </div>
+
+                <div>
+                    <p>SLA : T1 + T2 ≤ 4 giờ </p>
                 </div>
 
                 <div className="dash-filters">
@@ -288,24 +267,21 @@ const FulfillmentAnalytics = () => {
                         <div className="ops-kpi-value">{Math.round(overallStats.slaRate)}%</div>
                         <p>{overallStats.totalOrders.toLocaleString('vi-VN')} đơn đã được phân tích trong kỳ.</p>
                     </div>
-                    <div className="ops-kpi-card alert">
-                        <span className="ops-kpi-eyebrow">Điểm nghẽn hiện tại</span>
-                        <div className="ops-kpi-alert">
-                            <i className="fa-solid fa-circle-exclamation"></i>
-                            <strong>{BOTTLENECK_LABELS[overallStats.bottleneckStage]}</strong>
-                        </div>
-                        <p>{bottleneckText}</p>
+                    <div className="ops-kpi-card neutral">
+                        <span className="ops-kpi-eyebrow">T.b. xác nhận đơn (T1)</span>
+                        <div className="ops-kpi-value small">{formatMinutes(overallStats.avgLeadMins)}</div>
+                        <p>Thời gian từ lúc đặt đơn → xác nhận.</p>
                     </div>
                     <div className="ops-kpi-card neutral">
-                        <span className="ops-kpi-eyebrow">Thời gian xử lý trung bình</span>
-                        <div className="ops-kpi-value small">{formatMinutes(overallStats.avgInternalMins)} / đơn</div>
-                        <p>Đang tính theo T1 + T2 để phản ánh nội lực vận hành.</p>
+                        <span className="ops-kpi-eyebrow">T.b. đóng gói & bàn giao (T2)</span>
+                        <div className="ops-kpi-value small">{formatMinutes(overallStats.avgFulfillmentMins)}</div>
+                        <p>Thời gian từ xác nhận → bàn giao vận chuyển.</p>
                     </div>
                 </div>
 
                 <div className="dash-chart-section">
                     <div className="dash-chart-header">
-                        <h3>⛓️ Thời gian vận hành</h3>
+                        <h3>⛓️ Thời gian xử lý nội bộ (T1 + T2)</h3>
                         <span className="ops-chart-caption">
                             {isSingleStoreView ? 'Trục X theo ngày' : 'Trục X theo cửa hàng'}
                         </span>
@@ -320,12 +296,10 @@ const FulfillmentAnalytics = () => {
                                     <XAxis dataKey="label" stroke="#6b7280" fontSize={12} />
                                     <YAxis stroke="#6b7280" fontSize={12} tickFormatter={formatMinutes} />
                                     <Tooltip
-                                        formatter={(value, name, item) => {
+                                        formatter={(value, name) => {
                                             const label = name === 'avgLeadTimeMins'
-                                                ? 'Khâu xác nhận'
-                                                : name === 'avgFulfillmentTimeMins'
-                                                    ? 'Khâu đóng gói'
-                                                    : 'Khâu vận chuyển';
+                                                ? 'T1 - Xác nhận đơn'
+                                                : 'T2 - Đóng gói & Bàn giao';
                                             return [`${formatMinutes(value)}`, label];
                                         }}
                                         labelFormatter={(label, payload) => {
@@ -337,13 +311,11 @@ const FulfillmentAnalytics = () => {
                                     <Legend
                                         formatter={(value) => {
                                             if (value === 'avgLeadTimeMins') return 'T1 - Chờ xác nhận';
-                                            if (value === 'avgFulfillmentTimeMins') return 'T2 - Đóng gói';
-                                            return 'T3 - Vận chuyển';
+                                            return 'T2 - Đóng gói & Bàn giao';
                                         }}
                                     />
                                     <Bar stackId="time" dataKey="avgLeadTimeMins" fill="#7dd3fc" radius={[0, 0, 0, 0]} />
-                                    <Bar stackId="time" dataKey="avgFulfillmentTimeMins" fill="#fb923c" radius={[0, 0, 0, 0]} />
-                                    <Bar stackId="time" dataKey="avgDeliveryTimeMins" fill="#a78bfa" radius={[6, 6, 0, 0]} />
+                                    <Bar stackId="time" dataKey="avgFulfillmentTimeMins" fill="#fb923c" radius={[6, 6, 0, 0]} />
                                 </BarChart>
                             </ResponsiveContainer>
                         ) : (

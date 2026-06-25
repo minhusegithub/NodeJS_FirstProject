@@ -278,18 +278,18 @@ const seedInventory = async () => {
         let initialStock = 0;
         let restockDate = new Date();
 
-        // Phân bổ logic tồn kho mạnh tay hơn
+        // Phân bổ logic tồn kho thực tế theo phân khúc hàng hóa
         if (product.sku.startsWith("DSI-")) {
-          // Cố tình tạo ra lượng tồn kho chết (Dead Stock) khổng lồ để chỉ số DSI vọt lên cao
-          initialStock = Math.floor(Math.random() * 20) + 30; // 30 - 50 cái
+          // Hàng giá trị cao (tủ lạnh, dàn âm thanh...): 30 - 50 cái
+          initialStock = Math.floor(Math.random() * 21) + 30; // 30 - 50 cái
           restockDate = sixMonthsAgo;
         } else if (product.sku.startsWith("MOM-")) {
-          // Hàng trend nhập số lượng nhiều để lát xả hàng
-          initialStock = Math.floor(Math.random() * 300) + 200; // 200 - 500 cái
+          // Hàng xu hướng tầm trung: 100 - 200 cái
+          initialStock = Math.floor(Math.random() * 101) + 100; // 100 - 200 cái
           restockDate = twoWeeksAgo;
         } else if (product.sku.startsWith("COW-")) {
-          // Hàng bán đều ngày nào cũng nhập ngập kho
-          initialStock = Math.floor(Math.random() * 1000) + 1000; // 1000 - 2000 cái
+          // Hàng tiêu dùng nhanh giá rẻ: 300 - 600 cái
+          initialStock = Math.floor(Math.random() * 301) + 300; // 300 - 600 cái
           restockDate = twoWeeksAgo;
         }
 

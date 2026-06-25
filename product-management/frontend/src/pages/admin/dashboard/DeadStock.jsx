@@ -16,8 +16,8 @@ const formatDsiScore = (score) => {
 
 const RISK_MAP = {
     CRITICAL: { label: 'Nguy hiểm', cls: 'critical' },
-    WARNING:  { label: 'Cảnh báo',  cls: 'warning'  },
-    SAFE:     { label: 'An toàn',   cls: 'normal'   }
+    WARNING: { label: 'Cảnh báo', cls: 'warning' },
+    SAFE: { label: 'An toàn', cls: 'normal' }
 };
 
 const getRiskKey = (item) => {
@@ -95,29 +95,20 @@ const DeadStock = () => {
 
                 <div className="dsi-kpi-grid">
                     <div className="dsi-kpi-card dsi-kpi-tied-up">
-                        
+
                         <h3>Tổng Vốn Đọng</h3>
                         <div className="dsi-kpi-figure">{formatFullVND(dsiSummary.totalCapitalTiedUp)}</div>
                         <p>{dsiSummary.totalItems} mã hàng đang bị chôn vốn</p>
                     </div>
 
                     <div className="dsi-kpi-card dsi-kpi-critical">
-                        
-                    <h3>Mã hàng thuộc nhóm <b>CRITICAL</b></h3>
+
+                        <h3>Mã hàng thuộc nhóm <b>CRITICAL</b></h3>
                         <div className="dsi-kpi-figure">{dsiSummary.criticalCount}</div>
-                        <p>Cần ưu tiên chuyển kho, xả hàng hoặc xử lý ngay</p>
+                        <p>Cần ưu tiên xử lý ngay</p>
                     </div>
 
-                    <div className="dsi-kpi-card dsi-kpi-liberated">
-                           
-                            <h3>Vốn Đã Giải Phóng</h3>
-                        <div className="dsi-kpi-figure">{formatFullVND(dsiSummary.liberatedCapital)}</div>
-                        <p>
-                            {dsiSummary.liberatedCapital > 0
-                                ? 'Số tiền đã thu hồi từ các quyết định xử lý tồn kho'
-                                : 'KPI này đang chờ dữ liệu xử lý tồn kho từ hệ thống'}
-                        </p>
-                    </div>
+
                 </div>
 
                 {/* Filters */}

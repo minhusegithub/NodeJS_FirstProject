@@ -1,4 +1,4 @@
-import { Order, OrderItem, User, Store, ProductStoreInventory, Product } from '../models/sequelize/index.js';
+import { Order, OrderItem, User, Store, ProductStoreInventory, Product, DsiReport, StoreRevenueStat, MomentumReport, FulfillmentReport, sequelize } from '../models/sequelize/index.js';
 import { Op } from 'sequelize';
 
 // ============================================================================
@@ -40,6 +40,23 @@ const pickProductWeighted = (weightedProducts) => {
   return weightedProducts[0];
 };
 
+// 4. Số lượng mua thực tế theo phân khúc giá
+const getRealisticQuantity = (price) => {
+  if (price < 200000)   return getRandomInt(1, 5);  // Hàng rẻ: mua 1–5 cái
+  if (price < 1000000)  return getRandomInt(1, 3);  // Hàng trung: 1–3 cái
+  return 1;                                          // Hàng cao cấp: luôn 1
+};
+
+// 5. Số đơn hàng theo ngày (cuối tuần ít hơn 40%)
+const getOrdersCount = (date, isRealtimeRun) => {
+  if (isRealtimeRun) return getRandomInt(2, 5); // Bơm thêm realtime
+
+  const dayOfWeek = date.getDay(); // 0=CN, 6=T7
+  const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+  const baseCount = isWeekend ? getRandomInt(3, 9) : getRandomInt(5, 15);
+  return baseCount;
+};
+
 // Biến đếm toàn cục chống trùng lặp mã đơn
 let orderCounter = 1;
 
@@ -49,29 +66,64 @@ let orderCounter = 1;
 
 const seedTransactions = async () => {
   try {
-    console.log('⏳ Đang phân tích khoảng trống thời gian...');
+    // 🧹 TỰ ĐỘNG DỌN DẸP VÀ RESET KHO HÀNG + ĐƠN HÀNG CŨ ĐỂ ĐẢM BẢO TÍNH ĐỒNG NHẤT KHI DEMO
+    console.log('🧹 Đang dọn dẹp các đơn hàng và báo cáo cũ để reset dữ liệu...');
+    await OrderItem.destroy({ where: {}, force: true });
+    await Order.destroy({ where: {}, force: true });
+    await DsiReport.destroy({ where: {} });
+    await StoreRevenueStat.destroy({ where: {} });
+    await MomentumReport.destroy({ where: {} });
+    await FulfillmentReport.destroy({ where: {} });
 
-    // 1. TÌM NGÀY CỦA ĐƠN HÀNG CUỐI CÙNG
-    const lastOrder = await Order.findOne({ order: [['created_at', 'DESC']] });
+    console.log('📦 Đang thiết lập lại lượng tồn kho ban đầu của các cửa hàng...');
+    const products = await Product.findAll();
+    const inventories = await ProductStoreInventory.findAll();
 
-    let daysToGenerate = 0;
+    const sixMonthsAgo = new Date();
+    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+
+    const twoWeeksAgo = new Date();
+    twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
+
+    const inventoryUpdates = [];
+    for (const inv of inventories) {
+      const product = products.find(p => p.id === inv.product_id);
+      if (!product) continue;
+
+      let initialStock = 0;
+      let restockDate = new Date();
+
+      if (product.sku.startsWith("DSI-")) {
+        initialStock = getRandomInt(30, 50); // Hàng giá trị cao (tủ lạnh, dàn âm thanh...): 30 - 50 cái
+        restockDate = sixMonthsAgo;
+      } else if (product.sku.startsWith("MOM-")) {
+        initialStock = getRandomInt(100, 200); // Hàng xu hướng tầm trung: 100 - 200 cái
+        restockDate = twoWeeksAgo;
+      } else if (product.sku.startsWith("COW-")) {
+        initialStock = getRandomInt(300, 600); // Hàng tiêu dùng nhanh giá rẻ: 300 - 600 cái
+        restockDate = twoWeeksAgo;
+      } else {
+        initialStock = getRandomInt(30, 50);
+        restockDate = twoWeeksAgo;
+      }
+
+      inventoryUpdates.push({
+        id: inv.id,
+        store_id: inv.store_id,
+        product_id: inv.product_id,
+        stock: initialStock,
+        last_restock_date: restockDate,
+        reserved_stock: 0
+      });
+    }
+    await ProductStoreInventory.bulkCreate(inventoryUpdates, { updateOnDuplicate: ['stock', 'last_restock_date', 'reserved_stock'] });
+    console.log('✅ Đã khôi phục tồn kho ban đầu!');
+
+    let daysToGenerate = 180; // Luôn sinh 180 ngày khi reset
     const today = new Date();
     const todayMidnight = new Date(today.getFullYear(), today.getMonth(), today.getDate());
 
-    if (!lastOrder) {
-      daysToGenerate = 180; // Nếu DB trống, tạo 180 ngày
-      console.log('👉 Lần chạy đầu tiên: Khởi tạo dữ liệu hữu cơ 180 ngày qua.');
-    } else {
-      const lastDate = new Date(lastOrder.created_at);
-      const lastMidnight = new Date(lastDate.getFullYear(), lastDate.getMonth(), lastDate.getDate());
-      daysToGenerate = Math.floor((todayMidnight - lastMidnight) / (1000 * 60 * 60 * 24));
-
-      if (daysToGenerate > 0) {
-        console.log(`👉 Chạy bù dữ liệu: Sinh đơn hàng cho ${daysToGenerate} ngày bị khuyết.`);
-      } else {
-        console.log(`👉 Hôm nay đã có dữ liệu. Sẽ bơm thêm một vài đơn mới (Realtime Simulation).`);
-      }
-    }
+    console.log('👉 Tiến hành sinh mới 180 ngày dữ liệu hữu cơ.');
 
     // 2. CHUẨN BỊ DỮ LIỆU GỐC TRÊN RAM
     const allUsers = await User.findAll();
@@ -84,14 +136,19 @@ const seedTransactions = async () => {
       const product = p.toJSON();
       if (product.sku.startsWith('COW-')) product.weight = 75;      // Bò vắt sữa: 75% cơ hội
       else if (product.sku.startsWith('MOM-')) product.weight = 20; // Hàng trend: 20% cơ hội
-      else if (product.sku.startsWith('DSI-')) product.weight = 5;  // Hàng ế: 5% cơ hội
+      else if (product.sku.startsWith('DSI-')) product.weight = 1;  // Hàng ế: 1% cơ hội (bán rất chậm)
       else product.weight = 10;
       return product;
     });
 
-    const inventories = await ProductStoreInventory.findAll();
+    // Tạo Map O(1) thay vì tìm kiếm O(n) mỗi lần bốc sản phẩm
+    const freshInventories = await ProductStoreInventory.findAll();
     const inventoryMap = {};
-    inventories.forEach(inv => inventoryMap[inv.id] = inv.toJSON());
+    const invLookup = new Map(); // "storeId_productId" → inventoryId
+    freshInventories.forEach(inv => {
+      inventoryMap[inv.id] = inv.toJSON();
+      invLookup.set(`${inv.store_id}_${inv.product_id}`, inv.id);
+    });
 
     let totalOrdersCreated = 0;
 
@@ -100,12 +157,20 @@ const seedTransactions = async () => {
       const simulatedDate = new Date(today);
       simulatedDate.setDate(today.getDate() - dayOffset);
       const isToday = (dayOffset === 0);
+      const isRealtimeRun = isToday && daysToGenerate === 0;
 
-      // Số đơn: Nếu là chạy bù thì 5-15 đơn. Nếu click chạy thêm trong "Hôm nay" thì 2-5 đơn.
-      let ordersTodayCount = isToday && daysToGenerate === 0 ? getRandomInt(2, 5) : getRandomInt(5, 15);
+      const ordersTodayCount = getOrdersCount(simulatedDate, isRealtimeRun);
 
       const dailyOrdersData = [];
       const dailyOrderItemsBuffer = [];
+
+      // Cấu hình trọng số động: Đóng băng không cho bán hàng DSI trong 45 ngày qua để tạo hàng ế
+      const currentWeightedProducts = weightedProducts.map(p => {
+        if (p.sku.startsWith('DSI-') && dayOffset <= 45) {
+          return { ...p, weight: 0 };
+        }
+        return p;
+      });
 
       for (let i = 0; i < ordersTodayCount; i++) {
         const store = stores[getRandomInt(0, stores.length - 1)];
@@ -124,28 +189,40 @@ const seedTransactions = async () => {
         let orderTotalPrice = 0;
         const numItems = getRandomInt(1, 3); // Mỗi đơn mua 1-3 mặt hàng
 
+        // Dùng Set để tránh trùng sản phẩm trong cùng 1 đơn hàng
+        const pickedProductIds = new Set();
+
         for (let j = 0; j < numItems; j++) {
-          // Bốc sản phẩm theo tỷ lệ %
-          const selectedProduct = pickProductWeighted(weightedProducts);
+          // Bốc sản phẩm theo tỷ lệ %, tránh trùng
+          let selectedProduct;
+          let attempts = 0;
+          do {
+            selectedProduct = pickProductWeighted(currentWeightedProducts);
+            attempts++;
+          } while (pickedProductIds.has(selectedProduct.id) && attempts < 10);
 
-          const invId = Object.keys(inventoryMap).find(id =>
-            inventoryMap[id].product_id === selectedProduct.id &&
-            inventoryMap[id].store_id === store.id
-          );
+          if (pickedProductIds.has(selectedProduct.id)) continue;
+          pickedProductIds.add(selectedProduct.id);
 
-          // Trừ tồn kho nếu còn hàng
-          if (invId && inventoryMap[invId].stock > 0) {
-            inventoryMap[invId].stock -= 1;
-            const itemPrice = parseFloat(selectedProduct.price);
+          // Tra cứu tồn kho O(1)
+          const invId = invLookup.get(`${store.id}_${selectedProduct.id}`);
+
+          // Tính số lượng mua theo giá sản phẩm
+          const itemPrice = parseFloat(selectedProduct.price);
+          const quantity = getRealisticQuantity(itemPrice);
+
+          // Trừ tồn kho nếu còn đủ hàng
+          if (invId && inventoryMap[invId].stock >= quantity) {
+            inventoryMap[invId].stock -= quantity;
             orderItems.push({
               product_id: selectedProduct.id,
               title: selectedProduct.title,
               price: itemPrice,
               price_new: itemPrice,
-              quantity: 1,
-              total_price: itemPrice
+              quantity: quantity,
+              total_price: itemPrice * quantity
             });
-            orderTotalPrice += itemPrice;
+            orderTotalPrice += itemPrice * quantity;
           }
         }
 

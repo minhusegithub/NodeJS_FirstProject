@@ -4,13 +4,6 @@ import { sequelize, FulfillmentReport } from '../models/sequelize/index.js';
 
 const DEFAULT_SLA_TARGET_MINS = 240;
 
-const resolveBottleneck = (t1, t2, t3) => {
-    const maxTime = Math.max(t1, t2, t3);
-    if (maxTime <= 60) return 'OPTIMAL';
-    if (maxTime === t1) return 'LEAD_TIME';
-    if (maxTime === t2) return 'FULFILLMENT';
-    return 'DELIVERY';
-};
 
 export const generateDailyFulfillmentReport = async () => {
     const transaction = await sequelize.transaction();
@@ -76,7 +69,6 @@ export const generateDailyFulfillmentReport = async () => {
                 sla_target_mins: DEFAULT_SLA_TARGET_MINS,
                 sla_compliant_orders: compliant,
                 sla_compliance_rate: rate.toFixed(2),
-                bottleneck_stage: resolveBottleneck(t1, t2, t3),
                 calculated_at: new Date()
             };
         });
@@ -90,7 +82,6 @@ export const generateDailyFulfillmentReport = async () => {
                 'sla_target_mins',
                 'sla_compliant_orders',
                 'sla_compliance_rate',
-                'bottleneck_stage',
                 'calculated_at',
                 'updated_at'
             ],
@@ -106,25 +97,17 @@ export const generateDailyFulfillmentReport = async () => {
 };
 
 export const startFulfillmentAggregator = () => {
-    // Test schedule: every 12 hours.
-    // Production recommendation: 0 2 * * * (02:00 everyday).
+    // Runs every 12 hours. Calculates the fulfillment report for yesterday
+    // and upserts it into the DB. This is idempotent — safe to run multiple times.
     cron.schedule('0 */12 * * *', async () => {
         try {
             const reports = await generateDailyFulfillmentReport();
-            console.log(` [Cron Fulfillment] Upserted ${reports.length} records`);
+            console.log(`⏰ [Cron Fulfillment] Upserted ${reports.length} records for yesterday`);
         } catch (error) {
-            console.error('\u274C [Cron Fulfillment] Generate failed:', error.message);
+            console.error('❌ [Cron Fulfillment] Generate failed:', error.message);
         }
     });
 
-    // Daily at 3:00 AM (UTC+7): full recompute for yesterday
-    cron.schedule('0 3 * * *', async () => {
-        const { yesterday } = getDateRange();
-        console.log(`⏰ [Cron Daily] Full recompute for ${yesterday}`);
-        await generateDailyFulfillmentReport(yesterday);
-    });
-
-
-
-    console.log(' Fulfillment cron job started');
+    console.log('🚚 Fulfillment cron job started');
 };
+
