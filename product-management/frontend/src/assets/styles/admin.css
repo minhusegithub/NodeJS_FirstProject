@@ -38,37 +38,30 @@
 }
 
 .admin-logo {
-    padding: 1.75rem 1.5rem;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-    background: rgba(255, 255, 255, 0.03);
-    backdrop-filter: blur(10px);
+    padding: 1.25rem 1rem;
+    border-bottom: 1px solid rgba(29, 181, 108, 0.15);
+    background: #0D1413;
 }
 
-.admin-logo h2 {
-    font-size: 1.2rem;
-    margin: 0;
-    font-weight: 700;
-    letter-spacing: 0.4px;
+.admin-logo-inner {
     display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.logo-mark {
-    width: 34px;
-    height: 34px;
-    border-radius: 10px;
-    background: rgba(29, 181, 108, 0.12);
-    display: inline-flex;
-    align-items: center;
     justify-content: center;
-    color: #1DB56C;
-    box-shadow: inset 0 0 0 1px rgba(29, 181, 108, 0.2);
+    align-items: center;
 }
 
-.logo-text {
-    color: rgba(255, 255, 255, 0.95);
+.sidebar-logo-img {
+    width: 160px;
+    height: 160px;
+    object-fit: contain;
+    border-radius: 12px;
+    transition: filter 0.3s ease, transform 0.3s ease;
 }
+
+.sidebar-logo-img:hover {
+    filter: drop-shadow(0 0 14px rgba(29, 181, 108, 0.55));
+    transform: scale(1.03);
+}
+
 
 .admin-nav {
     flex: 1;
@@ -206,63 +199,7 @@
     color: inherit;
 }
 
-.admin-sidebar-footer {
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
-    padding: 1rem;
-    background: rgba(255, 255, 255, 0.03);
-    backdrop-filter: blur(10px);
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
 
-.sidebar-footer-actions {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-.sidebar-footer-actions .btn-profile-sidebar,
-.sidebar-footer-actions .btn-logout-sidebar {
-    padding: 0.75rem 1rem;
-    border: none;
-    border-radius: 10px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    font-size: 0.9rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    text-decoration: none;
-}
-
-.btn-profile-sidebar {
-    background: linear-gradient(135deg, #1DB56C 0%, #17a24f 100%);
-    color: white;
-    box-shadow: 0 2px 8px rgba(29, 181, 108, 0.2);
-}
-
-.btn-profile-sidebar:hover {
-    background: linear-gradient(135deg, #17a24f 0%, #138d42 100%);
-    transform: translateY(-3px);
-    box-shadow: 0 4px 14px rgba(29, 181, 108, 0.35);
-}
-
-.btn-logout-sidebar {
-    background: rgba(255, 255, 255, 0.1);
-    color: rgba(255, 255, 255, 0.9);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-}
-
-.btn-logout-sidebar:hover {
-    background: rgba(255, 255, 255, 0.15);
-    color: white;
-    transform: translateY(-3px);
-    box-shadow: 0 4px 14px rgba(255, 255, 255, 0.1);
-    border-color: rgba(255, 255, 255, 0.3);
-}
 
 .admin-main {
     flex: 1;
@@ -273,18 +210,180 @@
 
 .admin-topbar {
     background: white;
-    padding: var(--spacing-md) var(--spacing-lg);
-    box-shadow: var(--shadow-sm);
+    padding: 0 1.5rem;
+    height: 64px;
+    box-shadow: 0 1px 0 #e5e7eb;
     position: sticky;
     top: 0;
     z-index: 100;
+    display: flex;
+    align-items: center;
 }
 
 .admin-topbar-content {
+    width: 100%;
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
+
+/* Greeting */
+.topbar-greeting {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.topbar-welcome {
+    font-size: 0.9rem;
+    color: #9ca3af;
+}
+
+.topbar-name {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #111827;
+}
+
+/* Avatar button */
+.topbar-user {
+    position: relative;
+}
+
+.topbar-avatar-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: none;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 40px;
+    padding: 6px 14px 6px 6px;
+    cursor: pointer;
+    transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.topbar-avatar-btn:hover {
+    border-color: #1DB56C;
+    background: #f0fdf6;
+}
+
+.topbar-avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #1DB56C, #0ea364);
+    color: white;
+    font-weight: 700;
+    font-size: 0.95rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    box-shadow: 0 2px 6px rgba(29, 181, 108, 0.3);
+    overflow: hidden;
+}
+
+.topbar-avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+    display: block;
+}
+
+.topbar-avatar-name {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: #374151;
+    max-width: 130px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.topbar-chevron {
+    font-size: 0.7rem;
+    color: #9ca3af;
+    transition: transform 0.25s ease;
+}
+
+.topbar-chevron.open {
+    transform: rotate(180deg);
+}
+
+/* Dropdown */
+.topbar-dropdown {
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    min-width: 200px;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    overflow: hidden;
+    animation: dropdownFadeIn 0.18s ease;
+    z-index: 999;
+}
+
+@keyframes dropdownFadeIn {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.topbar-dropdown-item {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 11px 16px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 0.9rem;
+    color: #374151;
+    font-weight: 500;
+    transition: background 0.15s ease;
+    text-align: left;
+}
+
+.topbar-dropdown-item:hover {
+    background: #f9fafb;
+    color: #1DB56C;
+}
+
+.topbar-dropdown-item:hover i {
+    color: #1DB56C;
+}
+
+.topbar-dropdown-item.danger {
+    color: #ef4444;
+}
+
+.topbar-dropdown-item.danger:hover {
+    background: #fef2f2;
+    color: #dc2626;
+}
+
+.topbar-dropdown-item i {
+    width: 16px;
+    text-align: center;
+    color: #6b7280;
+    transition: color 0.15s ease;
+    font-size: 0.85rem;
+    flex-shrink: 0;
+}
+
+.topbar-dropdown-item.danger i {
+    color: #ef4444;
+}
+
+.topbar-dropdown-divider {
+    height: 1px;
+    background: #f3f4f6;
+    margin: 2px 0;
+}
+
 
 .topbar-actions {
     display: flex;

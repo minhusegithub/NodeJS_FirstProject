@@ -1,12 +1,25 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../stores/authStore';
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect, useRef } from 'react';
 import AdminProfileModal from './AdminProfileModal';
+import logo from '../../assets/admin_logo.png';
 
 const AdminLayout = () => {
     const navigate = useNavigate();
     const { user, logout } = useAuthStore();
     const [showProfileModal, setShowProfileModal] = useState(false);
+    const [dropdownOpen, setDropdownOpen] = useState(false);
+    const dropdownRef = useRef(null);
+
+    useEffect(() => {
+        const handleOutsideClick = (e) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+                setDropdownOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleOutsideClick);
+        return () => document.removeEventListener('mousedown', handleOutsideClick);
+    }, []);
 
     const handleLogout = async () => {
         await logout();
@@ -29,12 +42,9 @@ const AdminLayout = () => {
         <div className="admin-layout">
             <aside className="admin-sidebar">
                 <div className="admin-logo">
-                    <h2>
-                        <span className="logo-mark" aria-hidden="true">
-                            <i className="fa-solid fa-gauge-high"></i>
-                        </span>
-                        <span className="logo-text">MVN Admin</span>
-                    </h2>
+                    <div className="admin-logo-inner">
+                        <img src={logo} alt="MVN Admin" className="sidebar-logo-img" />
+                    </div>
                 </div>
 
                 <nav className="admin-nav">
@@ -139,33 +149,52 @@ const AdminLayout = () => {
                         </NavLink>
                     )}
                 </nav>
-
-                <aside className="admin-sidebar-footer">
-                    <div className="sidebar-footer-actions">
-                        <button
-                            className="btn-profile-sidebar"
-                            onClick={() => setShowProfileModal(true)}
-                            title="Xem thông tin cá nhân"
-                        >
-                            <i className="fa-regular fa-user" aria-hidden="true"></i>
-                            <span>Thông tin cá nhân</span>
-                        </button>
-                        <button
-                            className="btn-logout-sidebar"
-                            onClick={handleLogout}
-                            title="Đăng xuất tài khoản"
-                        >
-                            <i className="fa-solid fa-right-from-bracket" aria-hidden="true"></i>
-                            <span>Đăng xuất</span>
-                        </button>
-                    </div>
-                </aside>
             </aside>
 
             <div className="admin-main">
                 <header className="admin-topbar">
                     <div className="admin-topbar-content">
-                        <h3>Xin chào, {user?.fullName || 'Admin'}</h3>
+                        <div className="topbar-greeting">
+                            <span className="topbar-welcome">Xin chào,</span>
+                            <span className="topbar-name">{user?.fullName || 'Admin'}</span>
+                        </div>
+
+                        <div className="topbar-user" ref={dropdownRef}>
+                            <button
+                                className="topbar-avatar-btn"
+                                onClick={() => setDropdownOpen(prev => !prev)}
+                                title="Tài khoản của bạn"
+                            >
+                                <span className="topbar-avatar">
+                                    {user?.avatar
+                                        ? <img src={user.avatar} alt={user.fullName} className="topbar-avatar-img" />
+                                        : (user?.fullName || 'A').charAt(0).toUpperCase()
+                                    }
+                                </span>
+                                <span className="topbar-avatar-name">{user?.fullName || 'Admin'}</span>
+                                <i className={`fa-solid fa-chevron-down topbar-chevron ${dropdownOpen ? 'open' : ''}`}></i>
+                            </button>
+
+                            {dropdownOpen && (
+                                <div className="topbar-dropdown">
+                                    <button
+                                        className="topbar-dropdown-item"
+                                        onClick={() => { setShowProfileModal(true); setDropdownOpen(false); }}
+                                    >
+                                        <i className="fa-regular fa-user"></i>
+                                        <span>Thông tin cá nhân</span>
+                                    </button>
+                                    <div className="topbar-dropdown-divider" />
+                                    <button
+                                        className="topbar-dropdown-item danger"
+                                        onClick={handleLogout}
+                                    >
+                                        <i className="fa-solid fa-right-from-bracket"></i>
+                                        <span>Đăng xuất</span>
+                                    </button>
+                                </div>
+                            )}
+                        </div>
                     </div>
                 </header>
 

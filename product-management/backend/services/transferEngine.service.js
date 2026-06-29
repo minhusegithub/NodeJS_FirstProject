@@ -90,6 +90,8 @@ const detectDemands = async (allowedStoreIds = null) => {
         const reorderPoint = Math.max(calcReorderPoint(velocity), 1);
 
         if (row.stock <= reorderPoint) {
+            // Mục tiêu bổ sung: đưa stock lên gấp đôi reorderPoint (vùng an toàn)
+            // Ví dụ: RP = 10, stock = 3 → cần 10*2 - 3 = 17 SP để đạt mức lý tưởng
             const qtyNeeded = reorderPoint * 2 - row.stock;
             demands.push({
                 store_id: row.store_id,
@@ -122,6 +124,8 @@ const detectDemands = async (allowedStoreIds = null) => {
 const discoverSupply = async (productIds, demandStoreIds) => {
     if (!productIds.length) return new Map();
 
+    // Loại trừ các store đang thiếu hàng ra khỏi nguồn cung
+    // → tránh trường hợp "lấy từ chỗ đang cần" (vòng lặp vô nghĩa)
     const excludeFilter = demandStoreIds.length
         ? `AND psi.store_id NOT IN (${demandStoreIds.map(Number).join(',')})`
         : '';
@@ -153,6 +157,8 @@ const discoverSupply = async (productIds, demandStoreIds) => {
 
         if (row.stock <= threshold) continue; // không đủ dư
 
+        // Số SP có thể chuyển đi = stock - mức an toàn nội bộ
+        // Dùng SAFETY_FACTOR để đảm bảo store nguồn không bị hụt sau khi cho đi
         const transferableQty = Math.floor(row.stock - reorderPoint * SAFETY_FACTOR);
         if (transferableQty <= 0) continue;
 
@@ -231,9 +237,12 @@ const scoreCandidates = (demands, supplyMap) => {
     const maxTransferable = Math.max(...raw.map(r => r.source.transferable_qty), 1);
 
     return raw.map(r => {
+        // S_distance đảo ngược: store GẦN → điểm CAO (1 - dist/maxDist)
+        // S_surplus tuyến tính:  store DƯ NHIỀU → điểm CAO
+        // S_urgency đã nằm [0,1]: dest CÀN CẤP → điểm CAO
         const S_distance = 1 - (r.distance_km / maxDist);
         const S_surplus = r.source.transferable_qty / maxTransferable;
-        const S_urgency = r.S_urgency; // đã tính sẵn, range [0,1]
+        const S_urgency = r.S_urgency;
 
         const score = W_DISTANCE * S_distance + W_SURPLUS * S_surplus + W_URGENCY * S_urgency;
 
@@ -294,6 +303,8 @@ const greedyAllocate = (scoredCandidates) => {
 
         allocations.push({ ...candidate, actual_qty: actualQty });
 
+        // Trừ tồn kho nguồn và nhu cầu đích → lần duyệt tiếp sẽ thấy con số đã giảm
+        // Đây là cơ chế chống "double-spending": 1 source không bị phân bổ quá khả năng
         availableSupply.set(supplyKey, avail - actualQty);
         remainingDemand.set(demandKey, remaining - actualQty);
     }

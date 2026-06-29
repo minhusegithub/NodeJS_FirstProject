@@ -218,7 +218,7 @@ const FulfillmentAnalytics = () => {
                 </div>
 
                 <div>
-                    <p>SLA : T1 + T2 ≤ 4 giờ </p>
+                    <p> <i>SLA :Tổng thời gian xác nhận và đóng gói/bàn giao đến bên vận chuyển phải nhỏ hơn 4 giờ </i></p>
                 </div>
 
                 <div className="dash-filters">
@@ -283,7 +283,7 @@ const FulfillmentAnalytics = () => {
                     <div className="dash-chart-header">
                         <h3>⛓️ Thời gian xử lý nội bộ (T1 + T2)</h3>
                         <span className="ops-chart-caption">
-                            {isSingleStoreView ? 'Trục X theo ngày' : 'Trục X theo cửa hàng'}
+                            {isSingleStoreView ? 'Trục hoành theo ngày' : 'Trục hoành theo cửa hàng'}
                         </span>
                     </div>
                     <div className="dash-chart-container">
